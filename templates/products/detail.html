@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ product.name }} | Grow More{% endblock %}
+{% block content %}
+  <main class="container page-hero">
+    <section id="product-detail" class="detail-wrap" data-product-id="{{ product.id }}">
+      <div class="detail-media">
+        <div class="detail-main-frame">
+          <button type="button" class="img-nav prev" data-dir="-1" aria-label="Previous image">&#10094;</button>
+          <img src="{{ product.gallery_images.0 }}" alt="{{ product.name }}" id="detail-main-img" />
+          <button type="button" class="img-nav next" data-dir="1" aria-label="Next image">&#10095;</button>
+        </div>
+        <div class="swipe-dots" id="swipe-dots">
+          {% for image in product.gallery_images %}<span class="swipe-dot {% if forloop.first %}active{% endif %}" data-dot-index="{{ forloop.counter0 }}"></span>{% endfor %}
+        </div>
+        <div class="detail-thumbs">
+          {% for image in product.gallery_images %}
+            <button type="button" class="thumb-btn {% if forloop.first %}active{% endif %}" data-img="{{ image }}" data-index="{{ forloop.counter0 }}"><img src="{{ image }}" alt="{{ product.name }} view {{ forloop.counter }}" /></button>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="detail-copy">
+        <p class="chip">{{ product.category.name }}</p>
+        <h1>{{ product.name }}</h1>
+        <p>{{ product.description }}</p>
+        {% with offer=product.active_offer %}
+          <div class="price-block big {% if offer %}has-offer{% endif %}" {% if offer %}data-offer-expirable data-offer-id="{{ offer.id }}"{% endif %}>
+            <div class="price-line"><span class="price-now">Rs. {{ product.current_price }}</span><span class="price-old">Rs. {{ product.original_price }}</span><span class="price-off">{{ product.discount_percent }}% OFF</span></div>
+            <div class="save-line">{{ product.offer_highlight }}</div>
+            {% if offer %}
+              <div class="offer-detail-panel">
+                <span class="offer-label-chip">{{ product.offer_label }}</span>
+                {% if offer.description %}<p>{{ offer.description }}</p>{% endif %}
+                <div class="limited-badge" data-offer-countdown data-offer-end="{{ product.offer_countdown_target }}">Limited time</div>
+              </div>
+            {% endif %}
+          </div>
+        {% endwith %}
+        <div class="variant-stack">
+          <label>Size</label>
+          <div class="radio-row" data-role="size">
+            {% for size in product.sizes %}<button type="button" class="radio-pill {% if forloop.first %}active{% endif %}" data-value="{{ size }}">{{ size }}</button>{% endfor %}
+          </div>
+          {% if product.colors %}
+            <label>Color</label>
+            <div class="radio-row" data-role="color">
+              {% for color in product.colors %}<button type="button" class="radio-pill color-pill {% if forloop.first %}active{% endif %}" data-value="{{ color }}"><span class="swatch"></span><span class="pill-text">{{ color }}</span></button>{% endfor %}
+            </div>
+          {% endif %}
+        </div>
+        <div class="qty-wrap">
+          <label>Quantity</label>
+          <div class="qty-stepper">
+            <button type="button" class="qty-btn" data-action="minus">-</button>
+            <input id="detail-qty" class="qty-input" type="number" min="1" value="1" />
+            <button type="button" class="qty-btn" data-action="plus">+</button>
+          </div>
+        </div>
+        <div class="product-actions">
+          <button class="add-btn" type="button" data-add-cart>Add to cart</button>
+          <button class="fav-action-btn" type="button" data-favorite-id="{{ product.id }}">Add to Favorite</button>
+        </div>
+      </div>
+    </section>
+    <section class="related-section">
+      <h2>Related Products</h2>
+      <div class="product-grid-fixed" id="related-products">
+        {% for product in related %}{% include "partials/product_card.html" with product=product %}{% endfor %}
+      </div>
+    </section>
+  </main>
+{% endblock %}
+{% block scripts %}
+  <script type="module" src="{% static 'js/shop/product-detail.js' %}"></script>
+{% endblock %}

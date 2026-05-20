@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Login | Grow More{% endblock %}
+{% block content %}
+  <main class="container page-hero">
+    <section class="card auth-card" id="login-card">
+      <h1>Login</h1>
+      <p>Login once to continue checkout securely.</p>
+      <form method="post" class="form">
+        {% csrf_token %}
+        {{ form.website }}
+        <input type="text" name="username" placeholder="Username or email" value="{{ form.username.value|default:'' }}" required />
+        <input type="password" name="password" placeholder="Password" required />
+        {% if form.errors %}<p class="form-error">Please check your login details.</p>{% endif %}
+        <button class="submit-btn" type="submit">Login & Continue</button>
+      </form>
+      <div class="product-actions success-actions auth-actions">
+        <a class="ghost-btn" href="{% url 'accounts:register' %}">Create Account</a>
+        <a class="ghost-btn" href="{% url 'core:home' %}">Back to Store</a>
+      </div>
+    </section>
+  </main>
+{% endblock %}
+{% block scripts %}
+  <script type="module" src="{% static 'js/auth/login.js' %}"></script>
+{% endblock %}

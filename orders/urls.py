@@ -1,0 +1,16 @@
+from django.urls import path
+
+from orders import views
+
+app_name = "orders"
+
+urlpatterns = [
+    path("cart/", views.cart_api, name="cart_api"),
+    path("cart/add/", views.add_to_cart, name="add_to_cart"),
+    path("cart/items/<int:pk>/update/", views.update_cart_item, name="update_cart_item"),
+    path("cart/items/<int:pk>/remove/", views.remove_cart_item, name="remove_cart_item"),
+    path("checkout/", views.checkout, name="checkout"),
+    path("payment/verify/", views.verify_payment, name="verify_payment"),
+    path("orders/<str:order_number>/", views.order_detail, name="detail"),
+    path("orders/<str:order_number>/success/", views.order_success, name="success"),
+]

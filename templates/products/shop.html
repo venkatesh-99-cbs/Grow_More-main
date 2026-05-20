@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Shop | Grow More{% endblock %}
+{% block content %}
+  <main class="container page-hero">
+    <h1>Summer Collection 2026</h1>
+    <div class="controls shop-controls">
+      <input id="search-input" type="search" placeholder="Search product" />
+      <select id="category-filter">
+        <option value="all">All</option>
+        {% for category in categories %}<option value="{{ category.slug }}">{{ category.name }}</option>{% endfor %}
+      </select>
+      <select id="sort-by">
+        <option value="featured">Featured</option>
+        <option value="price-low">Price Low</option>
+        <option value="price-high">Price High</option>
+        <option value="name">Name A-Z</option>
+      </select>
+    </div>
+    <section class="section">
+      <div class="product-grid-fixed" id="product-grid">
+        {% for product in products %}{% include "partials/product_card.html" with product=product %}{% endfor %}
+      </div>
+    </section>
+  </main>
+{% endblock %}
+{% block scripts %}
+  <script type="module" src="{% static 'js/shop/products.js' %}"></script>
+{% endblock %}

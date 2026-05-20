@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Profile | Grow More{% endblock %}
+{% block content %}
+  <main class="container page-hero">
+    <h1>My Dashboard</h1>
+    <section class="section profile-grid">
+      <article class="card form-card">
+        <h3>Profile</h3>
+        <form method="post" class="form">
+          {% csrf_token %}
+          <input type="hidden" name="form_type" value="profile" />
+          <input type="text" name="first_name" placeholder="First name" value="{{ profile_form.first_name.value|default:'' }}" />
+          <input type="text" name="last_name" placeholder="Last name" value="{{ profile_form.last_name.value|default:'' }}" />
+          <input type="email" name="email" placeholder="Email" value="{{ profile_form.email.value|default:'' }}" required />
+          <button class="submit-btn" type="submit">Save Profile</button>
+        </form>
+        <form method="post" action="{% url 'accounts:logout' %}" class="logout-form">{% csrf_token %}<button class="ghost-btn" type="submit">Logout</button></form>
+      </article>
+
+      <article class="card form-card">
+        <h3>Add Address</h3>
+        <form method="post" action="{% url 'accounts:add_address' %}" class="form">
+          {% csrf_token %}
+          {{ address_form.full_name }}{{ address_form.phone }}{{ address_form.address_line }}{{ address_form.city }}{{ address_form.state }}{{ address_form.postal_code }}{{ address_form.country }}
+          <label class="check-line">{{ address_form.is_default }} Default address</label>
+          <button class="submit-btn" type="submit">Save Address</button>
+        </form>
+      </article>
+    </section>
+
+    <section class="section">
+      <h2>Saved Addresses</h2>
+      <div class="grid">
+        {% for address in addresses %}
+          <article class="info-card">
+            <h3>{{ address.full_name }}{% if address.is_default %} · Default{% endif %}</h3>
+            <p>{{ address.address_line }}</p><p>{{ address.city }}, {{ address.state }} {{ address.postal_code }}</p><p>{{ address.phone }}</p>
+            <form method="post" action="{% url 'accounts:delete_address' address.pk %}">{% csrf_token %}<button class="remove-btn" type="submit">Remove</button></form>
+          </article>
+        {% empty %}<p class="muted">No saved addresses yet.</p>{% endfor %}
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Order History</h2>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Order</th><th>Total</th><th>Status</th><th>Date</th><th></th></tr></thead>
+          <tbody>
+            {% for order in orders %}
+              <tr><td>{{ order.order_number }}</td><td>Rs. {{ order.total_amount }}</td><td>{{ order.get_status_display }}</td><td>{{ order.created_at|date:"M d, Y" }}</td><td><a href="{% url 'orders:detail' order.order_number %}">View</a></td></tr>
+            {% empty %}<tr><td colspan="5">No orders yet.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+{% endblock %}
+{% block scripts %}
+  <script type="module" src="{% static 'js/auth/profile.js' %}"></script>
+  <script type="module" src="{% static 'js/shop/orders.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% block dashboard_content %}
+  <h1>{% if offer %}Edit{% else %}Add{% endif %} Promotional Offer</h1>
+  <section class="dashboard-two">
+    <form class="card form admin-form" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="image-preview-grid" data-image-preview></div>
+      <button class="submit-btn" type="submit">Save Offer</button>
+    </form>
+    <article class="card form-card offer-preview-card">
+      <h3>Offer Preview</h3>
+      <div class="price-block has-offer">
+        <div class="price-line"><span class="price-now">Rs. 1299.00</span><span class="price-old">Rs. 1999.00</span><span class="price-off">35% OFF</span></div>
+        <div class="save-line">This is how the promotional highlight appears on product cards.</div>
+        <div class="offer-chip-row"><span class="offer-label-chip">Limited Offer</span><span class="offer-label-chip muted-chip">Trending Deal</span></div>
+        <div class="limited-badge">Ends in 02:14:39</div>
+      </div>
+      <p class="muted">Assign products, categories, or visibility rules on the left. The public UI updates automatically when the offer is active and scheduled.</p>
+    </article>
+  </section>
+{% endblock %}
+{% block scripts %}
+  {{ block.super }}
+  <script type="module" src="{% static 'js/admin/admin-products.js' %}"></script>
+{% endblock %}

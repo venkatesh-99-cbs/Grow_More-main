@@ -1,0 +1,8 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+  <h1>Categories</h1>
+  <form class="card form admin-form" method="post">{% csrf_token %}{{ form.as_p }}<button class="submit-btn" type="submit">Add Category</button></form>
+  <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Name</th><th>Slug</th><th>Active</th></tr></thead><tbody>
+    {% for category in categories %}<tr><td>{{ category.name }}</td><td>{{ category.slug }}</td><td>{{ category.is_active|yesno:"Yes,No" }}</td></tr>{% endfor %}
+  </tbody></table></div>
+{% endblock %}

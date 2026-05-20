@@ -1,0 +1,49 @@
+<article class="product-card reveal" data-product-id="{{ product.id }}" data-product-url="{{ product.get_absolute_url }}">
+  <div class="product-media" aria-label="{{ product.name }}">
+    <div class="flip-inner">
+      <img class="front" src="{{ product.main_image_url }}" alt="{{ product.name }} front" loading="lazy" />
+      <img class="back" src="{% if product.gallery_images.1 %}{{ product.gallery_images.1 }}{% else %}{{ product.main_image_url }}{% endif %}" alt="{{ product.name }} back" loading="lazy" />
+    </div>
+    <button type="button" class="fav-btn" data-favorite-id="{{ product.id }}" title="Add to favorites">&#10084;</button>
+    <div class="flip-hint">Tap to flip</div>
+  </div>
+  <div class="product-body">
+    <p class="chip">{{ product.category.name }}</p>
+    <h3>{{ product.name }}</h3>
+    <p class="tiny">{{ product.description }}</p>
+    {% with offer=product.active_offer %}
+      <div class="price-block {% if offer %}has-offer{% endif %}" {% if offer %}data-offer-expirable data-offer-id="{{ offer.id }}"{% endif %}>
+        <div class="price-line">
+          <span class="price-now">Rs. {{ product.current_price }}</span>
+          <span class="price-old">Rs. {{ product.original_price }}</span>
+          <span class="price-off">{{ product.discount_percent }}% OFF</span>
+        </div>
+        <div class="save-line">{{ product.offer_highlight }}</div>
+        {% if offer %}
+          <div class="offer-chip-row">
+            <span class="offer-label-chip">{{ product.offer_label }}</span>
+            {% if product.is_trending %}<span class="offer-label-chip muted-chip">Trending Deal</span>{% endif %}
+          </div>
+          <div class="limited-badge" data-offer-countdown data-offer-end="{{ product.offer_countdown_target }}">Limited time</div>
+        {% endif %}
+      </div>
+    {% endwith %}
+    <div class="variant-stack">
+      <label>Size</label>
+      <div class="radio-row" data-role="size">
+        {% for size in product.sizes %}<button type="button" class="radio-pill {% if forloop.first %}active{% endif %}" data-value="{{ size }}">{{ size }}</button>{% endfor %}
+      </div>
+      {% if product.colors %}
+        <label>Color</label>
+        <div class="radio-row" data-role="color">
+          {% for color in product.colors %}<button type="button" class="radio-pill color-pill {% if forloop.first %}active{% endif %}" data-value="{{ color }}"><span class="swatch"></span><span class="pill-text">{{ color }}</span></button>{% endfor %}
+        </div>
+      {% endif %}
+    </div>
+    {% if product.in_stock %}
+      <button class="add-btn" type="button" data-add-cart>Add to cart</button>
+    {% else %}
+      <button class="add-btn" type="button" disabled>Out of stock</button>
+    {% endif %}
+  </div>
+</article>

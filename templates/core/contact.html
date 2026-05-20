@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Contact | Grow More{% endblock %}
+{% block content %}
+  <main class="container page-hero">
+    <h1>Contact The Summer Team</h1>
+    <section class="section grid contact-grid">
+      <article class="card form-card">
+        <form class="form" method="post">
+          {% csrf_token %}
+          {{ form.website }}
+          <input type="text" name="name" placeholder="Your Name" value="{{ form.name.value|default:'' }}" required />
+          <input type="email" name="email" placeholder="Email Address" value="{{ form.email.value|default:'' }}" required />
+          <textarea name="message" rows="6" placeholder="Tell us what summer styles you need" required>{{ form.message.value|default:'' }}</textarea>
+          <button class="submit-btn" type="submit">Send Message</button>
+        </form>
+      </article>
+      <article class="info-card reveal">
+        <h3>Store Support</h3>
+        <p>Email: hello@growmore.com</p>
+        <p>Phone: +91 800 222 9944</p>
+        <p>Hours: 9:00 AM - 7:00 PM</p>
+      </article>
+    </section>
+  </main>
+{% endblock %}

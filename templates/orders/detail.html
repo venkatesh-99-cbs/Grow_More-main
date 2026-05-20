@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ order.order_number }} | Grow More{% endblock %}
+{% block content %}
+  <main class="container page-hero">
+    <h1>{{ order.order_number }}</h1>
+    <section class="checkout-wrap section">
+      <article class="card form-card">
+        <h3>Status: {{ order.get_status_display }}</h3>
+        <p>{{ order.full_name }}</p><p>{{ order.shipping_address }}</p><p>{{ order.shipping_city }}, {{ order.shipping_state }} {{ order.shipping_postal_code }}</p>
+      </article>
+      <article class="card form-card">
+        <h3>Items</h3>
+        {% for item in order.items.all %}
+          <div class="cart-row"><span>{{ item.product_name }} · {{ item.size }} {{ item.color }} x{{ item.quantity }}{% if item.offer_title %}<br><small class="offer-mini">{{ item.offer_title }} - {{ item.offer_discount_percent }}% off</small>{% endif %}</span><strong>Rs. {{ item.subtotal }}</strong></div>
+        {% endfor %}
+        <div class="cart-row"><strong>Total</strong><strong>Rs. {{ order.total_amount }}</strong></div>
+      </article>
+    </section>
+  </main>
+{% endblock %}

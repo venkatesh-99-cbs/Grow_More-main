@@ -1,0 +1,91 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Grow More | Summer Menswear{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body data-authenticated="{{ request.user.is_authenticated|yesno:'true,false' }}">
+    {% block header %}
+      <header class="topbar">
+        <div class="container nav">
+          <a class="logo" href="{% url 'core:home' %}">Grow More</a>
+          <ul class="nav-links">
+            <li><a href="{% url 'core:home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a></li>
+            <li><a href="{% url 'products:shop' %}" class="{% if request.resolver_match.app_name == 'products' and request.resolver_match.url_name != 'favorites' %}active{% endif %}">Shop</a></li>
+            <li><a href="{% url 'core:about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">About</a></li>
+            <li><a href="{% url 'products:favorites' %}" class="{% if request.resolver_match.url_name == 'favorites' %}active{% endif %}">Favorites</a></li>
+            <li><a href="{% url 'core:contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact</a></li>
+            {% if request.user.is_staff %}<li><a href="{% url 'dashboard:overview' %}">Dashboard</a></li>{% endif %}
+          </ul>
+          <div class="actions">
+            <button class="icon-btn menu-toggle" type="button" data-menu-toggle>&#9776;</button>
+            <a class="icon-btn fav-nav-btn" href="{% url 'products:favorites' %}">&#10084;<span id="fav-count" class="fav-count">0</span></a>
+            <button class="icon-btn" type="button" data-cart-toggle>&#128722;<span id="cart-count">{{ cart_count|default:0 }}</span></button>
+            {% if request.user.is_authenticated %}
+              <a class="auth-btn" href="{% url 'accounts:profile' %}">Profile</a>
+            {% else %}
+              <a class="auth-btn" href="{% url 'accounts:login' %}">Login</a>
+            {% endif %}
+            <a class="cta-btn" href="{% url 'products:shop' %}">Shop Summer</a>
+          </div>
+        </div>
+      </header>
+    {% endblock %}
+
+    {{ active_popup_offer_payload|json_script:"active-offer-data" }}
+    <div id="deal-popup-container" class="deal-popup-container" {% if not active_popup_offer %}hidden{% endif %} data-offer-expirable>
+      <div class="deal-popup-banner" {% if active_popup_offer %}data-offer-id="{{ active_popup_offer.id }}"{% endif %}>
+        <button class="popup-close" aria-label="Close deal banner">&times;</button>
+        <div class="popup-content">
+          <div class="popup-text">
+            <p class="popup-label">{% if active_popup_offer %}{{ active_popup_offer.offer_label }}{% else %}LIMITED TIME OFFER{% endif %}</p>
+            <p class="popup-description">{% if active_popup_offer %}{{ active_popup_offer.description|default:active_popup_offer.highlight_text }}{% else %}Get up to 40% OFF on selected pieces{% endif %}</p>
+          </div>
+          <div class="popup-timer">
+            <div class="timer-label">Deal Ends In:</div>
+            <div class="popup-countdown" {% if active_popup_offer %}data-offer-countdown data-offer-end="{{ active_popup_offer.countdown_target|date:'c' }}"{% endif %}>00:00:00</div>
+          </div>
+          <a href="{% if active_popup_offer %}{{ active_popup_offer.cta_link }}{% else %}{% url 'products:shop' %}{% endif %}" class="popup-cta">{% if active_popup_offer %}{{ active_popup_offer.cta_text }}{% else %}Shop Now{% endif %}</a>
+        </div>
+      </div>
+    </div>
+    <button id="deal-floating-ball" class="deal-floating-ball" type="button" hidden aria-label="Open current offer">
+      <span class="ball-label">{% if active_popup_offer %}{{ active_popup_offer.discount_percent }}%{% else %}Deal{% endif %}</span>
+      <span class="ball-timer" {% if active_popup_offer %}data-offer-countdown data-offer-end="{{ active_popup_offer.countdown_target|date:'c' }}"{% endif %}>00:00</span>
+      {% if active_popup_offer and active_popup_offer.permanent_dismiss_allowed %}<span class="ball-dismiss" data-offer-dismiss aria-label="Dismiss offer">×</span>{% endif %}
+    </button>
+
+    {% if messages %}
+      <div class="message-stack">
+        {% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}
+      </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+
+    {% block cart %}
+      <aside class="cart-sidebar" id="cart-sidebar">
+        <h3>My Cart</h3>
+        <div class="cart-items" id="cart-items"></div>
+        <div class="cart-row">
+          <strong>Total</strong><strong id="cart-total-amount">Rs. 0.00</strong>
+        </div>
+        <button class="add-btn" type="button" data-checkout-url="{% url 'orders:checkout' %}" data-checkout-button>Checkout</button>
+      </aside>
+    {% endblock %}
+
+    {% block footer %}
+      <footer class="footer"><div class="container">© 2026 Grow More Summer Menswear.</div></footer>
+    {% endblock %}
+    <script type="module" src="{% static 'js/core/main.js' %}"></script>
+    <script type="module" src="{% static 'js/offers/homepage-offers.js' %}"></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

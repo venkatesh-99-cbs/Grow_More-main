@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Register | Grow More{% endblock %}
+{% block content %}
+  <main class="container page-hero">
+    <section class="card auth-card">
+      <h1>Create Account</h1>
+      <p>Save addresses, track orders, and checkout faster.</p>
+      <form method="post" class="form">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="Username" value="{{ form.username.value|default:'' }}" required />
+        <input type="email" name="email" placeholder="Email Address" value="{{ form.email.value|default:'' }}" required />
+        <input type="password" name="password1" placeholder="Password" required />
+        <input type="password" name="password2" placeholder="Confirm Password" required />
+        {% if form.errors %}<div class="form-error">{{ form.errors }}</div>{% endif %}
+        <button class="submit-btn" type="submit">Create Account</button>
+      </form>
+      <a class="ghost-btn auth-wide-link" href="{% url 'accounts:login' %}">Already have an account?</a>
+    </section>
+  </main>
+{% endblock %}
+{% block scripts %}
+  <script type="module" src="{% static 'js/auth/register.js' %}"></script>
+{% endblock %}

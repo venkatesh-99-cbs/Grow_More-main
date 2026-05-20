@@ -1,0 +1,17 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+  <h1>Dashboard Overview</h1>
+  <div class="admin-stats">
+    <article class="info-card"><span>Products</span><strong>{{ stats.products }}</strong></article>
+    <article class="info-card"><span>Active Offers</span><strong>{{ stats.offers }}</strong></article>
+    <article class="info-card"><span>Orders</span><strong>{{ stats.orders }}</strong></article>
+    <article class="info-card"><span>Customers</span><strong>{{ stats.customers }}</strong></article>
+    <article class="info-card"><span>Revenue</span><strong>₹{{ stats.revenue }}</strong></article>
+  </div>
+  <h2>Recent Orders</h2>
+  <div class="admin-table-wrap">
+    <table class="admin-table"><thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead><tbody>
+      {% for order in orders %}<tr><td>{{ order.order_number }}</td><td>{{ order.full_name }}</td><td>₹{{ order.total_amount }}</td><td>{{ order.get_status_display }}</td></tr>{% empty %}<tr><td colspan="4">No orders yet.</td></tr>{% endfor %}
+    </tbody></table>
+  </div>
+{% endblock %}

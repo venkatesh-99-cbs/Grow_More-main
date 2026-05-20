@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Payment | Grow More{% endblock %}
+{% block content %}
+  <main class="container page-hero">
+    <section class="card auth-card">
+      <h1>Complete Payment</h1>
+      <p>Order {{ order.order_number }} is ready for secure Razorpay payment.</p>
+      <p class="price big">Rs. {{ order.total_amount }}</p>
+      {% if payment.provider_order_id %}
+        <form action="{% url 'orders:verify_payment' %}" method="post" id="razorpay-form">
+          {% csrf_token %}
+          <input type="hidden" name="razorpay_order_id" value="{{ payment.provider_order_id }}" />
+          <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id" />
+          <input type="hidden" name="razorpay_signature" id="razorpay_signature" />
+          <button class="submit-btn" type="button" id="pay-button" data-key="{{ razorpay_key_id }}" data-order="{{ payment.provider_order_id }}" data-amount="{{ order.total_amount }}" data-name="{{ order.full_name }}" data-email="{{ order.email }}" data-phone="{{ order.phone }}">Pay With Razorpay</button>
+        </form>
+        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+      {% else %}
+        <p class="muted">Razorpay keys are not configured. The order is saved as pending so you can test the flow safely.</p>
+        <a class="add-btn auth-wide-link" href="{% url 'orders:success' order.order_number %}">View Order</a>
+      {% endif %}
+    </section>
+  </main>
+{% endblock %}
+{% block scripts %}
+  <script type="module" src="{% static 'js/shop/checkout.js' %}"></script>
+{% endblock %}

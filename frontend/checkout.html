@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout | Grow More</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script defer src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container nav">
+        <a class="logo" href="index.html">Grow More</a>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a class="active" href="shop.html">Shop</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="favorites.html">Favorites</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+        <div class="actions">
+          <button class="icon-btn menu-toggle" onclick="toggleMenu()">
+            &#9776;</button
+          ><button class="icon-btn" onclick="toggleCart()">
+            &#128722;<span id="cart-count">0</span>
+          </button>
+        </div>
+      </div>
+    </header>
+    <div id="deal-popup-container" class="deal-popup-container">
+      <div class="deal-popup-banner">
+        <button class="popup-close" aria-label="Close deal banner">
+          &times;
+        </button>
+        <div class="popup-content">
+          <div class="popup-text">
+            <p class="popup-label">🔥 LIMITED TIME OFFER 🔥</p>
+            <p class="popup-description">
+              Get <strong>Up to 40% OFF</strong> + extra
+              <strong>10% OFF</strong> on 2+ items
+            </p>
+          </div>
+          <div class="popup-timer">
+            <div class="timer-label">Deal Ends In:</div>
+            <div class="popup-countdown">00:00:00</div>
+          </div>
+          <a href="shop.html" class="popup-cta">Shop Now</a>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="floating-deal-ball"
+      class="floating-deal-ball"
+      style="display: none"
+    >
+      <button class="ball-close" aria-label="Dismiss floating ball">
+        &times;
+      </button>
+      <button class="ball-expand" aria-label="Expand timer">
+        <div class="ball-timer-display">
+          <span class="ball-countdown">00:00:00</span>
+          <span class="ball-label">Deal On!</span>
+        </div>
+      </button>
+    </div>
+    <main class="container page-hero">
+      <h1>Secure Checkout</h1>
+      <div class="stepper">
+        <span class="step-dot active" data-step="1">1 Shipping</span
+        ><span class="step-dot" data-step="2">2 Payment</span
+        ><span class="step-dot" data-step="3">3 Review</span>
+      </div>
+      <section class="checkout-wrap section">
+        <article class="card" style="padding: 1rem">
+          <form id="checkout-form" class="form" novalidate>
+            <div class="step active" data-step="1">
+              <h3>Shipping & Contact</h3>
+              <input type="text" name="name" placeholder="Full Name" required />
+              <input
+                type="email"
+                name="email"
+                placeholder="Email Address"
+                required
+              />
+              <input
+                type="tel"
+                name="phone"
+                placeholder="Phone (10-15 digits)"
+                pattern="\d{10,15}"
+                required
+              />
+              <textarea
+                name="address"
+                rows="4"
+                placeholder="Shipping Address"
+                required
+              ></textarea>
+              <input type="text" name="city" placeholder="City" required />
+              <input
+                type="text"
+                name="zip"
+                placeholder="ZIP / Postal Code"
+                pattern="[A-Za-z0-9\- ]{4,10}"
+                required
+              />
+              <button type="button" class="submit-btn" id="to-payment">
+                Continue To Payment
+              </button>
+            </div>
+            <div class="step" data-step="2">
+              <h3>Payment</h3>
+              <select name="payment" required>
+                <option value="razorpay" selected>
+                  Razorpay Secure Checkout
+                </option>
+              </select>
+              <input
+                type="text"
+                name="card_name"
+                placeholder="Name On Card (Razorpay will collect this)"
+              />
+              <input
+                type="text"
+                name="card_number"
+                placeholder="Card Number (enter in Razorpay popup)"
+                pattern="\d{16}"
+              />
+              <div class="controls">
+                <input
+                  type="text"
+                  name="exp"
+                  placeholder="MM/YY (optional)"
+                  pattern="(0[1-9]|1[0-2])\/\d{2}"
+                /><input
+                  type="text"
+                  name="cvv"
+                  placeholder="CVV (optional)"
+                  pattern="\d{3}"
+                />
+              </div>
+              <div class="product-actions">
+                <button type="button" class="ghost-btn" id="back-shipping">
+                  Back</button
+                ><button type="button" class="submit-btn" id="to-review">
+                  Review Order
+                </button>
+              </div>
+            </div>
+            <div class="step" data-step="3">
+              <h3>Review & Place Order</h3>
+              <div id="review-block" class="card" style="padding: 0.8rem"></div>
+              <div class="product-actions">
+                <button type="button" class="ghost-btn" id="back-payment">
+                  Back</button
+                ><button class="submit-btn" type="submit">
+                  Pay & Place Order
+                </button>
+              </div>
+            </div>
+          </form>
+        </article>
+        <article class="card" style="padding: 1rem">
+          <h3>Order Summary</h3>
+          <div id="checkout-summary"></div>
+        </article>
+      </section>
+    </main>
+    <aside class="cart-sidebar" id="cart-sidebar">
+      <h3>My Cart</h3>
+      <div class="cart-items" id="cart-items"></div>
+      <div class="cart-row">
+        <strong>Total</strong><strong id="cart-total-amount">$0.00</strong>
+      </div>
+      <button class="add-btn" onclick="checkout()">Checkout</button>
+    </aside>
+    <footer class="footer">
+      <div class="container">Secure and guided payment flow.</div>
+    </footer>
+    <script src="app.js"></script>
+   
+  </body>
+</html>

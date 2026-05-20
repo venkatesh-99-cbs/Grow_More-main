@@ -1,0 +1,7 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+  <h1>Payments</h1>
+  <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Order</th><th>Provider</th><th>Status</th><th>Provider Order</th><th>Payment ID</th></tr></thead><tbody>
+    {% for payment in payments %}<tr><td>{{ payment.order.order_number }}</td><td>{{ payment.provider }}</td><td>{{ payment.status }}</td><td>{{ payment.provider_order_id }}</td><td>{{ payment.provider_payment_id }}</td></tr>{% empty %}<tr><td colspan="5">No payments yet.</td></tr>{% endfor %}
+  </tbody></table></div>
+{% endblock %}

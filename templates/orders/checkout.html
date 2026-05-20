@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Checkout | Grow More{% endblock %}
+{% block content %}
+  <main class="container page-hero">
+    <h1>Secure Checkout</h1>
+    <div class="stepper"><span class="step-dot active" data-step="1">1 Shipping</span><span class="step-dot" data-step="2">2 Payment</span><span class="step-dot" data-step="3">3 Review</span></div>
+    <section class="checkout-wrap section">
+      <article class="card form-card">
+        <form id="checkout-form" class="form" method="post" novalidate>
+          {% csrf_token %}
+          <div class="step active" data-step="1">
+            <h3>Shipping & Contact</h3>
+            <input type="text" name="full_name" placeholder="Full Name" value="{{ form.full_name.value|default:'' }}" required />
+            <input type="email" name="email" placeholder="Email Address" value="{{ form.email.value|default:'' }}" required />
+            <input type="tel" name="phone" placeholder="Phone (10-15 digits)" value="{{ form.phone.value|default:'' }}" pattern="\d{10,15}" required />
+            <textarea name="shipping_address" rows="4" placeholder="Shipping Address" required>{{ form.shipping_address.value|default:'' }}</textarea>
+            <input type="text" name="shipping_city" placeholder="City" value="{{ form.shipping_city.value|default:'' }}" required />
+            <input type="text" name="shipping_state" placeholder="State" value="{{ form.shipping_state.value|default:'' }}" required />
+            <input type="text" name="shipping_postal_code" placeholder="ZIP / Postal Code" value="{{ form.shipping_postal_code.value|default:'' }}" pattern="[A-Za-z0-9\- ]{4,12}" required />
+            <button type="button" class="submit-btn" id="to-payment">Continue To Payment</button>
+          </div>
+          <div class="step" data-step="2">
+            <h3>Payment</h3>
+            <select name="payment_method" required>
+              <option value="razorpay">Razorpay</option>
+              <option value="cod">Cash on Delivery</option>
+            </select>
+            <div class="product-actions"><button type="button" class="ghost-btn" id="back-shipping">Back</button><button type="button" class="submit-btn" id="to-review">Review Order</button></div>
+          </div>
+          <div class="step" data-step="3">
+            <h3>Review & Place Order</h3>
+            <div id="review-block" class="card form-card"></div>
+            {% if form.errors %}<div class="form-error">{{ form.errors }}</div>{% endif %}
+            <div class="product-actions"><button type="button" class="ghost-btn" id="back-payment">Back</button><button class="submit-btn" type="submit">Place Secure Order</button></div>
+          </div>
+        </form>
+      </article>
+      <article class="card form-card">
+        <h3>Order Summary</h3>
+        <div id="checkout-summary">
+          {% for item in cart.items.all %}
+            <div class="checkout-item"><img src="{{ item.product.main_image_url }}" alt="{{ item.product.name }}"><div><p>{{ item.product.name }}</p><small>{{ item.size }}, {{ item.color }} x{{ item.quantity }}</small>{% if item.product.active_offer %}<small class="offer-mini">{{ item.product.offer_label }}</small>{% endif %}</div><strong>Rs. {{ item.subtotal }}</strong></div>
+          {% endfor %}
+          <div class="cart-row"><strong>Total</strong><strong>Rs. {{ cart.total }}</strong></div>
+        </div>
+      </article>
+    </section>
+  </main>
+{% endblock %}
+{% block scripts %}
+  <script type="module" src="{% static 'js/shop/checkout.js' %}"></script>
+{% endblock %}

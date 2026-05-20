@@ -1,0 +1,24 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+  <div class="admin-heading"><h1>Promotional Offers</h1><a class="cta-btn" href="{% url 'dashboard:offer_create' %}">Add Offer</a></div>
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead><tr><th>Offer</th><th>Type</th><th>Discount</th><th>Schedule</th><th>Visibility</th><th></th></tr></thead>
+      <tbody>
+        {% for offer in offers %}
+          <tr>
+            <td><strong>{{ offer.title }}</strong><br><small>{{ offer.offer_label }}</small></td>
+            <td>{{ offer.get_offer_type_display }}</td>
+            <td>{{ offer.discount_percent }}%</td>
+            <td>{{ offer.starts_at|date:"M d, H:i" }}<br>{{ offer.ends_at|date:"M d, H:i" }}</td>
+            <td>{{ offer.is_active|yesno:"Active,Inactive" }}{% if offer.floating_ball_enabled %}<br><small>Floating reminder</small>{% endif %}</td>
+            <td class="table-actions">
+              <a href="{% url 'dashboard:offer_edit' offer.pk %}">Edit</a>
+              <form method="post" action="{% url 'dashboard:offer_delete' offer.pk %}">{% csrf_token %}<button class="remove-btn" type="submit">Remove</button></form>
+            </td>
+          </tr>
+        {% empty %}<tr><td colspan="6">No promotional offers yet.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

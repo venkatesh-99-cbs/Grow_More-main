@@ -1,0 +1,11 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+  <div class="admin-heading"><h1>Products</h1><a class="cta-btn" href="{% url 'dashboard:product_create' %}">Add Product</a></div>
+  <div class="admin-table-wrap">
+    <table class="admin-table"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Visible</th><th></th></tr></thead><tbody>
+      {% for product in products %}
+        <tr><td>{{ product.name }}</td><td>{{ product.category.name }}</td><td>₹{{ product.current_price }}</td><td>{{ product.stock }}</td><td>{{ product.is_active|yesno:"Yes,No" }}</td><td><a href="{% url 'dashboard:product_edit' product.pk %}">Edit</a></td></tr>
+      {% empty %}<tr><td colspan="6">No products yet.</td></tr>{% endfor %}
+    </tbody></table>
+  </div>
+{% endblock %}

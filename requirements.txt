@@ -1,0 +1,4 @@
+Django==6.0.4
+razorpay>=1.4.2
+gunicorn>=22.0.0; platform_system != "Windows"
+whitenoise>=6.7.0

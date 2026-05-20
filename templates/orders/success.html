@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Order Success | Grow More{% endblock %}
+{% block content %}
+  <main class="container page-hero">
+    <section class="card auth-card success-card">
+      <h1>Order Placed Successfully</h1>
+      <p>Your summer order is confirmed. A confirmation email is on the way.</p>
+      <p class="price big">Order ID: {{ order.order_number }}</p>
+      <div class="product-actions success-actions">
+        <a class="ghost-btn" href="{% url 'products:shop' %}">Continue Shopping</a>
+        <a class="add-btn" href="{% url 'accounts:profile' %}">Track Order</a>
+      </div>
+    </section>
+  </main>
+{% endblock %}

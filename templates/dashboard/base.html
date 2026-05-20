@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Dashboard | Grow More{% endblock %}
+{% block content %}
+  <main class="container page-hero admin-shell">
+    <div class="admin-layout">
+      <aside class="admin-nav card">
+        <h3>Grow More</h3>
+        <a href="{% url 'dashboard:overview' %}">Overview</a>
+        <a href="{% url 'dashboard:products' %}">Products</a>
+        <a href="{% url 'dashboard:categories' %}">Categories</a>
+        <a href="{% url 'dashboard:homepage' %}">Homepage</a>
+        <a href="{% url 'dashboard:offers' %}">Offers</a>
+        <a href="{% url 'dashboard:orders' %}">Orders</a>
+        <a href="{% url 'dashboard:customers' %}">Customers</a>
+        <a href="{% url 'dashboard:payments' %}">Payments</a>
+      </aside>
+      <section class="admin-content">
+        {% block dashboard_content %}{% endblock %}
+      </section>
+    </div>
+  </main>
+{% endblock %}
+{% block scripts %}
+  <script type="module" src="{% static 'js/admin/admin-dashboard.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Favorites | Grow More{% endblock %}
+{% block content %}
+  <main class="container page-hero">
+    <h1>My Favorites</h1>
+    <p>All liked products in one place.</p>
+    <section class="section">
+      <div class="product-grid-fixed" id="favorites-grid"></div>
+      <div class="product-grid-fixed hidden-product-source" hidden>
+        {% for product in products %}{% include "partials/product_card.html" with product=product %}{% endfor %}
+      </div>
+    </section>
+  </main>
+{% endblock %}
+{% block scripts %}
+  <script type="module" src="{% static 'js/shop/products.js' %}"></script>
+{% endblock %}

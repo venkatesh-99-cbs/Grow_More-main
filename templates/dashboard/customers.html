@@ -1,0 +1,7 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+  <h1>Customers</h1>
+  <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>User</th><th>Email</th><th>Orders</th><th>Addresses</th></tr></thead><tbody>
+    {% for customer in customers %}<tr><td>{{ customer.username }}</td><td>{{ customer.email }}</td><td>{{ customer.orders.count }}</td><td>{{ customer.addresses.count }}</td></tr>{% empty %}<tr><td colspan="4">No customers yet.</td></tr>{% endfor %}
+  </tbody></table></div>
+{% endblock %}
