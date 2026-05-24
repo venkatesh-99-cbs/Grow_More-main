@@ -1,64 +1,72 @@
-{% extends "base.html" %}
-{% load static %}
-{% block title %}Grow More | Summer Menswear{% endblock %}
-{% block content %}
-  <main>
-    <section class="hero container">
-      <div class="hero-wrap">
-        {% for banner in banners %}
-          <div class="hero-slide {% if forloop.first %}active{% endif %}">
-            <img src="{{ banner.display_image }}" alt="{{ banner.title }}" />
-          </div>
-        {% empty %}
-          <div class="hero-slide active"><img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=1600&q=80" alt="male summer style" /></div>
-          <div class="hero-slide"><img src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=1600&q=80" alt="young energetic fashion" /></div>
-          <div class="hero-slide"><img src="https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=1600&q=80" alt="urban summer menswear" /></div>
-        {% endfor %}
-        <div class="hero-content">
-          {% with first=banners|first %}
-            <h1>{% if first %}{{ first.title }}{% else %}Own The Heat. Stay Cool. Move Bold.{% endif %}</h1>
-            <p id="hero-subtitle">{% if first %}{{ first.subtitle }}{% else %}High-energy summer menswear built with breathable fabrics, clean cuts, and ocean-cool color tones.{% endif %}</p>
-            <a class="cta-btn" href="{% if first %}{{ first.button_url }}{% else %}{% url 'products:shop' %}{% endif %}">{% if first %}{{ first.button_label }}{% else %}Explore the Seasons{% endif %}</a>
-          {% endwith %}
-          <div class="stat-row" id="hero-stat-tabs">
-            <button type="button" class="stat stat-tab active">100% Summer Ready</button>
-            <button type="button" class="stat stat-tab">100% pure cotton</button>
-            <button type="button" class="stat stat-tab">Fast delivery</button>
-          </div>
+{% extends "base.html" %} {% load static %} {% block title %}Grow More | Summer
+Menswear{% endblock %} {% block content %}
+<main>
+  <!-- HERO SECTION - Dynamically rendered from backend -->
+  <section class="hero container">
+    <div class="hero-wrap" id="hero-wrap">
+      <div class="hero-slide active">
+        <img
+          src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=1600&q=80"
+          alt="Loading..."
+        />
+      </div>
+      <div class="hero-content">
+        <h1>Own The Heat. Stay Cool. Move Bold.</h1>
+        <p id="hero-subtitle">
+          High-energy summer menswear built with breathable fabrics, clean cuts,
+          and ocean-cool color tones.
+        </p>
+        <a class="cta-btn" href="{% url 'products:shop' %}"
+          >Explore the Seasons</a
+        >
+        <div class="stat-row" id="hero-stat-tabs">
+          <button type="button" class="stat stat-tab active">
+            100% Summer Ready
+          </button>
+          <button type="button" class="stat stat-tab">100% pure cotton</button>
+          <button type="button" class="stat stat-tab">Fast delivery</button>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="section container">
-      <h2>Hero Entry Products</h2>
-      <div class="grid" id="featured-products">
-        {% for product in featured_products %}
-          {% include "partials/product_card.html" with product=product %}
-        {% empty %}
-          <p class="muted">Add featured products from the dashboard to fill this section.</p>
-        {% endfor %}
-      </div>
-    </section>
+  <!-- FEATURED PRODUCTS SECTION -->
+  <section class="section container">
+    <h2>Hero Entry Products</h2>
+    <div class="grid" id="featured-products">
+      <p class="muted">Loading featured products...</p>
+    </div>
+  </section>
 
-    {% if deal_products %}
-      <section class="section container">
-        <h2>Current Deals</h2>
-        <div class="product-grid-fixed">
-          {% for product in deal_products %}
-            {% include "partials/product_card.html" with product=product %}
-          {% endfor %}
-        </div>
-      </section>
-    {% endif %}
+  <!-- CURRENT DEALS SECTION -->
+  <section class="section container" id="deals-section" style="display: none">
+    <h2>Current Deals</h2>
+    <div class="product-grid-fixed" id="deal-products"></div>
+  </section>
 
-    <section class="section container grid">
-      <article class="info-card reveal"><h3>Young & Energetic</h3><p>Athletic-inspired silhouettes designed for movement and confidence.</p></article>
-      <article class="info-card reveal"><h3>Cooling Sensation</h3><p>Visual temperature control using aqua and sky tones with warm highlights.</p></article>
-      <article class="info-card reveal"><h3>Real World Utility</h3><p>Mix-and-match pieces from beach mornings to city nights.</p></article>
-    </section>
-  </main>
-{% endblock %}
-{% block scripts %}
-  <script type="module" src="{% static 'js/homepage/hero-slider.js' %}"></script>
-  <script type="module" src="{% static 'js/homepage/trending-products.js' %}"></script>
+  <!-- BRAND FEATURES SECTION -->
+  <section class="section container grid">
+    <article class="info-card reveal">
+      <h3>Young & Energetic</h3>
+      <p>Athletic-inspired silhouettes designed for movement and confidence.</p>
+    </article>
+    <article class="info-card reveal">
+      <h3>Cooling Sensation</h3>
+      <p>
+        Visual temperature control using aqua and sky tones with warm
+        highlights.
+      </p>
+    </article>
+    <article class="info-card reveal">
+      <h3>Real World Utility</h3>
+      <p>Mix-and-match pieces from beach mornings to city nights.</p>
+    </article>
+  </section>
+</main>
+{% endblock %} {% block scripts %}
+<script type="module" src="{% static 'js/homepage/hero-slider.js' %}"></script>
+<script
+  type="module"
+  src="{% static 'js/homepage/dynamic-homepage.js' %}"
+></script>
 {% endblock %}

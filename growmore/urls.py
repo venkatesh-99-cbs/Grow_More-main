@@ -21,6 +21,7 @@ from django.urls import include, path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('accounts/', include('allauth.urls')),  # Social auth and account management
     path('', include('core.urls')),
     path('', include('products.urls')),
     path('', include('orders.urls')),

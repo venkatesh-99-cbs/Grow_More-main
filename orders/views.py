@@ -158,4 +158,40 @@ def order_detail(request, order_number):
     order = get_object_or_404(Order.objects.prefetch_related("items"), order_number=order_number, user=request.user)
     return render(request, "orders/detail.html", {"order": order})
 
+
+@login_required
+def download_invoice(request, order_number):
+    """Download order invoice as PDF"""
+    from orders.services import generate_order_invoice_pdf
+    from django.http import FileResponse
+
+    order = get_object_or_404(Order.objects.prefetch_related("items"), order_number=order_number, user=request.user)
+    pdf_buffer = generate_order_invoice_pdf(order)
+
+    if pdf_buffer is None:
+        messages.error(request, "PDF generation is not available. Please contact support.")
+        return redirect("orders:detail", order_number=order_number)
+
+    response = FileResponse(pdf_buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="invoice-{order.order_number}.pdf"'
+    return response
+
+
+@login_required  
+def download_delivery_sheet(request, order_number):
+    """Download order delivery sheet as PDF"""
+    from orders.services import generate_delivery_sheet_pdf
+    from django.http import FileResponse
+
+    order = get_object_or_404(Order.objects.prefetch_related("items"), order_number=order_number, user=request.user)
+    pdf_buffer = generate_delivery_sheet_pdf(order)
+
+    if pdf_buffer is None:
+        messages.error(request, "PDF generation is not available. Please contact support.")
+        return redirect("orders:detail", order_number=order_number)
+
+    response = FileResponse(pdf_buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="delivery-sheet-{order.order_number}.pdf"'
+    return response
+
 # Create your views here.

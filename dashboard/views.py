@@ -148,4 +148,40 @@ def offer_delete(request, pk):
     messages.success(request, "Promotional offer removed.")
     return redirect("dashboard:offers")
 
+
+@staff_member_required
+def admin_download_invoice(request, pk):
+    """Admin endpoint to download order invoice as PDF"""
+    from django.http import FileResponse
+    from orders.services import generate_order_invoice_pdf
+
+    order = get_object_or_404(Order.objects.prefetch_related("items"), pk=pk)
+    pdf_buffer = generate_order_invoice_pdf(order)
+
+    if pdf_buffer is None:
+        messages.error(request, "PDF generation is not available.")
+        return redirect("dashboard:orders")
+
+    response = FileResponse(pdf_buffer, content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="invoice-{order.order_number}.pdf"'
+    return response
+
+
+@staff_member_required
+def admin_download_delivery_sheet(request, pk):
+    """Admin endpoint to download order delivery sheet as PDF"""
+    from django.http import FileResponse
+    from orders.services import generate_delivery_sheet_pdf
+
+    order = get_object_or_404(Order.objects.prefetch_related("items"), pk=pk)
+    pdf_buffer = generate_delivery_sheet_pdf(order)
+
+    if pdf_buffer is None:
+        messages.error(request, "PDF generation is not available.")
+        return redirect("dashboard:orders")
+
+    response = FileResponse(pdf_buffer, content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="delivery-sheet-{order.order_number}.pdf"'
+    return response
+
 # Create your views here.
