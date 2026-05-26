@@ -2,8 +2,8 @@
 Core API endpoints for dynamic frontend synchronization.
 All frontend content is served from these endpoints.
 """
-from decimal import Decimal
 
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -18,23 +18,19 @@ from .models import HeroBanner, HomepageSection
 
 @require_http_methods(["GET"])
 def api_hero_banners(request):
-    """
-    GET /api/hero-banners/
-    Returns all active hero banners for homepage carousel.
-    """
     banners = HeroBanner.objects.filter(is_active=True).order_by("sort_order")
     return JsonResponse(
         {
             "banners": [
                 {
-                    "id": b.id,
-                    "title": b.title,
-                    "subtitle": b.subtitle,
-                    "button_label": b.button_label,
-                    "button_url": b.button_url,
-                    "image": b.display_image,
+                    "id": banner.id,
+                    "title": banner.title,
+                    "subtitle": banner.subtitle,
+                    "button_label": banner.button_label,
+                    "button_url": banner.button_url,
+                    "image": banner.display_image,
                 }
-                for b in banners
+                for banner in banners
             ]
         }
     )
@@ -42,21 +38,17 @@ def api_hero_banners(request):
 
 @require_http_methods(["GET"])
 def api_products(request):
-    """
-    GET /api/products/
-    Returns all active products with current pricing and offer info.
-
-    Query params:
-    - category: Filter by category slug
-    - featured: true/false filter
-    - trending: true/false filter
-    - limit: Number of products (default 20)
-    """
     query = Product.objects.filter(is_active=True).select_related("category")
 
-    # Filters
-    if request.GET.get("category"):
-        query = query.filter(category__slug=request.GET.get("category"))
+    q = request.GET.get("q", "").strip()
+    category = request.GET.get("category", "").strip()
+    sort = request.GET.get("sort", "featured").strip()
+
+    if q:
+        query = query.filter(Q(name__icontains=q) | Q(description__icontains=q) | Q(category__name__icontains=q))
+
+    if category and category != "all":
+        query = query.filter(category__slug=category)
 
     if request.GET.get("featured") == "true":
         query = query.filter(is_featured=True)
@@ -64,25 +56,25 @@ def api_products(request):
     if request.GET.get("trending") == "true":
         query = query.filter(is_trending=True)
 
-    limit = int(request.GET.get("limit", 20))
-    products = query[:limit]
+    if sort == "name":
+        query = query.order_by("name")
+    elif sort in {"price-low", "price-high"}:
+        query = list(query)
+        query.sort(key=lambda product: product.current_price, reverse=sort == "price-high")
 
-    return JsonResponse(
-        {
-            "products": [_serialize_product(p) for p in products],
-            "count": products.count(),
-        }
-    )
+    try:
+        limit = int(request.GET.get("limit", 20))
+    except (TypeError, ValueError):
+        limit = 20
+    limit = max(1, min(limit, 100))
+
+    products = query[:limit]
+    return JsonResponse({"products": [_serialize_product(product) for product in products], "count": len(products)})
 
 
 @require_http_methods(["GET"])
 def api_product_detail(request, product_id):
-    """
-    GET /api/products/{product_id}/
-    Returns detailed product info with gallery and current offer.
-    """
-    product = get_object_or_404(Product, id=product_id, is_active=True)
-
+    product = get_object_or_404(Product.objects.select_related("category"), id=product_id, is_active=True)
     offer = best_offer_for_product(product)
     current_price, _ = price_for_product(product)
 
@@ -106,12 +98,8 @@ def api_product_detail(request, product_id):
             "stock": product.stock,
             "is_featured": product.is_featured,
             "is_trending": product.is_trending,
-            "main_image": product.main_image.url if product.main_image else product.image_url,
-            "gallery_images": [
-            product.gallery_image_1.url if product.gallery_image_1 else product.gallery_url_1,
-            product.gallery_image_2.url if product.gallery_image_2 else product.gallery_url_2,
-            product.gallery_image_3.url if product.gallery_image_3 else product.gallery_url_3,
-            ],
+            "main_image": product.main_image_url,
+            "gallery_images": product.gallery_images,
             "offer": _serialize_offer(offer) if offer else None,
         }
     )
@@ -119,50 +107,29 @@ def api_product_detail(request, product_id):
 
 @require_http_methods(["GET"])
 def api_product_offer(request, product_id):
-    """
-    GET /api/products/{product_id}/offer/
-    Returns current active offer for a product (if any).
-    """
     product = get_object_or_404(Product, id=product_id, is_active=True)
     offer = best_offer_for_product(product)
-
-    if not offer:
-        return JsonResponse({"offer": None})
-
-    return JsonResponse(
-        {
-            "offer": _serialize_offer(offer),
-        }
-    )
+    return JsonResponse({"offer": _serialize_offer(offer) if offer else None})
 
 
 @require_http_methods(["GET"])
 def api_homepage_sections(request):
-    """
-    GET /api/homepage/sections/
-    Returns all active homepage sections with their content.
-    """
     sections = HomepageSection.objects.filter(is_active=True).order_by("sort_order")
     result = []
 
     for section in sections:
+        products = Product.objects.filter(is_active=True).select_related("category")
         if section.section_type == "featured":
-            products = Product.objects.filter(is_active=True, is_featured=True)[
-                : section.limit
-            ]
+            products = products.filter(is_featured=True)
         elif section.section_type == "trending":
-            products = Product.objects.filter(is_active=True, is_trending=True)[
-                : section.limit
-            ]
-        else:  # collection
-            products = Product.objects.filter(is_active=True)[: section.limit]
+            products = products.filter(is_trending=True)
 
         result.append(
             {
                 "id": section.id,
                 "title": section.title,
                 "section_type": section.section_type,
-                "products": [_serialize_product(p) for p in products],
+                "products": [_serialize_product(product) for product in products[: section.limit]],
             }
         )
 
@@ -171,69 +138,34 @@ def api_homepage_sections(request):
 
 @require_http_methods(["GET"])
 def api_active_offers(request):
-    """
-    GET /api/offers/active/
-    Returns all currently active promotional offers for frontend display.
-    """
     now = timezone.now()
-    offers = PromotionalOffer.objects.filter(
-        is_active=True, starts_at__lte=now, ends_at__gte=now
-    ).order_by("display_priority")
-
-    return JsonResponse(
-        {
-            "offers": [
-                {
-                    "id": o.id,
-                    "title": o.title,
-                    "description": o.description,
-                    "offer_label": o.offer_label,
-                    "discount_percent": o.discount_percent,
-                    "cta_text": o.cta_text,
-                    "cta_link": o.cta_link,
-                    "image": o.display_image.url if o.display_image else "",
-                    "countdown_end": o.countdown_target.isoformat(),
-                    "floating_ball_enabled": o.floating_ball_enabled,
-                    "display_priority": o.display_priority,
-                }
-                for o in offers
-                if o.is_current
-            ]
-        }
+    offers = PromotionalOffer.objects.filter(is_active=True, starts_at__lte=now, ends_at__gte=now).order_by(
+        "display_priority", "-discount_percent"
     )
+    return JsonResponse({"offers": [_serialize_offer(offer) for offer in offers if offer.is_current]})
 
 
 @require_http_methods(["GET"])
 def api_offer_detail(request, offer_id):
-    """
-    GET /api/offers/{offer_id}/
-    Returns detailed offer information.
-    """
     offer = get_object_or_404(PromotionalOffer, id=offer_id, is_active=True)
-
     if not offer.is_current:
         return JsonResponse({"error": "Offer has expired"}, status=404)
-
     return JsonResponse(_serialize_offer(offer))
 
 
 @require_http_methods(["GET"])
 def api_categories(request):
-    """
-    GET /api/categories/
-    Returns all active product categories.
-    """
     categories = Category.objects.filter(is_active=True).order_by("sort_order")
     return JsonResponse(
         {
             "categories": [
                 {
-                    "id": c.id,
-                    "name": c.name,
-                    "slug": c.slug,
-                    "description": c.description,
+                    "id": category.id,
+                    "name": category.name,
+                    "slug": category.slug,
+                    "description": category.description,
                 }
-                for c in categories
+                for category in categories
             ]
         }
     )
@@ -241,96 +173,24 @@ def api_categories(request):
 
 @require_http_methods(["GET"])
 def api_featured_products(request):
-    """
-    GET /api/featured-products/
-    Returns featured products for display sections.
-    """
-    products = Product.objects.filter(is_active=True, is_featured=True)[:4]
-    return JsonResponse(
-        {
-            "products": [_serialize_product(p) for p in products],
-        }
-    )
+    products = Product.objects.filter(is_active=True, is_featured=True).select_related("category")[:4]
+    return JsonResponse({"products": [_serialize_product(product) for product in products]})
 
 
 @require_http_methods(["GET"])
 def api_deal_products(request):
-    """
-    GET /api/deal-products/
-    Returns products with active offers (deals).
-    """
-    now = timezone.now()
-    offers = PromotionalOffer.objects.filter(
-        is_active=True, starts_at__lte=now, ends_at__gte=now
-    ).values_list("products__id", flat=True)
-
-    products = Product.objects.filter(is_active=True, id__in=offers)[:6]
-    return JsonResponse(
-        {
-            "products": [_serialize_product(p) for p in products],
-        }
-    )
+    products = Product.objects.filter(is_active=True).select_related("category")
+    deal_products = [product for product in products if best_offer_for_product(product)][:6]
+    return JsonResponse({"products": [_serialize_product(product) for product in deal_products]})
 
 
 @require_http_methods(["GET"])
 def api_trending_products(request):
-    """
-    GET /api/trending-products/
-    Returns trending products.
-    """
-    products = Product.objects.filter(is_active=True, is_trending=True)[:6]
-    return JsonResponse(
-        {
-            "products": [_serialize_product(p) for p in products],
-        }
-    )
-
-
-# ============================================================================
-# Helper serializers
-# ============================================================================
+    products = Product.objects.filter(is_active=True, is_trending=True).select_related("category")[:6]
+    return JsonResponse({"products": [_serialize_product(product) for product in products]})
 
 
 def _serialize_product(product):
-    """Serialize product to API JSON format."""
-    offer = best_offer_for_product(product)
-    current_price, _ = price_for_product(product)
-    
-    return {
-        "id": product.id,
-        "name": product.name,
-        "slug": product.slug,
-        "category": product.category.name,
-        "category_slug": product.category.slug,
-        "description": product.description,
-        "price": float(product.price),
-        "current_price": float(current_price),
-        "original_price": float(product.original_price),
-        "discount_percent": product.discount_percent,
-        "is_featured": product.is_featured,
-        "is_trending": product.is_trending,
-        "stock": product.stock,
-        "main_image": product.main_image.url if product.main_image else product.image_url,
-        "thumbnail": product.main_image.url if product.main_image else product.image_url,
-        "images": [
-            product.main_image.url or product.image_url,
-            product.gallery_image_1.url or product.gallery_url_1 or "",
-            product.gallery_image_2.url or product.gallery_url_2 or "",
-            product.gallery_image_3.url or product.gallery_url_3 or "",
-        ],
-        "gallery_images": [
-            product.main_image.url or product.image_url,
-            product.gallery_image_1.url if product.gallery_image_1 else product.gallery_url_1,
-            product.gallery_image_2.url if product.gallery_image_2 else product.gallery_url_2,
-            product.gallery_image_3.url if product.gallery_image_3 else product.gallery_url_3,
-       ],
-
-        "sizes": product.sizes,
-        "colors": product.colors,
-        "offer": _serialize_offer(offer) if offer else None,
-    }
-def _serialize_product(product):
-    """Serialize product to API JSON format."""
     offer = best_offer_for_product(product)
     current_price, _ = price_for_product(product)
     return {
@@ -338,37 +198,34 @@ def _serialize_product(product):
         "name": product.name,
         "slug": product.slug,
         "category": product.category.name,
+        "categoryName": product.category.name,
         "category_slug": product.category.slug,
         "description": product.description,
-        "price": float(product.price),
+        "desc": product.description,
+        "url": product.get_absolute_url(),
+        "price": float(current_price),
+        "regular_price": float(product.price),
         "current_price": float(current_price),
         "original_price": float(product.original_price),
+        "originalPrice": float(product.original_price),
         "discount_percent": product.discount_percent,
+        "discountPercent": product.discount_percent,
         "is_featured": product.is_featured,
+        "isFeatured": product.is_featured,
         "is_trending": product.is_trending,
+        "isTrending": product.is_trending,
         "stock": product.stock,
-        # Safe access to main_image: check if object exists before .url
-        "main_image": product.main_image.url if product.main_image else product.image_url,
-        "thumbnail": product.main_image.url if product.main_image else product.image_url,
-        "images": [
-            product.main_image.url if product.main_image else product.image_url,
-            product.gallery_image_1.url if product.gallery_image_1 else product.gallery_url_1 or "",
-            product.gallery_image_2.url if product.gallery_image_2 else product.gallery_url_2 or "",
-            product.gallery_image_3.url if product.gallery_image_3 else product.gallery_url_3 or "",
-        ],
-        "gallery_images": [
-            product.main_image.url if product.main_image else product.image_url,
-            product.gallery_image_1.url if product.gallery_image_1 else product.gallery_url_1,
-            product.gallery_image_2.url if product.gallery_image_2 else product.gallery_url_2,
-            product.gallery_image_3.url if product.gallery_image_3 else product.gallery_url_3,
-        ],
+        "main_image": product.main_image_url,
+        "thumbnail": product.main_image_url,
+        "images": product.gallery_images,
+        "gallery_images": product.gallery_images,
         "sizes": product.sizes,
         "colors": product.colors,
         "offer": _serialize_offer(offer) if offer else None,
     }
+
 
 def _serialize_offer(offer):
-    """Serialize offer to API JSON format."""
     if not offer:
         return None
 
@@ -377,13 +234,17 @@ def _serialize_offer(offer):
         "title": offer.title,
         "slug": offer.slug,
         "description": offer.description,
+        "highlight_text": offer.highlight_text,
+        "highlight": offer.highlight_text,
         "offer_label": offer.offer_label,
+        "label": offer.offer_label,
         "discount_percent": offer.discount_percent,
         "cta_text": offer.cta_text,
         "cta_link": offer.cta_link,
         "image": offer.display_image,
         "countdown_end": offer.countdown_target.isoformat(),
         "countdown_end_timestamp": int(offer.countdown_target.timestamp() * 1000),
+        "endsAt": offer.countdown_target.isoformat(),
         "floating_ball_enabled": offer.floating_ball_enabled,
         "permanent_dismiss_allowed": offer.permanent_dismiss_allowed,
         "display_priority": offer.display_priority,

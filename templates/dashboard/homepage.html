@@ -4,20 +4,29 @@
   <h1>Homepage Manager</h1>
   <section class="dashboard-two">
     <form class="card form admin-form" method="post" enctype="multipart/form-data" action="{% url 'dashboard:banner_create' %}">
-      {% csrf_token %}<h3>Add Hero Banner</h3>{{ banner_form.as_p }}<button class="submit-btn" type="submit">Save Banner</button>
-    </form>
-    <form class="card form admin-form" method="post" action="{% url 'dashboard:section_create' %}">
-      {% csrf_token %}<h3>Add Section</h3>{{ section_form.as_p }}<button class="submit-btn" type="submit">Save Section</button>
+      {% csrf_token %}
+      <h3>Add Hero Banner</h3>
+      {{ banner_form.as_p }}
+      <button class="submit-btn" type="submit">Save Banner</button>
     </form>
   </section>
+
   <h2>Hero Banners</h2>
   <div class="grid">
     {% for banner in banners %}
-      <article class="info-card"><h3>{{ banner.title }}</h3><p>{{ banner.subtitle }}</p><p>Order {{ banner.sort_order }} · {{ banner.is_active|yesno:"Active,Inactive" }}</p><form method="post" action="{% url 'dashboard:banner_delete' banner.pk %}">{% csrf_token %}<button class="remove-btn" type="submit">Remove</button></form></article>
-    {% empty %}<p class="muted">No banners configured.</p>{% endfor %}
+      <article class="info-card">
+        <h3>{{ banner.title }}</h3>
+        <p>{{ banner.subtitle }}</p>
+        <p>Order {{ banner.sort_order }} - {{ banner.is_active|yesno:"Active,Inactive" }}</p>
+        <form method="post" action="{% url 'dashboard:banner_delete' banner.pk %}">
+          {% csrf_token %}
+          <button class="remove-btn" type="submit">Remove</button>
+        </form>
+      </article>
+    {% empty %}
+      <p class="muted">No banners configured.</p>
+    {% endfor %}
   </div>
-  <h2>Sections</h2>
-  <div class="grid">{% for section in sections %}<article class="info-card"><h3>{{ section.title }}</h3><p>{{ section.get_section_type_display }} · Limit {{ section.limit }}</p></article>{% endfor %}</div>
 {% endblock %}
 {% block scripts %}
   {{ block.super }}

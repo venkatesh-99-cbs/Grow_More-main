@@ -17,4 +17,6 @@ python manage.py runserver
 
 ## Production notes
 
-Set `DEBUG=False`, a strong `SECRET_KEY`, HTTPS `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`, and Razorpay keys in the host environment. SQLite is configured by default; switch `DB_ENGINE` and related variables to PostgreSQL when the store grows.
+Set `DEBUG=False`, a strong `SECRET_KEY`, HTTPS `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`, Razorpay keys, Neon `DATABASE_URL`, and Cloudinary `CLOUDINARY_URL` in the host environment. The recommended production stack is Render, Neon PostgreSQL, Cloudinary, GitHub, and Cloudflare.
+
+See `ADMIN_DASHBOARD_GUIDE.md` for dashboard operations and the deployment checklist.

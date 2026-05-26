@@ -47,10 +47,11 @@ export function initFavoriteUI() {
 
 function productCard(product) {
   const favoriteActive = favorites().includes(product.id) ? "active" : "";
-  const front = product.images[0] || "";
-  const back = product.images[1] || front;
-  const sizes = product.sizes.map((size, index) => `<button type="button" class="radio-pill ${index === 0 ? "active" : ""}" data-value="${size}">${size}</button>`).join("");
-  const colors = product.colors.map((color, index) => `<button type="button" class="radio-pill color-pill ${index === 0 ? "active" : ""}" data-value="${color}" style="--swatch:${COLOR_MAP[color] || "#fff"}"><span class="swatch"></span><span class="pill-text">${color}</span></button>`).join("");
+  const images = product.images || product.gallery_images || [];
+  const front = images[0] || product.main_image || product.thumbnail || "";
+  const back = images[1] || front;
+  const sizes = (product.sizes || []).map((size, index) => `<button type="button" class="radio-pill ${index === 0 ? "active" : ""}" data-value="${size}">${size}</button>`).join("");
+  const colors = (product.colors || []).map((color, index) => `<button type="button" class="radio-pill color-pill ${index === 0 ? "active" : ""}" data-value="${color}" style="--swatch:${COLOR_MAP[color] || "#fff"}"><span class="swatch"></span><span class="pill-text">${color}</span></button>`).join("");
   const offerMarkup = product.offer ? `
     <div class="offer-chip-row">
       <span class="offer-label-chip">${product.offer.label}</span>
@@ -58,18 +59,26 @@ function productCard(product) {
     </div>
     <div class="limited-badge" data-offer-countdown data-offer-end="${product.offer.endsAt}">Limited time</div>
   ` : "";
-  const highlight = product.offer?.highlight || "Premium summer pricing";
+  const url = product.url || (product.slug ? `/products/${product.slug}/` : "#");
+  const categoryName = product.categoryName || product.category || "";
+  const description = product.desc || product.description || "";
+  const price = product.price ?? product.current_price;
+  const originalPrice = product.originalPrice ?? product.original_price ?? price;
+  const discountPercent = product.discountPercent ?? product.discount_percent ?? 0;
+  const highlight = product.offer?.highlight || (discountPercent ? "Special pricing" : "");
+  const priceOld = discountPercent ? `<span class="price-old">${money(originalPrice)}</span><span class="price-off">${discountPercent}% OFF</span>` : "";
+  const saveLine = highlight ? `<div class="save-line">${highlight}</div>` : "";
   return `
-    <article class="product-card reveal" data-product-id="${product.id}" data-product-url="${product.url}">
+    <article class="product-card reveal" data-product-id="${product.id}" data-product-url="${url}">
       <div class="product-media" aria-label="${product.name}">
         <div class="flip-inner"><img class="front" src="${front}" alt="${product.name} front" loading="lazy"><img class="back" src="${back}" alt="${product.name} back" loading="lazy"></div>
         <button type="button" class="fav-btn ${favoriteActive}" data-favorite-id="${product.id}" title="Add to favorites">&#10084;</button><div class="flip-hint">Tap to flip</div>
       </div>
       <div class="product-body">
-        <p class="chip">${product.categoryName}</p><h3>${product.name}</h3><p class="tiny">${product.desc}</p>
-        <div class="price-block ${product.offer ? "has-offer" : ""}" ${product.offer ? `data-offer-expirable` : ""}><div class="price-line"><span class="price-now">${money(product.price)}</span><span class="price-old">${money(product.originalPrice)}</span><span class="price-off">${product.discountPercent}% OFF</span></div><div class="save-line">${highlight}</div>${offerMarkup}</div>
+        <p class="chip">${categoryName}</p><h3>${product.name}</h3><p class="tiny">${description}</p>
+        <div class="price-block ${product.offer ? "has-offer" : ""}" ${product.offer ? `data-offer-expirable` : ""}><div class="price-line"><span class="price-now">${money(price)}</span>${priceOld}</div>${saveLine}${offerMarkup}</div>
         <div class="variant-stack"><label>Size</label><div class="radio-row" data-role="size">${sizes}</div>${colors ? `<label>Color</label><div class="radio-row" data-role="color">${colors}</div>` : ""}</div>
-        <button class="add-btn" type="button" data-add-cart>Add to cart</button>
+        ${product.stock > 0 ? '<button class="add-btn" type="button" data-add-cart>Add to cart</button>' : '<button class="add-btn" type="button" disabled>Out of stock</button>'}
       </div>
     </article>`;
 }
@@ -110,7 +119,9 @@ function initCardNavigation() {
     }
     const card = event.target.closest(".product-card");
     if (!card || event.target.closest("button, input, select, textarea, a, .radio-row")) return;
-    window.location.href = card.dataset.productUrl;
+    if (card.dataset.productUrl && card.dataset.productUrl !== "#") {
+      window.location.href = card.dataset.productUrl;
+    }
   });
 }
 

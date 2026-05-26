@@ -1,6 +1,6 @@
-{% extends "dashboard/base.html" %} 
-{% load static %} 
-{% block dashboard_content%}
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% block dashboard_content %}
 <h1>Orders</h1>
 <div class="admin-table-wrap">
   <table class="admin-table">
@@ -18,49 +18,23 @@
       {% for order in orders %}
       <tr>
         <td>{{ order.order_number }}</td>
-        <td>{{ order.full_name }}<br /><small>{{ order.email }}</small></td>
-        <td>₹{{ order.total_amount }}</td>
-        <td>{{ order.payment_method }}</td>
+        <td>{{ order.full_name }}<br><small>{{ order.email }}</small></td>
+        <td>Rs. {{ order.total_amount }}</td>
+        <td>{{ order.get_payment_method_display }}</td>
         <td>
-          <form
-            method="post"
-            action="{% url 'dashboard:order_status' order.pk %}"
-          >
+          <form method="post" action="{% url 'dashboard:order_status' order.pk %}">
             {% csrf_token %}
             <select name="status" onchange="this.form.submit()">
               {% for value,label in status_choices %}
-              <option
-                value="{{ value }}"
-                {%
-                if
-                order.status=""
-                ="value"
-                %}selected{%
-                endif
-                %}
-              >
-                {{ label }}
-              </option>
+                <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ label }}</option>
               {% endfor %}
             </select>
           </form>
         </td>
         <td>
           <div class="action-buttons">
-            <a
-              href="{% url 'dashboard:admin_download_invoice' order.pk %}"
-              class="btn-small"
-              title="Download Invoice"
-              download
-              >📄 Invoice</a
-            >
-            <a
-              href="{% url 'dashboard:admin_download_delivery_sheet' order.pk %}"
-              class="btn-small"
-              title="Download Delivery Sheet"
-              download
-              >📋 Sheet</a
-            >
+            <a href="{% url 'dashboard:admin_download_payment_receipt' order.pk %}" class="btn-small invoice-btn" target="_blank" title="Download payment receipt PDF" download>Receipt</a>
+            <a href="{% url 'dashboard:admin_download_shipping_sheet' order.pk %}" class="btn-small" title="Download shipping sheet" download>Shipping</a>
           </div>
         </td>
       </tr>
@@ -94,7 +68,7 @@
   }
 </style>
 {% endblock %}
- {% block scripts %}
+{% block scripts %}
   {{ block.super }}
-<script type="module" src="{% static 'js/admin/admin-orders.js' %}"></script>
+  <script type="module" src="{% static 'js/admin/admin-orders.js' %}"></script>
 {% endblock %}

@@ -19,7 +19,7 @@ export function tick() {
     }
     const endTime = Date.parse(node.dataset.offerEnd);
     const seconds = Math.max(0, Math.floor((endTime - now) / 1000));
-    node.textContent = seconds ? `Ends in ${formatCountdown(seconds)}` : "Offer ended";
+    node.textContent = seconds ? formatCountdown(seconds) : "Offer ended";
     node.classList.toggle("expired", seconds === 0);
     if (seconds === 0) {
       node.closest("[data-offer-expirable]")?.setAttribute("hidden", "");

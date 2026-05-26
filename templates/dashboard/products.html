@@ -1,11 +1,42 @@
 {% extends "dashboard/base.html" %}
 {% block dashboard_content %}
-  <div class="admin-heading"><h1>Products</h1><a class="cta-btn" href="{% url 'dashboard:product_create' %}">Add Product</a></div>
+  <div class="admin-heading">
+    <div>
+      <h1>Products</h1>
+      <p class="admin-subtitle">Edit storefront products, stock, pricing, visibility, and images.</p>
+    </div>
+    <a class="cta-btn" href="{% url 'dashboard:product_create' %}">Add Product</a>
+  </div>
   <div class="admin-table-wrap">
-    <table class="admin-table"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Visible</th><th></th></tr></thead><tbody>
-      {% for product in products %}
-        <tr><td>{{ product.name }}</td><td>{{ product.category.name }}</td><td>₹{{ product.current_price }}</td><td>{{ product.stock }}</td><td>{{ product.is_active|yesno:"Yes,No" }}</td><td><a href="{% url 'dashboard:product_edit' product.pk %}">Edit</a></td></tr>
-      {% empty %}<tr><td colspan="6">No products yet.</td></tr>{% endfor %}
-    </tbody></table>
+    <table class="admin-table">
+      <thead>
+        <tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Visible</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+          <tr>
+            <td>
+              <strong>{{ product.name }}</strong>
+              {% if product.slug %}<br><small>{{ product.slug }}</small>{% endif %}
+            </td>
+            <td>{{ product.category.name }}</td>
+            <td>Rs. {{ product.current_price|floatformat:2 }}</td>
+            <td>{{ product.stock }}</td>
+            <td><span class="status-pill {% if product.is_active %}status-live{% else %}status-muted{% endif %}">{{ product.is_active|yesno:"Live,Hidden" }}</span></td>
+            <td>
+              <div class="admin-actions">
+                <a class="text-action" href="{% url 'dashboard:product_edit' product.pk %}">Edit</a>
+                <form method="post" action="{% url 'dashboard:product_delete' product.pk %}" data-confirm="Remove this product from the storefront?">
+                  {% csrf_token %}
+                  <button class="danger-action" type="submit">Remove</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6">No products yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 {% endblock %}

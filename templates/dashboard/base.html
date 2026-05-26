@@ -5,7 +5,10 @@
   <main class="container page-hero admin-shell">
     <div class="admin-layout">
       <aside class="admin-nav card">
-        <h3>Grow More</h3>
+        <h3 class="admin-brand">
+          <img src="{% get_media_prefix %}logo/Grow_More_logo.png" alt="Grow More" />
+          <span>Grow More</span>
+        </h3>
         <a href="{% url 'dashboard:overview' %}">Overview</a>
         <a href="{% url 'dashboard:products' %}">Products</a>
         <a href="{% url 'dashboard:categories' %}">Categories</a>

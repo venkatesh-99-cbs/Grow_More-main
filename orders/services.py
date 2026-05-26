@@ -2,21 +2,19 @@ import hashlib
 import hmac
 from decimal import Decimal
 from io import BytesIO
-from datetime import datetime
 
 from django.conf import settings
 from django.db import transaction
 
 from orders.models import Cart, CartItem, Order, OrderItem, Payment
 
-# PDF Generation imports
 try:
-    from reportlab.lib.pagesizes import letter, A4
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.units import inch
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
     from reportlab.lib import colors
-    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+    from reportlab.lib.pagesizes import A4, letter
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+    from reportlab.lib.units import inch
+    from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
     REPORTLAB_AVAILABLE = True
 except ImportError:
     REPORTLAB_AVAILABLE = False
@@ -124,15 +122,54 @@ def verify_razorpay_signature(provider_order_id, provider_payment_id, signature)
     return hmac.compare_digest(expected, signature)
 
 
-# ============================================================================
-# Invoice PDF Generation
-# ============================================================================
+def _brand_logo_path():
+    logo_path = settings.BASE_DIR / "media" / "products" / "main" / "Grow_More_logo.png"
+    return logo_path if logo_path.exists() else None
+
+
+def _payment_status(order):
+    payment = getattr(order, "payment", None)
+    return payment.get_status_display() if payment else "Not recorded"
+
+
+def _brand_header(styles, title, subtitle):
+    title_style = ParagraphStyle(
+        name=f"{title}Title",
+        parent=styles["Heading1"],
+        fontSize=20,
+        textColor=colors.HexColor("#1a1a1a"),
+        spaceAfter=4,
+        alignment=2,
+        fontName="Helvetica-Bold",
+    )
+    brand_block = [
+        Paragraph("<b>GROW MORE</b>", styles["Heading2"]),
+        Paragraph("Premium Summer Menswear", styles["Normal"]),
+    ]
+    logo_path = _brand_logo_path()
+    if logo_path:
+        brand_block.insert(0, Image(str(logo_path), width=0.7 * inch, height=0.7 * inch, kind="proportional"))
+
+    header = Table(
+        [[brand_block, [Paragraph(title, title_style), Paragraph(subtitle, styles["Normal"])]]],
+        colWidths=[3.2 * inch, 3.3 * inch],
+    )
+    header.setStyle(
+        TableStyle(
+            [
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("ALIGN", (1, 0), (1, 0), "RIGHT"),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+            ]
+        )
+    )
+    return header
 
 
 def generate_order_invoice_pdf(order):
     """
-    Generate a professional order invoice PDF.
-    Returns BytesIO buffer with PDF content, or None if reportlab not available.
+    Generate a professional payment receipt PDF.
+    Kept under the original function name so older invoice URLs remain compatible.
     """
     if not REPORTLAB_AVAILABLE:
         return None
@@ -142,103 +179,106 @@ def generate_order_invoice_pdf(order):
     story = []
     styles = getSampleStyleSheet()
 
-    # Create custom styles
-    title_style = ParagraphStyle(
-        name='CustomTitle',
-        parent=styles['Heading1'],
-        fontSize=24,
-        textColor=colors.HexColor('#1a1a1a'),
-        spaceAfter=6,
-        alignment=TA_CENTER,
-        fontName='Helvetica-Bold',
-    )
+    story.append(_brand_header(styles, "PAYMENT RECEIPT", f"Receipt #{order.order_number}"))
+    story.append(Spacer(1, 0.12 * inch))
 
-    # Header
-    story.append(Paragraph("GROW MORE", title_style))
-    story.append(Paragraph("Premium Summer Fashion Store", styles['Normal']))
-    story.append(Spacer(1, 0.15 * inch))
-
-    # Invoice header
-    header_data = [
-        [Paragraph(f"<b>Invoice #{order.order_number}</b>", styles['Heading2']), 
-         Paragraph(f"<b>Date:</b> {order.created_at.strftime('%d-%b-%Y')}", styles['Normal'])],
+    receipt_data = [
+        [Paragraph("<b>Order Number</b>", styles["Normal"]), Paragraph(order.order_number, styles["Normal"])],
+        [Paragraph("<b>Receipt Date</b>", styles["Normal"]), Paragraph(order.created_at.strftime("%d-%b-%Y"), styles["Normal"])],
+        [Paragraph("<b>Payment Method</b>", styles["Normal"]), Paragraph(order.get_payment_method_display(), styles["Normal"])],
+        [Paragraph("<b>Payment Status</b>", styles["Normal"]), Paragraph(_payment_status(order), styles["Normal"])],
     ]
-    header_table = Table(header_data, colWidths=[3.5 * inch, 2.5 * inch])
-    header_table.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'LEFT')]))
-    story.append(header_table)
+    receipt_table = Table(receipt_data, colWidths=[1.6 * inch, 4.8 * inch])
+    receipt_table.setStyle(
+        TableStyle(
+            [
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#dddddd")),
+                ("BACKGROUND", (0, 0), (0, -1), colors.HexColor("#f6fbfb")),
+                ("PADDING", (0, 0), (-1, -1), 8),
+            ]
+        )
+    )
+    story.append(receipt_table)
     story.append(Spacer(1, 0.15 * inch))
 
-    # Customer info
-    cust_data = [
-        [Paragraph("<b>BILL TO:</b>", styles['Heading3']), Paragraph("<b>SHIP TO:</b>", styles['Heading3'])],
+    customer_data = [
+        [Paragraph("<b>Customer</b>", styles["Heading3"]), Paragraph("<b>Shipping Address</b>", styles["Heading3"])],
         [
-            Paragraph(
-                f"{order.full_name}<br/>{order.email}<br/>{order.phone}",
-                styles['Normal']
-            ),
-            Paragraph(
-                f"{order.shipping_address}<br/>{order.shipping_city}, {order.shipping_state}<br/>{order.shipping_postal_code}",
-                styles['Normal']
-            ),
+            Paragraph(f"{order.full_name}<br/>{order.email}<br/>{order.phone}", styles["Normal"]),
+            Paragraph(f"{order.shipping_address}<br/>{order.shipping_city}, {order.shipping_state}<br/>{order.shipping_postal_code}", styles["Normal"]),
         ],
     ]
-    cust_table = Table(cust_data, colWidths=[3.25 * inch, 3.25 * inch])
-    cust_table.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'LEFT'), ('VALIGN', (0, 0), (-1, -1), 'TOP')]))
-    story.append(cust_table)
+    customer_table = Table(customer_data, colWidths=[3.2 * inch, 3.2 * inch])
+    customer_table.setStyle(
+        TableStyle(
+            [
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#dddddd")),
+                ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#eeeeee")),
+                ("PADDING", (0, 0), (-1, -1), 8),
+            ]
+        )
+    )
+    story.append(customer_table)
     story.append(Spacer(1, 0.15 * inch))
 
-    # Items table
     items_data = [
         [
-            Paragraph("<b>Product</b>", styles['Normal']),
-            Paragraph("<b>Size</b>", styles['Normal']),
-            Paragraph("<b>Qty</b>", styles['Normal']),
-            Paragraph("<b>Price</b>", styles['Normal']),
-            Paragraph("<b>Total</b>", styles['Normal']),
+            Paragraph("<b>Product</b>", styles["Normal"]),
+            Paragraph("<b>Size</b>", styles["Normal"]),
+            Paragraph("<b>Qty</b>", styles["Normal"]),
+            Paragraph("<b>Paid Price</b>", styles["Normal"]),
+            Paragraph("<b>Total</b>", styles["Normal"]),
         ]
     ]
-
     for item in order.items.all():
         items_data.append(
             [
-                Paragraph(item.product_name, styles['Normal']),
-                Paragraph(item.size or '-', styles['Normal']),
-                Paragraph(str(item.quantity), styles['Normal']),
-                Paragraph(f"₹{item.price:.2f}", styles['Normal']),
-                Paragraph(f"₹{item.price * item.quantity:.2f}", styles['Normal']),
+                Paragraph(item.product_name, styles["Normal"]),
+                Paragraph(item.size or "-", styles["Normal"]),
+                Paragraph(str(item.quantity), styles["Normal"]),
+                Paragraph(f"Rs. {item.price:.2f}", styles["Normal"]),
+                Paragraph(f"Rs. {item.subtotal:.2f}", styles["Normal"]),
             ]
         )
 
-    items_table = Table(items_data, colWidths=[2.5 * inch, 0.7 * inch, 0.7 * inch, 1 * inch, 1.1 * inch])
+    items_table = Table(items_data, colWidths=[2.45 * inch, 0.7 * inch, 0.65 * inch, 1.1 * inch, 1.15 * inch])
     items_table.setStyle(
-        TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f0f0f0')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('ALIGN', (0, 0), (0, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 9),
-            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#cccccc')),
-        ])
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#20343a")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("ALIGN", (1, 1), (-1, -1), "CENTER"),
+                ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, -1), 9),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#d6d6d6")),
+                ("PADDING", (0, 0), (-1, -1), 7),
+            ]
+        )
     )
     story.append(items_table)
     story.append(Spacer(1, 0.15 * inch))
 
-    # Totals
     totals_data = [
-        [Paragraph("<b>Subtotal:</b>", styles['Normal']), Paragraph(f"₹{order.total_amount:.2f}", styles['Normal'])],
-        [Paragraph("<b>Shipping:</b>", styles['Normal']), Paragraph("Free", styles['Normal'])],
-        [Paragraph("<b>TOTAL:</b>", styles['Heading3']), Paragraph(f"<b>₹{order.total_amount:.2f}</b>", styles['Heading3'])],
+        [Paragraph("<b>Subtotal</b>", styles["Normal"]), Paragraph(f"Rs. {order.total_amount:.2f}", styles["Normal"])],
+        [Paragraph("<b>Shipping</b>", styles["Normal"]), Paragraph("Free", styles["Normal"])],
+        [Paragraph("<b>Amount Paid</b>", styles["Heading3"]), Paragraph(f"<b>Rs. {order.total_amount:.2f}</b>", styles["Heading3"])],
     ]
-    totals_table = Table(totals_data, colWidths=[4.5 * inch, 1.5 * inch])
+    totals_table = Table(totals_data, colWidths=[4.7 * inch, 1.5 * inch], hAlign="RIGHT")
     totals_table.setStyle(
-        TableStyle([
-            ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
-            ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#f0f0f0')),
-            ('GRID', (0, -2), (-1, -1), 1, colors.HexColor('#999999')),
-        ])
+        TableStyle(
+            [
+                ("ALIGN", (0, 0), (-1, -1), "RIGHT"),
+                ("BACKGROUND", (0, -1), (-1, -1), colors.HexColor("#f6fbfb")),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#cccccc")),
+                ("PADDING", (0, 0), (-1, -1), 8),
+            ]
+        )
     )
     story.append(totals_table)
+    story.append(Spacer(1, 0.18 * inch))
+    story.append(Paragraph("This receipt confirms payment recorded for the order above.", styles["Normal"]))
 
     doc.build(story)
     buffer.seek(0)
@@ -247,8 +287,8 @@ def generate_order_invoice_pdf(order):
 
 def generate_delivery_sheet_pdf(order):
     """
-    Generate a delivery sheet (packing sheet) PDF.
-    Returns BytesIO buffer with PDF content, or None if reportlab not available.
+    Generate a shipping sheet PDF for dispatch and packing.
+    Kept under the original function name so older delivery-sheet URLs remain compatible.
     """
     if not REPORTLAB_AVAILABLE:
         return None
@@ -258,68 +298,82 @@ def generate_delivery_sheet_pdf(order):
     story = []
     styles = getSampleStyleSheet()
 
-    # Title
-    title_style = ParagraphStyle(
-        name='DeliveryTitle',
-        parent=styles['Heading1'],
-        fontSize=18,
-        alignment=TA_CENTER,
-        fontName='Helvetica-Bold',
-    )
-    story.append(Paragraph("DELIVERY SHEET", title_style))
-    story.append(Spacer(1, 0.1 * inch))
+    story.append(_brand_header(styles, "SHIPPING SHEET", f"Ship order #{order.order_number}"))
+    story.append(Spacer(1, 0.14 * inch))
 
-    # Order details
     details_data = [
-        [Paragraph("<b>Order #:</b>", styles['Normal']), Paragraph(order.order_number, styles['Normal'])],
-        [Paragraph("<b>Date:</b>", styles['Normal']), Paragraph(order.created_at.strftime('%d-%b-%Y'), styles['Normal'])],
-        [Paragraph("<b>Status:</b>", styles['Normal']), Paragraph(order.get_status_display(), styles['Normal'])],
+        [Paragraph("<b>Order Number</b>", styles["Normal"]), Paragraph(order.order_number, styles["Normal"])],
+        [Paragraph("<b>Order Date</b>", styles["Normal"]), Paragraph(order.created_at.strftime("%d-%b-%Y"), styles["Normal"])],
+        [Paragraph("<b>Order Status</b>", styles["Normal"]), Paragraph(order.get_status_display(), styles["Normal"])],
+        [Paragraph("<b>Payment</b>", styles["Normal"]), Paragraph(f"{order.get_payment_method_display()} - {_payment_status(order)}", styles["Normal"])],
     ]
-    details_table = Table(details_data, colWidths=[1.5 * inch, 4.5 * inch])
-    details_table.setStyle(TableStyle([('ALIGN', (0, 0), (-1, -1), 'LEFT')]))
+    details_table = Table(details_data, colWidths=[1.6 * inch, 4.7 * inch])
+    details_table.setStyle(
+        TableStyle(
+            [
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#dddddd")),
+                ("BACKGROUND", (0, 0), (0, -1), colors.HexColor("#f6fbfb")),
+                ("PADDING", (0, 0), (-1, -1), 8),
+            ]
+        )
+    )
     story.append(details_table)
     story.append(Spacer(1, 0.15 * inch))
 
-    # Delivery address
-    story.append(Paragraph("<b>DELIVER TO:</b>", styles['Heading3']))
+    story.append(Paragraph("<b>SHIP TO</b>", styles["Heading3"]))
     addr_text = f"{order.full_name}<br/>{order.phone}<br/>{order.shipping_address}<br/>{order.shipping_city}, {order.shipping_state} {order.shipping_postal_code}"
-    story.append(Paragraph(addr_text, styles['Normal']))
+    story.append(Paragraph(addr_text, styles["Normal"]))
     story.append(Spacer(1, 0.15 * inch))
 
-    # Items
-    story.append(Paragraph("<b>ITEMS TO PACK:</b>", styles['Heading3']))
-
+    story.append(Paragraph("<b>PACKING CHECKLIST</b>", styles["Heading3"]))
     items_data = [
-        [Paragraph("<b>Product</b>", styles['Normal']), Paragraph("<b>Size</b>", styles['Normal']), Paragraph("<b>Qty</b>", styles['Normal'])],
+        [
+            Paragraph("<b>Product</b>", styles["Normal"]),
+            Paragraph("<b>Size</b>", styles["Normal"]),
+            Paragraph("<b>Color</b>", styles["Normal"]),
+            Paragraph("<b>Qty</b>", styles["Normal"]),
+            Paragraph("<b>Checked</b>", styles["Normal"]),
+        ],
     ]
     for item in order.items.all():
         items_data.append(
             [
-                Paragraph(item.product_name, styles['Normal']),
-                Paragraph(item.size or '-', styles['Normal']),
-                Paragraph(str(item.quantity), styles['Normal']),
+                Paragraph(item.product_name, styles["Normal"]),
+                Paragraph(item.size or "-", styles["Normal"]),
+                Paragraph(item.color or "-", styles["Normal"]),
+                Paragraph(str(item.quantity), styles["Normal"]),
+                Paragraph("[  ]", styles["Normal"]),
             ]
         )
 
-    items_table = Table(items_data, colWidths=[3.5 * inch, 1 * inch, 1 * inch])
+    items_table = Table(items_data, colWidths=[2.7 * inch, 0.75 * inch, 1.15 * inch, 0.65 * inch, 0.8 * inch])
     items_table.setStyle(
-        TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('ALIGN', (0, 0), (0, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ])
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#20343a")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("ALIGN", (1, 1), (-1, -1), "CENTER"),
+                ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#222222")),
+                ("PADDING", (0, 0), (-1, -1), 8),
+            ]
+        )
     )
     story.append(items_table)
     story.append(Spacer(1, 0.2 * inch))
 
-    # Notes
-    story.append(Paragraph("<b>NOTES:</b>", styles['Heading3']))
-    story.append(Paragraph("Please verify all items and quantities before handing to customer.", styles['Normal']))
+    handoff_data = [
+        [Paragraph("<b>Packed By</b>", styles["Normal"]), Paragraph("____________________", styles["Normal"])],
+        [Paragraph("<b>Dispatch Partner</b>", styles["Normal"]), Paragraph("____________________", styles["Normal"])],
+        [Paragraph("<b>Tracking Number</b>", styles["Normal"]), Paragraph("____________________", styles["Normal"])],
+    ]
+    handoff_table = Table(handoff_data, colWidths=[1.7 * inch, 4.4 * inch])
+    handoff_table.setStyle(TableStyle([("PADDING", (0, 0), (-1, -1), 8), ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#dddddd"))]))
+    story.append(handoff_table)
+    story.append(Spacer(1, 0.15 * inch))
+    story.append(Paragraph("Verify product, size, color, and quantity before sealing the package.", styles["Normal"]))
 
     doc.build(story)
     buffer.seek(0)
     return buffer
-

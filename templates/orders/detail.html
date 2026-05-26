@@ -1,141 +1,42 @@
-{% extends "base.html" %} {% block title %}{{ order.order_number }} | Grow
-More{% endblock %} {% block content %}
+{% extends "base.html" %}
+{% block title %}{{ order.order_number }} | Grow More{% endblock %}
+{% block content %}
 <main class="container page-hero">
   <h1>Order {{ order.order_number }}</h1>
   <section class="checkout-wrap section">
     <article class="card form-card">
-      <h3>
-        Order Status:
-        <span class="status-badge">{{ order.get_status_display }}</span>
-      </h3>
-      <p><strong>Delivery Address:</strong></p>
+      <h3>Order Status: <span class="status-pill status-live">{{ order.get_status_display }}</span></h3>
+      <p><strong>Shipping Address:</strong></p>
       <p>{{ order.full_name }}</p>
       <p>{{ order.shipping_address }}</p>
-      <p>
-        {{ order.shipping_city }}, {{ order.shipping_state }} {{
-        order.shipping_postal_code }}
-      </p>
+      <p>{{ order.shipping_city }}, {{ order.shipping_state }} {{ order.shipping_postal_code }}</p>
       <p><strong>Phone:</strong> {{ order.phone }}</p>
       <p><strong>Email:</strong> {{ order.email }}</p>
 
-      <!-- Download Buttons -->
-      <div
-        class="download-actions"
-        style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap"
-      >
-        <a
-          href="{% url 'orders:download_invoice' order.order_number %}"
-          class="btn-download"
-          download
-        >
-          <span style="font-size: 18px; margin-right: 6px">📄</span> Download
-          Invoice
-        </a>
-        <a
-          href="{% url 'orders:download_delivery_sheet' order.order_number %}"
-          class="btn-download"
-          download
-        >
-          <span style="font-size: 18px; margin-right: 6px">📋</span> Delivery
-          Sheet
-        </a>
+      <div class="download-actions">
+        <a href="{% url 'orders:download_payment_receipt' order.order_number %}" class="ghost-btn" download>Payment Receipt</a>
+        <a href="{% url 'orders:download_shipping_sheet' order.order_number %}" class="ghost-btn" download>Shipping Sheet</a>
       </div>
     </article>
 
     <article class="card form-card">
       <h3>Order Items</h3>
       {% for item in order.items.all %}
-      <div class="cart-row">
-        <span
-          >{{ item.product_name }} · {{ item.size }} {{ item.color }} x{{
-          item.quantity }} {% if item.offer_title %} <br /><small
-            class="offer-mini"
-            style="color: #07a"
-            >{{ item.offer_title }} - {{ item.offer_discount_percent }}%
-            off</small
-          >
-          {% endif %}
-        </span>
-        <strong
-          >₹{{ item.price|floatformat:2 }} × {{ item.quantity }} = ₹{{
-          item.price|add:0|mul:item.quantity }}</strong
-        >
-      </div>
+        <div class="cart-row">
+          <span>
+            {{ item.product_name }}{% if item.size %} / {{ item.size }}{% endif %}{% if item.color %} / {{ item.color }}{% endif %} x{{ item.quantity }}
+            {% if item.offer_title %}<br><small class="offer-mini">{{ item.offer_title }} - {{ item.offer_discount_percent }}% off</small>{% endif %}
+          </span>
+          <strong>Rs. {{ item.subtotal|floatformat:2 }}</strong>
+        </div>
+      {% empty %}
+        <p class="muted">No products recorded for this order.</p>
       {% endfor %}
-      <div
-        class="cart-row"
-        style="border-top: 2px solid #eee; margin-top: 12px; padding-top: 12px"
-      >
-        <strong style="font-size: 16px">Total Amount</strong>
-        <strong style="font-size: 16px"
-          >₹{{ order.total_amount|floatformat:2 }}</strong
-        >
+      <div class="cart-row cart-row-total">
+        <strong>Total Amount</strong>
+        <strong>Rs. {{ order.total_amount|floatformat:2 }}</strong>
       </div>
     </article>
   </section>
 </main>
-
-<style>
-  .status-badge {
-    display: inline-block;
-    padding: 6px 12px;
-    background-color: #0066cc;
-    color: white;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
-    text-transform: capitalize;
-  }
-
-  .status-badge.pending {
-    background-color: #ff9800;
-  }
-
-  .status-badge.confirmed {
-    background-color: #2196f3;
-  }
-
-  .status-badge.shipped {
-    background-color: #4caf50;
-  }
-
-  .status-badge.delivered {
-    background-color: #009688;
-  }
-
-  .btn-download {
-    display: inline-flex;
-    align-items: center;
-    padding: 10px 16px;
-    background-color: #0066cc;
-    color: white;
-    text-decoration: none;
-    border-radius: 6px;
-    font-weight: 500;
-    transition: background-color 0.2s;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-  }
-
-  .btn-download:hover {
-    background-color: #0052a3;
-  }
-
-  .btn-download:active {
-    transform: scale(0.98);
-  }
-
-  .cart-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 12px 0;
-    border-bottom: 1px solid #f0f0f0;
-  }
-
-  .offer-mini {
-    color: #07a;
-    font-weight: 500;
-  }
-</style>
 {% endblock %}

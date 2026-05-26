@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: grow-more
+    env: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput
+    startCommand: gunicorn growmore.wsgi:application
+    autoDeploy: true
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: ENVIRONMENT
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: USE_CLOUDINARY
+        value: "True"
+      - key: CLOUDINARY_URL
+        sync: false
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false

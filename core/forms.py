@@ -1,6 +1,6 @@
 from django import forms
 
-from core.models import HeroBanner, HomepageSection
+from core.models import HeroBanner
 
 
 class ContactForm(forms.Form):
@@ -15,8 +15,3 @@ class HeroBannerForm(forms.ModelForm):
         model = HeroBanner
         fields = ("title", "subtitle", "button_label", "button_url", "image", "image_url", "is_active", "sort_order")
 
-
-class HomepageSectionForm(forms.ModelForm):
-    class Meta:
-        model = HomepageSection
-        fields = ("title", "section_type", "is_active", "sort_order", "limit")

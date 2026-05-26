@@ -57,12 +57,17 @@ class PromotionalOffer(models.Model):
             raise ValidationError({"ends_at": "Offer end time must be after start time."})
         if self.countdown_end and self.countdown_end > self.ends_at:
             raise ValidationError({"countdown_end": "Countdown end cannot be after offer end time."})
-        if self.offer_type == "site_wide":
-            self.site_wide = True
+        self.site_wide = self.offer_type == "site_wide"
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
+            base_slug = slugify(self.title) or "offer"
+            slug = base_slug
+            counter = 2
+            while PromotionalOffer.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
         self.full_clean()
         super().save(*args, **kwargs)
 
@@ -94,7 +99,7 @@ class PromotionalOffer(models.Model):
     def applies_to_product(self, product):
         if not self.is_current:
             return False
-        if self.site_wide or self.offer_type == "site_wide":
+        if self.offer_type == "site_wide":
             return True
         if self.offer_type == "homepage" and product.is_featured:
             return True

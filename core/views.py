@@ -22,6 +22,7 @@ def about(request):
     return render(request, "core/about.html")
 
 
+
 @ensure_csrf_cookie
 def contact(request):
     form = ContactForm(request.POST or None)

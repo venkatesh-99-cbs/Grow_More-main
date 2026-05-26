@@ -160,8 +160,8 @@ def order_detail(request, order_number):
 
 
 @login_required
-def download_invoice(request, order_number):
-    """Download order invoice as PDF"""
+def download_payment_receipt(request, order_number):
+    """Download order payment receipt as PDF."""
     from orders.services import generate_order_invoice_pdf
     from django.http import FileResponse
 
@@ -173,13 +173,13 @@ def download_invoice(request, order_number):
         return redirect("orders:detail", order_number=order_number)
 
     response = FileResponse(pdf_buffer, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="invoice-{order.order_number}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="payment-receipt-{order.order_number}.pdf"'
     return response
 
 
 @login_required  
-def download_delivery_sheet(request, order_number):
-    """Download order delivery sheet as PDF"""
+def download_shipping_sheet(request, order_number):
+    """Download order shipping sheet as PDF."""
     from orders.services import generate_delivery_sheet_pdf
     from django.http import FileResponse
 
@@ -191,7 +191,11 @@ def download_delivery_sheet(request, order_number):
         return redirect("orders:detail", order_number=order_number)
 
     response = FileResponse(pdf_buffer, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="delivery-sheet-{order.order_number}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="shipping-sheet-{order.order_number}.pdf"'
     return response
+
+
+download_invoice = download_payment_receipt
+download_delivery_sheet = download_shipping_sheet
 
 # Create your views here.

@@ -1,7 +1,46 @@
 {% extends "dashboard/base.html" %}
 {% block dashboard_content %}
-  <h1>Customers</h1>
-  <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>User</th><th>Email</th><th>Orders</th><th>Addresses</th></tr></thead><tbody>
-    {% for customer in customers %}<tr><td>{{ customer.username }}</td><td>{{ customer.email }}</td><td>{{ customer.orders.count }}</td><td>{{ customer.addresses.count }}</td></tr>{% empty %}<tr><td colspan="4">No customers yet.</td></tr>{% endfor %}
-  </tbody></table></div>
+  <div class="admin-heading">
+    <div>
+      <h1>Customers</h1>
+      <p class="admin-subtitle">Review customer profiles, saved addresses, and product order history.</p>
+    </div>
+  </div>
+  <div class="admin-table-wrap">
+    <table class="admin-table customer-history-table">
+      <thead>
+        <tr><th>User</th><th>Email</th><th>Orders</th><th>Addresses</th><th>Recent Products</th></tr>
+      </thead>
+      <tbody>
+        {% for customer in customers %}
+          <tr>
+            <td><strong>{{ customer.get_full_name|default:customer.username }}</strong><br><small>{{ customer.username }}</small></td>
+            <td>{{ customer.email }}</td>
+            <td>{{ customer.orders.count }}</td>
+            <td>{{ customer.addresses.count }}</td>
+            <td>
+              <div class="mini-history-list">
+                {% for order in customer.orders.all|slice:":3" %}
+                  <div class="mini-history-item">
+                    <strong>{{ order.order_number }}</strong>
+                    <span>
+                      {% for item in order.items.all %}
+                        {{ item.product_name }} x{{ item.quantity }}{% if not forloop.last %}, {% endif %}
+                      {% empty %}
+                        No products recorded
+                      {% endfor %}
+                    </span>
+                  </div>
+                {% empty %}
+                  <span class="muted-left">No order history</span>
+                {% endfor %}
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5">No customers yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 {% endblock %}

@@ -22,12 +22,13 @@ def active_popup_offer():
 def best_offer_for_product(product):
     offers = active_offers()
     best = None
-    best_price = product.discount_price or product.price
+    base_sale_price = product.discount_price or product.price
+    best_price = base_sale_price
     for offer in offers:
         if not offer.applies_to_product(product):
             continue
         offer_price = offer.discount_price_for(product.price)
-        if best is None or offer_price < best_price:
+        if offer_price < best_price:
             best = offer
             best_price = offer_price
     return best

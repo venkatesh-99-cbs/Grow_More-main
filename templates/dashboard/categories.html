@@ -1,8 +1,46 @@
 {% extends "dashboard/base.html" %}
 {% block dashboard_content %}
-  <h1>Categories</h1>
-  <form class="card form admin-form" method="post">{% csrf_token %}{{ form.as_p }}<button class="submit-btn" type="submit">Add Category</button></form>
-  <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Name</th><th>Slug</th><th>Active</th></tr></thead><tbody>
-    {% for category in categories %}<tr><td>{{ category.name }}</td><td>{{ category.slug }}</td><td>{{ category.is_active|yesno:"Yes,No" }}</td></tr>{% endfor %}
-  </tbody></table></div>
+  <div class="admin-heading">
+    <div>
+      <h1>Categories</h1>
+      <p class="admin-subtitle">Organize products into clear collections for customers.</p>
+    </div>
+    {% if category %}<a class="ghost-btn admin-reset-btn" href="{% url 'dashboard:categories' %}">New Category</a>{% endif %}
+  </div>
+
+  <form class="card form admin-form" method="post">
+    {% csrf_token %}
+    <h3>{% if category %}Edit Category{% else %}Add Category{% endif %}</h3>
+    {{ form.as_p }}
+    <button class="submit-btn" type="submit">Save Category</button>
+  </form>
+
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr><th>Name</th><th>Slug</th><th>Products</th><th>Active</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for item in categories %}
+          <tr>
+            <td><strong>{{ item.name }}</strong></td>
+            <td>{{ item.slug }}</td>
+            <td>{{ item.product_count }}</td>
+            <td><span class="status-pill {% if item.is_active %}status-live{% else %}status-muted{% endif %}">{{ item.is_active|yesno:"Active,Hidden" }}</span></td>
+            <td>
+              <div class="admin-actions">
+                <a class="text-action" href="{% url 'dashboard:category_edit' item.pk %}">Edit</a>
+                <form method="post" action="{% url 'dashboard:category_delete' item.pk %}" data-confirm="Remove this category? Categories used by products will be hidden instead.">
+                  {% csrf_token %}
+                  <button class="danger-action" type="submit">Remove</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5">No categories yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 {% endblock %}

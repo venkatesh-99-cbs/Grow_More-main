@@ -7,7 +7,7 @@ from offers.models import PromotionalOffer
 @admin.register(PromotionalOffer)
 class PromotionalOfferAdmin(admin.ModelAdmin):
     list_display = ("title", "offer_type", "discount_percent", "starts_at", "ends_at", "is_active", "display_priority")
-    list_filter = ("offer_type", "is_active", "site_wide", "show_on_homepage", "floating_ball_enabled")
+    list_filter = ("offer_type", "is_active", "show_on_homepage", "floating_ball_enabled")
     list_editable = ("is_active", "display_priority")
     search_fields = ("title", "offer_label", "description")
     prepopulated_fields = {"slug": ("title",)}
@@ -17,7 +17,7 @@ class PromotionalOfferAdmin(admin.ModelAdmin):
         ("Offer content", {"fields": ("title", "slug", "offer_label", "highlight_text", "description", "discount_percent")}),
         ("Schedule", {"fields": ("starts_at", "ends_at", "countdown_end")}),
         ("CTA and image", {"fields": ("cta_text", "cta_link", "image", "image_url", "image_preview")}),
-        ("Visibility", {"fields": ("offer_type", "site_wide", "show_on_homepage", "floating_ball_enabled", "permanent_dismiss_allowed", "display_priority", "is_active")}),
+        ("Visibility", {"fields": ("offer_type", "show_on_homepage", "floating_ball_enabled", "permanent_dismiss_allowed", "display_priority", "is_active")}),
         ("Assignments", {"fields": ("products", "categories")}),
     )
 

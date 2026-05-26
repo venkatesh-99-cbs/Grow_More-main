@@ -12,15 +12,27 @@ class RegisterForm(UserCreationForm):
         model = User
         fields = ("username", "email", "password1", "password2")
 
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        if username and User.objects.filter(username__iexact=username).exists():
+            raise forms.ValidationError(
+                "An account with this username already exists.",
+                code="invalid",
+            )
+        return username
+
     def clean_email(self):
-        email = self.cleaned_data["email"].lower()
+        email = self.cleaned_data.get("email")
+        if not email:
+            return email
+        email = email.lower()
         if User.objects.filter(email__iexact=email).exists():
-            raise forms.ValidationError("An account with this email already exists.")
+            raise forms.ValidationError("An account with this email already exists.", code="invalid")
         return email
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.email = self.cleaned_data["email"].lower()
+        user.email = self.cleaned_data.get("email", "").lower()
         if commit:
             user.save()
         return user
@@ -51,3 +63,4 @@ class AddressForm(forms.ModelForm):
         model = Address
         fields = ("full_name", "phone", "address_line", "city", "state", "postal_code", "country", "is_default")
         widgets = {"address_line": forms.Textarea(attrs={"rows": 3})}
+

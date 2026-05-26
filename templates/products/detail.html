@@ -25,8 +25,14 @@
         <p>{{ product.description }}</p>
         {% with offer=product.active_offer %}
           <div class="price-block big {% if offer %}has-offer{% endif %}" {% if offer %}data-offer-expirable data-offer-id="{{ offer.id }}"{% endif %}>
-            <div class="price-line"><span class="price-now">Rs. {{ product.current_price }}</span><span class="price-old">Rs. {{ product.original_price }}</span><span class="price-off">{{ product.discount_percent }}% OFF</span></div>
-            <div class="save-line">{{ product.offer_highlight }}</div>
+            <div class="price-line">
+              <span class="price-now">Rs. {{ product.current_price }}</span>
+              {% if product.discount_percent %}
+                <span class="price-old">Rs. {{ product.original_price }}</span>
+                <span class="price-off">{{ product.discount_percent }}% OFF</span>
+              {% endif %}
+            </div>
+            {% if product.offer_highlight %}<div class="save-line">{{ product.offer_highlight }}</div>{% endif %}
             {% if offer %}
               <div class="offer-detail-panel">
                 <span class="offer-label-chip">{{ product.offer_label }}</span>

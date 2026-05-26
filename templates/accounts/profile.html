@@ -34,7 +34,7 @@
       <div class="grid">
         {% for address in addresses %}
           <article class="info-card">
-            <h3>{{ address.full_name }}{% if address.is_default %} · Default{% endif %}</h3>
+            <h3>{{ address.full_name }}{% if address.is_default %} &middot; Default{% endif %}</h3>
             <p>{{ address.address_line }}</p><p>{{ address.city }}, {{ address.state }} {{ address.postal_code }}</p><p>{{ address.phone }}</p>
             <form method="post" action="{% url 'accounts:delete_address' address.pk %}">{% csrf_token %}<button class="remove-btn" type="submit">Remove</button></form>
           </article>
@@ -44,15 +44,41 @@
 
     <section class="section">
       <h2>Order History</h2>
-      <div class="admin-table-wrap">
-        <table class="admin-table">
-          <thead><tr><th>Order</th><th>Total</th><th>Status</th><th>Date</th><th></th></tr></thead>
-          <tbody>
-            {% for order in orders %}
-              <tr><td>{{ order.order_number }}</td><td>Rs. {{ order.total_amount }}</td><td>{{ order.get_status_display }}</td><td>{{ order.created_at|date:"M d, Y" }}</td><td><a href="{% url 'orders:detail' order.order_number %}">View</a></td></tr>
-            {% empty %}<tr><td colspan="5">No orders yet.</td></tr>{% endfor %}
-          </tbody>
-        </table>
+      <div class="order-history-list">
+        {% for order in orders %}
+          <article class="card order-history-card">
+            <div class="order-history-head">
+              <div>
+                <strong>{{ order.order_number }}</strong>
+                <span>{{ order.created_at|date:"M d, Y" }}</span>
+              </div>
+              <div class="order-history-meta">
+                <span class="status-pill status-live">{{ order.get_status_display }}</span>
+                <strong>Rs. {{ order.total_amount|floatformat:2 }}</strong>
+              </div>
+            </div>
+            <div class="order-product-list">
+              {% for item in order.items.all %}
+                <div class="order-product-row">
+                  {% if item.product.main_image_url %}<img src="{{ item.product.main_image_url }}" alt="{{ item.product_name }}" />{% else %}<span class="order-product-placeholder"></span>{% endif %}
+                  <div>
+                    <strong>{{ item.product_name }}</strong>
+                    <p>{{ item.size|default:"Standard" }}{% if item.color %} &middot; {{ item.color }}{% endif %} &middot; Qty {{ item.quantity }}</p>
+                  </div>
+                  <span>Rs. {{ item.subtotal|floatformat:2 }}</span>
+                </div>
+              {% empty %}
+                <p class="muted">No products recorded for this order.</p>
+              {% endfor %}
+            </div>
+            <div class="profile-order-actions">
+              <a class="ghost-btn" href="{% url 'orders:detail' order.order_number %}">View Order</a>
+              <a class="ghost-btn" href="{% url 'orders:download_payment_receipt' order.order_number %}">Payment Receipt</a>
+            </div>
+          </article>
+        {% empty %}
+          <p class="muted">No orders yet.</p>
+        {% endfor %}
       </div>
     </section>
   </main>

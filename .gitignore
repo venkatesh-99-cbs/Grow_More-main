@@ -1,0 +1,82 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# Static Files
+staticfiles/
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Node/Tailwind
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build Files
+dist/
+build/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Migrations Cache
+*.mo
+*.pot
+
+# Cloudinary Cache
+cloudinary_cache/
+
+# Render
+.render/
+
+# Temporary Files
+*.tmp
+*.temp
+
+# Logs
+logs/
+*.log
+
+# PDF Exports
+exports/
+generated_pdfs/
+
+# Uploaded Media
+media/uploads/
+
+# Secrets
+secret.key
+credentials.json
+
+# Cache
+.cache/

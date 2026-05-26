@@ -28,11 +28,15 @@ def register(request):
     form = RegisterForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         user = form.save()
-        login(request, user)
+        login(request, user, backend='allauth.account.auth_backends.AuthenticationBackend')
         merge_session_cart_into_user(request)
         messages.success(request, "Welcome to Grow More.")
         return redirect("accounts:profile")
-    return render(request, "accounts/register.html", {"form": form})
+    error_form = {"form": form}
+    if form.errors:
+        # Display form-specific errors at the top of the page
+        messages.error(request, "Registration Error - " + "; ".join(form.errors.values()))
+    return render(request, "accounts/register.html", error_form)
 
 
 @require_POST
@@ -51,7 +55,7 @@ def profile(request):
         messages.success(request, "Profile updated.")
         return redirect("accounts:profile")
     addresses = request.user.addresses.all()
-    orders = request.user.orders.prefetch_related("items").all()[:10]
+    orders = request.user.orders.prefetch_related("items__product", "payment").all()[:10]
     return render(
         request,
         "accounts/profile.html",
@@ -82,3 +86,4 @@ def delete_address(request, pk):
     return redirect("accounts:profile")
 
 # Create your views here.
+

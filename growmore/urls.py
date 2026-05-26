@@ -21,12 +21,12 @@ from django.urls import include, path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('accounts/', include('allauth.urls')),  # Social auth and account management
+    path('accounts/', include('accounts.urls')),  # Custom accounts URLs must come first
+    path('accounts/', include('allauth.urls')),   # Social auth fallback
     path('', include('core.urls')),
     path('', include('products.urls')),
     path('', include('orders.urls')),
     path('', include('offers.urls')),
-    path('accounts/', include('accounts.urls')),
     path('dashboard/', include('dashboard.urls')),
 ]
 

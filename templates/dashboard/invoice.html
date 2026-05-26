@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Receipt</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 30px; color: #222; background: #f6fbfb; }
+    .receipt-box { max-width: 820px; margin: 0 auto; border: 1px solid #d9e4e5; padding: 30px; border-radius: 12px; background: #fff; }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 30px; }
+    .logo { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 22px; }
+    .logo img { width: 72px; height: 72px; object-fit: contain; }
+    .receipt-title { text-align: right; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th { background: #20343a; color: white; padding: 12px; text-align: left; }
+    td { border-bottom: 1px solid #ddd; padding: 12px; }
+    .total { text-align: right; margin-top: 20px; font-size: 22px; font-weight: bold; }
+    .print-btn { margin-top: 20px; padding: 12px 20px; background: #20343a; color: white; border: none; cursor: pointer; border-radius: 8px; }
+    @media print { .print-btn { display: none; } body { background: #fff; } }
+  </style>
+</head>
+<body>
+  <div class="receipt-box">
+    <div class="top">
+      <div class="logo">
+        <img src="/media/products/main/Grow_More_logo.png" alt="Grow More" />
+        <span>Grow More</span>
+      </div>
+      <div class="receipt-title">
+        <h1>Payment Receipt</h1>
+        <p>Receipt for completed order payment</p>
+      </div>
+    </div>
+    <p>This printable template is retained for dashboard compatibility. PDF downloads are generated from the order actions.</p>
+    <button class="print-btn" onclick="window.print()">Print Receipt</button>
+  </div>
+</body>
+</html>

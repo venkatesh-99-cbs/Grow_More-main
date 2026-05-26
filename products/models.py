@@ -20,7 +20,13 @@ class Category(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            base_slug = slugify(self.name) or "category"
+            slug = base_slug
+            counter = 2
+            while Category.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -61,7 +67,13 @@ class Product(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            base_slug = slugify(self.name) or "product"
+            slug = base_slug
+            counter = 2
+            while Product.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -81,11 +93,11 @@ class Product(models.Model):
     def original_price(self):
         if self.active_offer or self.discount_price:
             return self.price
-        return (self.price / Decimal("0.72")).quantize(Decimal("0.01"))
+        return self.price
 
     @property
     def discount_percent(self):
-        if not self.original_price:
+        if not self.original_price or self.current_price >= self.original_price:
             return 0
         return int(((self.original_price - self.current_price) / self.original_price) * 100)
 
@@ -105,7 +117,9 @@ class Product(models.Model):
         offer = self.active_offer
         if offer and offer.highlight_text:
             return offer.highlight_text
-        return "Premium summer pricing"
+        if self.discount_percent:
+            return "Special pricing"
+        return ""
 
     @property
     def offer_countdown_target(self):

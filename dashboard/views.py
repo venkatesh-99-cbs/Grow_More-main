@@ -1,12 +1,13 @@
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User
+from django.db.models import Count, ProtectedError
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from core.forms import HeroBannerForm, HomepageSectionForm
-from core.models import HeroBanner, HomepageSection
+from core.forms import HeroBannerForm
+from core.models import HeroBanner
 from offers.forms import PromotionalOfferForm
 from offers.models import PromotionalOffer
 from orders.models import Order, Payment
@@ -45,23 +46,58 @@ def product_form(request, pk=None):
 
 
 @staff_member_required
-def categories(request):
-    form = CategoryForm(request.POST or None)
+@require_POST
+def product_delete(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    name = product.name
+    try:
+        product.delete()
+        messages.success(request, f"{name} removed.")
+    except ProtectedError:
+        product.is_active = False
+        product.save(update_fields=["is_active"])
+        messages.warning(request, f"{name} has order history, so it was hidden from the storefront instead.")
+    return redirect("dashboard:products")
+
+
+@staff_member_required
+def categories(request, pk=None):
+    category = get_object_or_404(Category, pk=pk) if pk else None
+    form = CategoryForm(request.POST or None, instance=category)
     if request.method == "POST" and form.is_valid():
         form.save()
         messages.success(request, "Category saved.")
         return redirect("dashboard:categories")
-    return render(request, "dashboard/categories.html", {"form": form, "categories": Category.objects.all()})
+    categories_qs = Category.objects.annotate(product_count=Count("products"))
+    return render(
+        request,
+        "dashboard/categories.html",
+        {"form": form, "categories": categories_qs, "category": category},
+    )
+
+
+@staff_member_required
+@require_POST
+def category_delete(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    name = category.name
+    try:
+        category.delete()
+        messages.success(request, f"{name} removed.")
+    except ProtectedError:
+        category.is_active = False
+        category.save(update_fields=["is_active"])
+        messages.warning(request, f"{name} is used by products, so it was hidden instead.")
+    return redirect("dashboard:categories")
 
 
 @staff_member_required
 def homepage(request):
     banner_form = HeroBannerForm()
-    section_form = HomepageSectionForm()
     return render(
         request,
         "dashboard/homepage.html",
-        {"banner_form": banner_form, "section_form": section_form, "banners": HeroBanner.objects.all(), "sections": HomepageSection.objects.all()},
+        {"banner_form": banner_form, "banners": HeroBanner.objects.all()},
     )
 
 
@@ -86,16 +122,6 @@ def banner_delete(request, pk):
 
 
 @staff_member_required
-@require_POST
-def section_create(request):
-    form = HomepageSectionForm(request.POST)
-    if form.is_valid():
-        form.save()
-        messages.success(request, "Homepage section saved.")
-    return redirect("dashboard:homepage")
-
-
-@staff_member_required
 def orders(request):
     items = Order.objects.select_related("user").prefetch_related("items", "payment").all()
     return render(request, "dashboard/orders.html", {"orders": items, "status_choices": Order.STATUS_CHOICES})
@@ -115,7 +141,7 @@ def order_status(request, pk):
 
 @staff_member_required
 def customers(request):
-    users = User.objects.filter(is_staff=False).prefetch_related("orders", "addresses")
+    users = User.objects.filter(is_staff=False).prefetch_related("orders__items", "addresses")
     return render(request, "dashboard/customers.html", {"customers": users})
 
 
@@ -150,8 +176,8 @@ def offer_delete(request, pk):
 
 
 @staff_member_required
-def admin_download_invoice(request, pk):
-    """Admin endpoint to download order invoice as PDF"""
+def admin_download_payment_receipt(request, pk):
+    """Admin endpoint to download order payment receipt as PDF."""
     from django.http import FileResponse
     from orders.services import generate_order_invoice_pdf
 
@@ -163,13 +189,13 @@ def admin_download_invoice(request, pk):
         return redirect("dashboard:orders")
 
     response = FileResponse(pdf_buffer, content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="invoice-{order.order_number}.pdf"'
+    response["Content-Disposition"] = f'attachment; filename="payment-receipt-{order.order_number}.pdf"'
     return response
 
 
 @staff_member_required
-def admin_download_delivery_sheet(request, pk):
-    """Admin endpoint to download order delivery sheet as PDF"""
+def admin_download_shipping_sheet(request, pk):
+    """Admin endpoint to download order shipping sheet as PDF."""
     from django.http import FileResponse
     from orders.services import generate_delivery_sheet_pdf
 
@@ -181,7 +207,9 @@ def admin_download_delivery_sheet(request, pk):
         return redirect("dashboard:orders")
 
     response = FileResponse(pdf_buffer, content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="delivery-sheet-{order.order_number}.pdf"'
+    response["Content-Disposition"] = f'attachment; filename="shipping-sheet-{order.order_number}.pdf"'
     return response
 
-# Create your views here.
+
+admin_download_invoice = admin_download_payment_receipt
+admin_download_delivery_sheet = admin_download_shipping_sheet
