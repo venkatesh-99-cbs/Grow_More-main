@@ -54,9 +54,9 @@ class Command(BaseCommand):
             )
 
         hero_images = [
-            "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=1600&q=80",
-            "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=1600&q=80",
-            "https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=1600&q=80",
+            "media/hero/product101.png",
+            "media/hero/product201.png",
+            "media/hero/product103.png",
         ]
         for index, image in enumerate(hero_images):
             HeroBanner.objects.update_or_create(

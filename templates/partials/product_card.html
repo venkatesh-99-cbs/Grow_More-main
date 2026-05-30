@@ -1,51 +1,245 @@
-<article class="product-card reveal" data-product-id="{{ product.id }}" data-product-url="{{ product.get_absolute_url }}">
+<article
+  class="product-card reveal"
+  data-product-id="{{ product.id }}"
+  data-product-url="{{ product.get_absolute_url }}"
+>
   <div class="product-media" aria-label="{{ product.name }}">
     <div class="flip-inner">
-      <img class="front" src="{{ product.main_image_url }}" alt="{{ product.name }} front" loading="lazy" />
-      <img class="back" src="{% if product.gallery_images.1 %}{{ product.gallery_images.1 }}{% else %}{{ product.main_image_url }}{% endif %}" alt="{{ product.name }} back" loading="lazy" />
+      <img
+        class="front"
+        src="{{ product.main_image_url }}"
+        alt="{{ product.name }} front"
+        loading="lazy"
+      />
+      <img
+        class="back"
+        src="{% if product.gallery_images.1 %}{{ product.gallery_images.1 }}{% else %}{{ product.main_image_url }}{% endif %}"
+        alt="{{ product.name }} back"
+        loading="lazy"
+      />
     </div>
-    <button type="button" class="fav-btn" data-favorite-id="{{ product.id }}" title="Add to favorites">&#10084;</button>
+    <button
+      type="button"
+      class="fav-btn"
+      data-favorite-id="{{ product.id }}"
+      title="Add to favorites"
+    >
+      &#10084;
+    </button>
     <div class="flip-hint">Tap to flip</div>
+
+    {# Premium Discount Badge #} {% if product.discount_percent %}
+    <div style="position: absolute; top: 10px; right: 10px; z-index: 2">
+      <div
+        style="
+          background: linear-gradient(
+            135deg,
+            var(--bright-blue),
+            var(--pink-sand)
+          );
+          color: #2b2025;
+          border-radius: 999px;
+          padding: 6px 12px;
+          font-weight: 800;
+          font-size: 0.85rem;
+          text-align: center;
+          box-shadow: 0 4px 12px rgba(81, 226, 245, 0.25);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          min-width: 50px;
+        "
+      >
+        <span style="font-size: 0.7rem; opacity: 0.8; letter-spacing: 0.02em"
+          >SAVE</span
+        >
+        <span style="font-size: 1.1rem; line-height: 1"
+          >{{ product.discount_percent }}%</span
+        >
+      </div>
+    </div>
+    {% endif %}
   </div>
+
   <div class="product-body">
-    <p class="chip">{{ product.category.name }}</p>
-    <h3>{{ product.name }}</h3>
-    <p class="tiny">{{ product.description }}</p>
-    {% with offer=product.active_offer %}
-      <div class="price-block {% if offer %}has-offer{% endif %}" {% if offer %}data-offer-expirable data-offer-id="{{ offer.id }}"{% endif %}>
-        <div class="price-line">
-          <span class="price-now">Rs. {{ product.current_price }}</span>
-          {% if product.discount_percent %}
-            <span class="price-old">Rs. {{ product.original_price }}</span>
-            <span class="price-off">{{ product.discount_percent }}% OFF</span>
-          {% endif %}
-        </div>
-        {% if product.offer_highlight %}<div class="save-line">{{ product.offer_highlight }}</div>{% endif %}
-        {% if offer %}
-          <div class="offer-chip-row">
-            <span class="offer-label-chip">{{ product.offer_label }}</span>
-            {% if product.is_trending %}<span class="offer-label-chip muted-chip">Trending Deal</span>{% endif %}
-          </div>
-          <div class="limited-badge" data-offer-countdown data-offer-end="{{ product.offer_countdown_target }}">Limited time</div>
-        {% endif %}
-      </div>
-    {% endwith %}
-    <div class="variant-stack">
-      <label>Size</label>
-      <div class="radio-row" data-role="size">
-        {% for size in product.sizes %}<button type="button" class="radio-pill {% if forloop.first %}active{% endif %}" data-value="{{ size }}">{{ size }}</button>{% endfor %}
-      </div>
-      {% if product.colors %}
-        <label>Color</label>
-        <div class="radio-row" data-role="color">
-          {% for color in product.colors %}<button type="button" class="radio-pill color-pill {% if forloop.first %}active{% endif %}" data-value="{{ color }}"><span class="swatch"></span><span class="pill-text">{{ color }}</span></button>{% endfor %}
-        </div>
+    {# Category & Brand #}
+    <div
+      style="
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-bottom: 0.35rem;
+        flex-wrap: wrap;
+      "
+    >
+      <p class="chip">{{ product.category.name }}</p>
+      {% if product.brand %}
+      <p
+        class="chip"
+        style="background: rgba(47, 141, 161, 0.18); color: #245f6d"
+      >
+        {{ product.brand.name }}
+      </p>
       {% endif %}
     </div>
-    {% if product.in_stock %}
-      <button class="add-btn" type="button" data-add-cart>Add to cart</button>
+
+    <h3>{{ product.name }}</h3>
+    <p class="tiny">{{ product.description|truncatewords:12 }}</p>
+
+    {# Premium Pricing Block #} {% with offer=product.active_offer %}
+    <div
+      class="price-block {% if offer %}has-offer{% endif %}"
+      {%
+      if
+      offer
+      %}data-offer-expirable
+      data-offer-id="{{ offer.id }}"
+      {%
+      endif
+      %}
+    >
+      <div class="price-line">
+        <span class="price-now">Rs. {{ product.current_price }}</span>
+        {% if product.discount_percent %}
+        <span class="price-old">Rs. {{ product.original_price }}</span>
+        <span class="price-off">{{ product.discount_percent }}% OFF</span>
+        {% endif %}
+      </div>
+      {% if product.offer_highlight %}
+      <div class="save-line">{{ product.offer_highlight }}</div>
+      {% endif %} {% if offer %}
+      <div class="offer-chip-row">
+        <span class="offer-label-chip">{{ product.offer_label }}</span>
+        {% if product.is_trending %}<span class="offer-label-chip muted-chip"
+          >Trending Deal</span
+        >{% endif %}
+      </div>
+      <div
+        class="limited-badge"
+        data-offer-countdown
+        data-offer-end="{{ product.offer_countdown_target }}"
+      >
+        Limited time
+      </div>
+      {% endif %}
+    </div>
+    {% endwith %} {# Size & Color Variants #}
+    <div class="variant-stack">
+      {# Size Selection with Stock Indicators #}
+      <label
+        style="
+          font-weight: 600;
+          font-size: 0.78rem;
+          color: #5f5860;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+          margin-bottom: 0.3rem;
+        "
+      >
+        Size
+        <span
+          style="
+            display: inline-block;
+            background: rgba(81, 226, 245, 0.15);
+            color: #2f8da1;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 0.65rem;
+            margin-left: 4px;
+            font-weight: 700;
+          "
+        >
+          Size Guide
+        </span>
+      </label>
+<div class="radio-row" data-role="size">
+        {% for size in product.sizes %}
+        {% with size_stock=product.size_stock_list|slice:forloop.counter0 %}
+        <button
+          type="button"
+          class="radio-pill {% if forloop.first %}active{% endif %}"
+          data-value="{{ size }}"
+          {% if size_stock and size_stock.is_out_of_stock %}disabled style="opacity: 0.5; cursor: not-allowed"{% endif %}
+          title="{% if size_stock %}{% if size_stock.is_out_of_stock %}Out of stock{% elif size_stock.is_low_stock %}Only {{ size_stock.available_quantity }} left{% endif %}{% endif %}"
+        >
+          {{ size }} {% if size_stock %}{% if size_stock.is_out_of_stock %}
+          <span
+            style="
+              display: block;
+              font-size: 0.6rem;
+              margin-top: 2px;
+              opacity: 0.8;
+            "
+            >Out</span
+          >
+          {% elif size_stock.is_low_stock %}
+          <span
+            style="
+              display: block;
+              font-size: 0.6rem;
+              margin-top: 2px;
+              opacity: 0.8;
+            "
+            >{{ size_stock.available_quantity }} left</span
+          >
+          {% endif %}{% endif %}
+        </button>
+        {% endwith %}
+        {% endfor %}
+      </div>
+
+      {# Color Selection with Visual Swatches #} {% if product.colors.all %}
+      <label
+        style="
+          font-weight: 600;
+          font-size: 0.78rem;
+          color: #5f5860;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+          margin-top: 0.6rem;
+          margin-bottom: 0.3rem;
+          display: block;
+        "
+        >Color</label
+      >
+      <div class="radio-row" data-role="color">
+        {% for color in product.colors.all %}
+        <button
+          type="button"
+          class="radio-pill color-pill {% if forloop.first %}active{% endif %}"
+          data-value="{{ color.name }}"
+          style="--swatch: {{ color.hex_code }};"
+          title="{{ color.name }}"
+        >
+          <span
+            class="swatch"
+            style="background-color: {{ color.hex_code }}; border: 1px solid rgba(58, 47, 51, 0.26);"
+          ></span>
+          <span class="pill-text">{{ color.name }}</span>
+        </button>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    {# Call-to-Action #} {% if product.in_stock %}
+    <button
+      class="add-btn"
+      type="button"
+      data-add-cart
+      style="margin-top: 0.6rem"
+    >
+      Add to cart
+    </button>
     {% else %}
-      <button class="add-btn" type="button" disabled>Out of stock</button>
+    <button
+      class="add-btn"
+      type="button"
+      disabled
+      style="opacity: 0.6; cursor: not-allowed; margin-top: 0.6rem"
+    >
+      Out of stock
+    </button>
     {% endif %}
   </div>
 </article>

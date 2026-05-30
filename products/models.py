@@ -7,6 +7,123 @@ from django.utils.text import slugify
 from core.validators import validate_store_image
 
 
+class Brand(models.Model):
+    """Premium brand management for Grow More fashion line."""
+    name = models.CharField(max_length=80, unique=True)
+    slug = models.SlugField(max_length=100, unique=True, blank=True)
+    description = models.TextField(blank=True)
+    logo = models.ImageField(upload_to="brands/logos/", validators=[validate_store_image], blank=True)
+    website = models.URLField(blank=True)
+    is_active = models.BooleanField(default=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["sort_order", "name"]
+        verbose_name = "Brand"
+        verbose_name_plural = "Brands"
+        indexes = [
+            models.Index(fields=["slug"]),
+            models.Index(fields=["is_active"]),
+        ]
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.name) or "brand"
+            slug = base_slug
+            counter = 2
+            while Brand.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
+class ColorVariant(models.Model):
+    """Color variants for products with hex codes and visual representation."""
+    PRESET_COLORS = [
+        ('Bright Blue', '#51e2f5'),
+        ('Blue Green', '#9df9ef'),
+        ('Dusty White', '#edf756'),
+        ('Pink Sand', '#ffa8b6'),
+        ('Dark Sand', '#a28089'),
+        ('Ink', '#3a2f33'),
+        ('Black', '#000000'),
+        ('White', '#ffffff'),
+        ('Navy', '#001f3f'),
+        ('Ocean Blue', '#0066cc'),
+        ('Sunset Orange', '#ff6b35'),
+        ('Forest Green', '#2d5016'),
+        ('Cream', '#fffdd0'),
+        ('Charcoal', '#36454f'),
+    ]
+
+    name = models.CharField(max_length=50)
+    hex_code = models.CharField(max_length=7, default='#51e2f5')  # Hex color code
+    is_active = models.BooleanField(default=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["sort_order", "name"]
+        unique_together = ("name", "hex_code")
+
+    def __str__(self):
+        return f"{self.name} ({self.hex_code})"
+
+    def get_color_display(self):
+        return {'name': self.name, 'hex': self.hex_code}
+
+
+class SizeStock(models.Model):
+    """Track stock levels by size for each product."""
+    SIZE_CHOICES = [
+        ('XS', 'Extra Small'),
+        ('S', 'Small'),
+        ('M', 'Medium'),
+        ('L', 'Large'),
+        ('XL', 'Extra Large'),
+        ('XXL', '2X Large'),
+        ('3XL', '3X Large'),
+        ('4XL', '4X Large'),
+    ]
+
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='size_stocks')
+    size = models.CharField(max_length=5, choices=SIZE_CHOICES)
+    stock_quantity = models.PositiveIntegerField(default=0)
+    reserved_quantity = models.PositiveIntegerField(default=0)
+    low_stock_threshold = models.PositiveIntegerField(default=5)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('product', 'size')
+        ordering = ['size']
+        verbose_name = "Size Stock"
+        verbose_name_plural = "Size Stocks"
+        indexes = [
+            models.Index(fields=['product', 'stock_quantity']),
+        ]
+
+    @property
+    def available_quantity(self):
+        return self.stock_quantity - self.reserved_quantity
+
+    @property
+    def is_low_stock(self):
+        return self.available_quantity <= self.low_stock_threshold
+
+    @property
+    def is_out_of_stock(self):
+        return self.available_quantity <= 0
+
+    def __str__(self):
+        return f"{self.product.name} - Size {self.size}: {self.available_quantity} available"
+
+
 class Category(models.Model):
     name = models.CharField(max_length=80, unique=True)
     slug = models.SlugField(max_length=100, unique=True, blank=True)
@@ -37,11 +154,12 @@ class Product(models.Model):
     name = models.CharField(max_length=160)
     slug = models.SlugField(max_length=180, unique=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="products")
+    brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True, related_name="products")
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     discount_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     sizes = models.JSONField(default=list, help_text="Example: ['S', 'M', 'L', 'XL']")
-    colors = models.JSONField(default=list, blank=True, help_text="Example: ['Bright Blue', 'Pink Sand']")
+    colors = models.ManyToManyField(ColorVariant, blank=True, related_name="products")
     stock = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     is_trending = models.BooleanField(default=False)
@@ -63,6 +181,7 @@ class Product(models.Model):
             models.Index(fields=["slug"]),
             models.Index(fields=["is_active", "is_featured"]),
             models.Index(fields=["is_active", "is_trending"]),
+            models.Index(fields=["brand"]),
         ]
 
     def save(self, *args, **kwargs):
@@ -146,6 +265,33 @@ class Product(models.Model):
 
     @property
     def in_stock(self):
-        return self.stock > 0
+        """Check if product has stock in any size."""
+        return self.size_stocks.filter(stock_quantity__gt=0).exists() or self.stock > 0
+    
+    @property
+    def size_stock_items(self):
+        """Return list of (size, stock) tuples for template iteration."""
+        items = []
+        for size in self.sizes:
+            try:
+                items.append((size, self.size_stocks.get(size=size)))
+            except:
+                items.append((size, None))
+        return items
+    
+    def get_size_stock(self, size):
+        """Get stock for specific size."""
+        try:
+            return self.size_stocks.get(size=size)
+        except:
+            return None
+    
+    def get_total_stock(self):
+        """Calculate total stock across all sizes."""
+        return sum(ss.available_quantity for ss in self.size_stocks.all()) or self.stock
+    
+    def get_colors_display(self):
+        """Get color variants for frontend display."""
+        return [{'name': c.name, 'hex': c.hex_code} for c in self.colors.all()]
 
 # Create your models here.

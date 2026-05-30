@@ -42,17 +42,18 @@
             {% endif %}
           </div>
         {% endwith %}
-        <div class="variant-stack">
+<div class="variant-stack">
           <label>Size</label>
           <div class="radio-row" data-role="size">
             {% for size in product.sizes %}<button type="button" class="radio-pill {% if forloop.first %}active{% endif %}" data-value="{{ size }}">{{ size }}</button>{% endfor %}
           </div>
-          {% if product.colors %}
-            <label>Color</label>
-            <div class="radio-row" data-role="color">
-              {% for color in product.colors %}<button type="button" class="radio-pill color-pill {% if forloop.first %}active{% endif %}" data-value="{{ color }}"><span class="swatch"></span><span class="pill-text">{{ color }}</span></button>{% endfor %}
-            </div>
-          {% endif %}
+          {% if product.colors.exists %}
+             <label>Color</label>
+             <div class="radio-row" data-role="color">
+             {% for color in product.colors.all %}
+               <button type="button" class="radio-pill color-pill {% if forloop.first %}active{% endif %}" data-value="{{ color.name }}" style="--swatch: {{ color.hex_code }};" title="{{ color.name }}"><span class="swatch" style="background-color: {{ color.hex_code }}; border: 1px solid rgba(58, 47, 51, 0.26);"></span><span class="pill-text">{{ color.name }}</span></button>{% endfor %}
+             </div>
+           {% endif %}
         </div>
         <div class="qty-wrap">
           <label>Quantity</label>

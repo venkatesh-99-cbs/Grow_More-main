@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>We've Received Your Message - Grow More</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          "Poppins",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+        padding: 20px;
+        color: #3a2f33;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: #ffffff;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(58, 47, 51, 0.15);
+      }
+      .header {
+        background: linear-gradient(135deg, #2f8da1 0%, #51e2f5 100%);
+        padding: 40px 20px;
+        text-align: center;
+        color: #ffffff;
+      }
+      .header-icon {
+        font-size: 40px;
+        margin-bottom: 12px;
+      }
+      .header h1 {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 8px;
+      }
+      .header p {
+        font-size: 14px;
+        opacity: 0.95;
+      }
+      .content {
+        padding: 40px;
+      }
+      .greeting {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 16px;
+        color: #2b2025;
+      }
+      .intro-text {
+        font-size: 14px;
+        line-height: 1.6;
+        color: #5f5860;
+        margin-bottom: 24px;
+      }
+      .message-box {
+        background: linear-gradient(
+          135deg,
+          rgba(81, 226, 245, 0.08),
+          rgba(157, 249, 239, 0.08)
+        );
+        padding: 20px;
+        border-radius: 12px;
+        border-left: 4px solid #51e2f5;
+        margin: 24px 0;
+        font-size: 13px;
+        line-height: 1.8;
+        color: #5f5860;
+      }
+      .message-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        font-weight: 800;
+        color: #245f6d;
+        margin-bottom: 8px;
+      }
+      .message-content {
+        color: #3a2f33;
+        word-break: break-word;
+      }
+      .details-section {
+        background: #f8f8f8;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 24px 0;
+      }
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        font-size: 13px;
+        line-height: 1.6;
+        border-bottom: 1px solid rgba(162, 128, 137, 0.1);
+      }
+      .detail-row:last-child {
+        border-bottom: none;
+      }
+      .detail-label {
+        color: #8d7a80;
+        font-weight: 600;
+      }
+      .detail-value {
+        color: #2b2025;
+        font-weight: 700;
+        text-align: right;
+      }
+      .timeline {
+        display: grid;
+        gap: 16px;
+        margin: 32px 0;
+      }
+      .timeline-item {
+        display: flex;
+        gap: 16px;
+      }
+      .timeline-marker {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #51e2f5, #2f8da1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-weight: 800;
+        flex-shrink: 0;
+      }
+      .timeline-content {
+        flex: 1;
+      }
+      .timeline-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #2b2025;
+        margin-bottom: 2px;
+      }
+      .timeline-desc {
+        font-size: 12px;
+        color: #8d7a80;
+        line-height: 1.6;
+      }
+      .cta-button {
+        display: inline-block;
+        background: linear-gradient(120deg, #51e2f5, #2f8da1);
+        color: #ffffff;
+        padding: 14px 32px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 8px 20px rgba(47, 141, 161, 0.25);
+        margin-top: 16px;
+      }
+      .help-section {
+        background: linear-gradient(
+          135deg,
+          rgba(47, 141, 161, 0.08),
+          rgba(81, 226, 245, 0.08)
+        );
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid rgba(81, 226, 245, 0.15);
+        margin: 24px 0;
+      }
+      .help-title {
+        font-size: 14px;
+        font-weight: 800;
+        color: #245f6d;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+      .help-text {
+        font-size: 13px;
+        line-height: 1.8;
+        color: #3a2f33;
+      }
+      .help-text a {
+        color: #2f8da1;
+        text-decoration: none;
+        font-weight: 700;
+      }
+      .footer {
+        padding: 20px 40px;
+        background: #f8f8f8;
+        border-top: 1px solid #e8e8e8;
+        text-align: center;
+        font-size: 12px;
+        color: #8d7a80;
+      }
+      .footer-links a {
+        color: #2f8da1;
+        text-decoration: none;
+        margin: 0 8px;
+        font-weight: 600;
+      }
+      @media (max-width: 480px) {
+        .content {
+          padding: 24px;
+        }
+        .detail-row {
+          flex-direction: column;
+          gap: 4px;
+        }
+        .detail-value {
+          text-align: left;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      {# Header #}
+      <div class="header">
+        <div class="header-icon">📧</div>
+        <h1>Message Received!</h1>
+        <p>We'll get back to you soon</p>
+      </div>
+
+      {# Main Content #}
+      <div class="content">
+        <div class="greeting">
+          Thank you, {{ name|default:"Valued Customer" }}!
+        </div>
+
+        <p class="intro-text">
+          We've successfully received your message and appreciate you reaching
+          out to Grow More. Our team has been notified and will review your
+          inquiry as soon as possible.
+        </p>
+
+        {# Their Message #}
+        <div class="message-box">
+          <div class="message-label">Your Message</div>
+          <div class="message-content">{{ message }}</div>
+        </div>
+
+        {# Contact Details #}
+        <div class="details-section">
+          <div class="detail-row">
+            <span class="detail-label">Name:</span>
+            <span class="detail-value">{{ name }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Email:</span>
+            <span class="detail-value">{{ email }}</span>
+          </div>
+          {% if phone %}
+          <div class="detail-row">
+            <span class="detail-label">Phone:</span>
+            <span class="detail-value">{{ phone }}</span>
+          </div>
+          {% endif %} {% if subject %}
+          <div class="detail-row">
+            <span class="detail-label">Subject:</span>
+            <span class="detail-value">{{ subject }}</span>
+          </div>
+          {% endif %}
+          <div class="detail-row">
+            <span class="detail-label">Received:</span>
+            <span class="detail-value"
+              >{{ timestamp|date:"M d, Y H:i A" }}</span
+            >
+          </div>
+        </div>
+
+        {# Timeline #}
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-marker">✓</div>
+            <div class="timeline-content">
+              <div class="timeline-title">Message Received</div>
+              <div class="timeline-desc">
+                Your message has been securely received and logged
+              </div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-marker">⏱</div>
+            <div class="timeline-content">
+              <div class="timeline-title">Under Review</div>
+              <div class="timeline-desc">
+                Our team will review your inquiry within 24-48 hours
+              </div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-marker">💬</div>
+            <div class="timeline-content">
+              <div class="timeline-title">We'll Be In Touch</div>
+              <div class="timeline-desc">
+                We'll respond to you via email at {{ email }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {# Help Section #}
+        <div class="help-section">
+          <div class="help-title">Need Immediate Assistance?</div>
+          <div class="help-text">
+            If you need urgent assistance, please contact us directly:<br />
+            <strong>📞 Phone:</strong> +91 (your-number)<br />
+            <strong>📧 Email:</strong>
+            <a href="mailto:support@growmore.com">support@growmore.com</a><br />
+            <strong>⏰ Hours:</strong> Mon - Fri, 10 AM - 6 PM IST
+          </div>
+        </div>
+
+        <p class="intro-text" style="margin-top: 24px">
+          Thank you for your patience. We value your feedback and will do our
+          best to help!<br />
+          <strong style="color: #2b2025">- Team Grow More</strong>
+        </p>
+      </div>
+
+      {# Footer #}
+      <div class="footer">
+        <p style="margin-bottom: 12px">
+          © 2026 Grow More. All rights reserved. | Premium Summer Menswear
+        </p>
+        <div style="margin-bottom: 12px">
+          <a href="https://growmore.com">Visit Website</a> |
+          <a href="https://growmore.com/faq">FAQ</a> |
+          <a href="https://growmore.com/privacy">Privacy</a>
+        </div>
+        <p style="opacity: 0.8">
+          Please don't reply to this email. Visit our contact page to send
+          another message.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

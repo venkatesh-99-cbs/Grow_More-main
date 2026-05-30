@@ -12,41 +12,71 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
-    {% block extra_css %}{% endblock %}
-    {% block extra_head %}{% endblock %}
+    {% block extra_css %}{% endblock %} {% block extra_head %}{% endblock %}
   </head>
-  <body data-authenticated="{{ request.user.is_authenticated|yesno:'true,false' }}">
+  <body
+    data-authenticated="{{ request.user.is_authenticated|yesno:'true,false' }}"
+  >
     {% block header %}
     <header class="topbar">
       <div class="container nav">
         <a class="logo brand-logo" href="{% url 'core:home' %}">
-          <img src="{% get_media_prefix %}logo/Grow_More_logo.png" alt="Grow More" />
+          <img
+            src="{% get_media_prefix %}logo/Grow_More_logo.png"
+            alt="Grow More"
+          />
           <span>Grow More</span>
         </a>
         <ul class="nav-links">
           <li>
-            <a href="{% url 'core:home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a>
+            <a
+              href="{% url 'core:home' %}"
+              class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}"
+              >Home</a
+            >
           </li>
           <li>
-            <a href="{% url 'products:shop' %}" class="{% if request.resolver_match.app_name == 'products' and request.resolver_match.url_name != 'favorites' %}active{% endif %}">Shop</a>
+            <a
+              href="{% url 'products:shop' %}"
+              class="{% if request.resolver_match.app_name == 'products' and request.resolver_match.url_name != 'favorites' %}active{% endif %}"
+              >Shop</a
+            >
           </li>
           <li>
-            <a href="{% url 'core:about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">About</a>
+            <a
+              href="{% url 'core:about' %}"
+              class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}"
+              >About</a
+            >
           </li>
           <li>
-            <a href="{% url 'products:favorites' %}" class="{% if request.resolver_match.url_name == 'favorites' %}active{% endif %}">Favorites</a>
+            <a
+              href="{% url 'products:favorites' %}"
+              class="{% if request.resolver_match.url_name == 'favorites' %}active{% endif %}"
+              >Favorites</a
+            >
           </li>
           <li>
-            <a href="{% url 'core:contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact</a>
+            <a
+              href="{% url 'core:contact' %}"
+              class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}"
+              >Contact</a
+            >
           </li>
           {% if request.user.is_staff %}
           <li><a href="{% url 'dashboard:overview' %}">Dashboard</a></li>
           {% endif %}
         </ul>
         <div class="actions">
-          <button class="icon-btn menu-toggle" type="button" data-menu-toggle>&#9776;</button>
-          <a class="icon-btn fav-nav-btn" href="{% url 'products:favorites' %}">&#10084;<span id="fav-count" class="fav-count">0</span></a>
-          <button class="icon-btn" type="button" data-cart-toggle>&#128722;<span id="cart-count">{{ cart_count|default:0 }}</span></button>
+          <button class="icon-btn menu-toggle" type="button" data-menu-toggle>
+            &#9776;
+          </button>
+          <a class="icon-btn fav-nav-btn" href="{% url 'products:favorites' %}"
+            >&#10084;<span id="fav-count" class="fav-count">0</span></a
+          >
+          <button class="icon-btn" type="button" data-cart-toggle>
+            &#128722;<span id="cart-count">{{ cart_count|default:0 }}</span>
+          </button>
           {% if request.user.is_authenticated %}
           <a class="auth-btn" href="{% url 'accounts:profile' %}">Profile</a>
           {% else %}
@@ -56,67 +86,112 @@
         </div>
       </div>
     </header>
-    {% endblock %}
-
-    {% if active_popup_offer %}
-    {{ active_popup_offer_payload|json_script:"active-offer-data" }}
-    <aside id="deal-popup-container" class="deal-popup-container" data-offer-expirable data-offer-id="{{ active_popup_offer.id }}" aria-label="Current promotional offer">
+    {% endblock %} {% if active_popup_offer %}{{
+    active_popup_offer_payload|json_script:"active-offer-data" }}
+    <aside
+      id="deal-popup-container"
+      class="deal-popup-container"
+      data-offer-expirable
+      data-offer-id="{{ active_popup_offer.id }}"
+      aria-label="Current promotional offer"
+    >
       <div class="deal-popup-banner">
-        <button class="popup-close" type="button" aria-label="Close offer">&times;</button>
+        <button class="popup-close" type="button" aria-label="Close offer">
+          &times;
+        </button>
         <div class="popup-content">
           <div class="popup-text">
-            <p class="popup-label">{{ active_popup_offer.offer_label|default:"Limited Time Offer" }}</p>
+            <p class="popup-label">
+              {{ active_popup_offer.offer_label|default:"Limited Time Offer" }}
+            </p>
             <h2 class="popup-title">{{ active_popup_offer.title }}</h2>
             <p class="popup-description">
-              {{ active_popup_offer.description|default:active_popup_offer.highlight_text|default:"Save on selected Grow More styles before the deal ends." }}
+              {{
+              active_popup_offer.description|default:active_popup_offer.highlight_text|default:"Save
+              on selected Grow More styles before the deal ends." }}
             </p>
           </div>
           <div class="popup-timer" aria-label="Offer countdown">
             <span class="timer-label">Ends in</span>
-            <strong class="popup-countdown" data-offer-countdown data-offer-end="{{ active_popup_offer.countdown_target|date:'c' }}">00:00:00</strong>
+            <strong
+              class="popup-countdown"
+              data-offer-countdown
+              data-offer-end="{{ active_popup_offer.countdown_target|date:'c' }}"
+              >00:00:00</strong
+            >
           </div>
-          <a href="{{ active_popup_offer.cta_link }}" class="popup-cta">{{ active_popup_offer.cta_text|default:"Shop Now" }}</a>
+          <a href="{{ active_popup_offer.cta_link }}" class="popup-cta"
+            >{{ active_popup_offer.cta_text|default:"Shop Now" }}</a
+          >
         </div>
       </div>
     </aside>
-    <button id="deal-floating-ball" class="deal-floating-ball" type="button" aria-label="Open current offer">
+    <button
+      id="deal-floating-ball"
+      class="deal-floating-ball"
+      type="button"
+      aria-label="Open current offer"
+    >
       <span class="ball-label">{{ active_popup_offer.discount_percent }}%</span>
-      <span class="ball-timer" data-offer-countdown data-offer-end="{{ active_popup_offer.countdown_target|date:'c' }}">00:00</span>
+      <span
+        class="ball-timer"
+        data-offer-countdown
+        data-offer-end="{{ active_popup_offer.countdown_target|date:'c' }}"
+        >00:00</span
+      >
       {% if active_popup_offer.permanent_dismiss_allowed %}
-      <span class="ball-dismiss" data-offer-dismiss aria-label="Dismiss offer">&times;</span>
+      <span class="ball-dismiss" data-offer-dismiss aria-label="Dismiss offer"
+        >&times;</span
+      >
       {% endif %}
     </button>
-    {% endif %}
-
-    {% if messages %}
-    <div class="message-stack">
+    {% endif %} {# Premium Toast Notifications and Modal Auth #} {% if
+    messages%}
+    <div id="django-messages" style="display: none">
       {% for message in messages %}
-      <div class="message {{ message.tags }}">{{ message }}</div>
+      <div data-message-type="{{ message.tags|default:'info' }}">
+        {{ message }}
+      </div>
       {% endfor %}
     </div>
-    {% endif %}
-
-    {% block content %}{% endblock %}
-
-    {% block cart %}
+    {% endif %} {% block content %} {% endblock %} {% block cart %}
     <aside class="cart-sidebar" id="cart-sidebar">
       <h3>My Cart</h3>
       <div class="cart-items" id="cart-items"></div>
       <div class="cart-row">
         <strong>Total</strong><strong id="cart-total-amount">Rs. 0.00</strong>
       </div>
-      <button class="add-btn" type="button" data-checkout-url="{% url 'orders:checkout' %}" data-checkout-button>Checkout</button>
+      <button
+        class="add-btn"
+        type="button"
+        data-checkout-url="{% url 'orders:checkout' %}"
+        data-checkout-button
+      >
+        Checkout
+      </button>
     </aside>
-    {% endblock %}
-
-    {% block footer %}
+    {% endblock %} {% block footer %}
     <footer class="footer">
       <div class="container">&copy; 2026 Grow More Summer Menswear.</div>
     </footer>
-    {% endblock %}
+    {% endblock %} {# Product Discovery Intro #}
+    <script src="{% static 'js/product-discovery.js' %}"></script>
+
+    {# Phase 1: Premium Systems #}
+    <script src="{% static 'js/notifications.js' %}"></script>
+    <script src="{% static 'js/auth-modal.js' %}"></script>
+    <script src="{% static 'js/skeleton-loader.js' %}"></script>
+    <script src="{% static 'js/phase1-init.js' %}"></script>
+
+    {# Phase 2: Product Experience #}
+    <script src="{% static 'js/product-interactions.js' %}"></script>
+    <script src="{% static 'js/filters.js' %}"></script>
 
     <script type="module" src="{% static 'js/core/main.js' %}"></script>
-    <script type="module" src="{% static 'js/offers/homepage-offers.js' %}"></script>
+    <script
+      type="module"
+      src="{% static 'js/offers/homepage-offers.js' %}"
+    ></script>
     {% block scripts %}{% endblock %}
   </body>
 </html>
