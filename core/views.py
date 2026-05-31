@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.shortcuts import redirect, render
@@ -31,8 +32,8 @@ def contact(request):
             f"Grow More contact from {form.cleaned_data['name']}",
             form.cleaned_data["message"],
             form.cleaned_data["email"],
-            ["hello@growmore.com"],
-            fail_silently=True,
+            [settings.CONTACT_EMAIL],
+            fail_silently=False,
         )
         messages.success(request, "Thanks, we will contact you soon.")
         return redirect("core:contact")

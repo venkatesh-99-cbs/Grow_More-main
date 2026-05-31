@@ -1,17 +1,15 @@
 /**
- * Premium Toast Notification System
- * Auto-dismissing, stackable, type-based notifications
+ * Premium Global Notification System
+ * Auto-dismissing, glassmorphism toast notifications with progress bars.
  */
 
 class NotificationManager {
   constructor() {
-    this.notifications = [];
     this.container = null;
     this.init();
   }
 
   init() {
-    // Create container if not exists
     if (!document.querySelector('.toast-container')) {
       this.container = document.createElement('div');
       this.container.className = 'toast-container';
@@ -24,16 +22,13 @@ class NotificationManager {
   show(message, options = {}) {
     const {
       type = 'info',
-      title = this.getDefaultTitle(type),
       duration = this.getDuration(type),
-      dismissible = true
+      dismissible = true,
+      title = this.getDefaultTitle(type)
     } = options;
 
     const id = Date.now();
-    const notification = { id, message, type, title, duration, dismissible };
-
-    this.notifications.push(notification);
-    this.renderNotification(notification);
+    this.renderNotification({ id, message, type, title, duration, dismissible });
 
     if (duration > 0) {
       setTimeout(() => this.remove(id), duration);
@@ -43,160 +38,87 @@ class NotificationManager {
   }
 
   success(message, options = {}) {
-    return this.show(message, { type: 'success', title: 'Success', ...options });
+    return this.show(message, { ...options, type: 'success' });
   }
 
   error(message, options = {}) {
-    return this.show(message, { type: 'error', title: 'Error', ...options });
+    return this.show(message, { ...options, type: 'error' });
   }
 
   warning(message, options = {}) {
-    return this.show(message, { type: 'warning', title: 'Warning', ...options });
+    return this.show(message, { ...options, type: 'warning' });
   }
 
   info(message, options = {}) {
-    return this.show(message, { type: 'info', title: 'Info', ...options });
-  }
-
-  getIcon(type) {
-    const icons = {
-      success: '✓',
-      error: '✕',
-      warning: '⚠',
-      info: 'ℹ'
-    };
-    return icons[type] || icons.info;
-  }
-
-  getDefaultTitle(type) {
-    const titles = {
-      success: 'Success',
-      error: 'Error',
-      warning: 'Warning',
-      info: 'Info'
-    };
-    return titles[type] || 'Notification';
+    return this.show(message, { ...options, type: 'info' });
   }
 
   getDuration(type) {
     const durations = {
-      success: 3500,
-      error: 6500,
-      warning: 5500,
+      success: 4000,
+      warning: 5000,
+      error: 7000,
       info: 4000
     };
     return durations[type] || 4000;
   }
 
-  renderNotification(notification) {
-    const element = document.createElement('div');
-    element.className = `toast-notification ${notification.type}`;
-    element.dataset.id = notification.id;
+  getDefaultTitle(type) {
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  }
 
-    const progressDuration = notification.duration > 0 ? notification.duration : 4000;
+  getIcon(type) {
+    const icons = {
+      success: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>',
+      error: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
+      warning: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
+      info: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>'
+    };
+    return icons[type] || icons.info;
+  }
 
-    element.innerHTML = `
-      <div class="toast-icon">${this.getIcon(notification.type)}</div>
+  renderNotification(n) {
+    const el = document.createElement('div');
+    el.className = `toast-notification ${n.type}`;
+    el.dataset.id = n.id;
+
+    el.innerHTML = `
+      <div class="toast-icon">${this.getIcon(n.type)}</div>
       <div class="toast-content">
-        <div class="toast-title">${this.escapeHtml(notification.title)}</div>
-        <div class="toast-message">${this.escapeHtml(notification.message)}</div>
+        <div class="toast-title">${n.title}</div>
+        <div class="toast-message">${n.message}</div>
       </div>
-      ${notification.dismissible ? '<button class="toast-close" aria-label="Close">✕</button>' : ''}
-      ${notification.duration > 0 ? `<div class="toast-progress" style="animation-duration: ${progressDuration}ms;"></div>` : ''}
+      ${n.dismissible ? '<button class="toast-close">✕</button>' : ''}
+      <div class="toast-progress" style="animation-duration: ${n.duration}ms"></div>
     `;
 
-    this.container.appendChild(element);
+    this.container.prepend(el);
 
-    // Trigger animation
-    requestAnimationFrame(() => {
-      element.classList.add('show');
-    });
+    requestAnimationFrame(() => el.classList.add('show'));
 
-    // Close button listener
-    if (notification.dismissible) {
-      const closeBtn = element.querySelector('.toast-close');
-      if (closeBtn) {
-        closeBtn.addEventListener('click', () => this.remove(notification.id));
-      }
+    if (n.dismissible) {
+      el.querySelector('.toast-close').onclick = () => this.remove(n.id);
     }
-
-    // Auto remove on mouse leave (for manual interaction)
-    element.addEventListener('mouseenter', () => {
-      const progressBar = element.querySelector('.toast-progress');
-      if (progressBar) {
-        progressBar.style.animationPlayState = 'paused';
-      }
-    });
-
-    element.addEventListener('mouseleave', () => {
-      const progressBar = element.querySelector('.toast-progress');
-      if (progressBar) {
-        progressBar.style.animationPlayState = 'running';
-      }
-    });
   }
 
   remove(id) {
-    const element = document.querySelector(`.toast-notification[data-id="${id}"]`);
-    if (element) {
-      element.classList.add('removing');
-      setTimeout(() => {
-        element.remove();
-      }, 400);
+    const el = this.container.querySelector(`.toast-notification[data-id="${id}"]`);
+    if (el) {
+      el.classList.add('removing');
+      el.addEventListener('animationend', () => el.remove(), { once: true });
     }
-    this.notifications = this.notifications.filter(n => n.id !== id);
-  }
-
-  escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  clear() {
-    this.container.innerHTML = '';
-    this.notifications = [];
   }
 }
 
-// Create global instance
 const notifications = new NotificationManager();
+window.notifications = notifications;
 
-// Override Django message display to use premium toast system
-document.addEventListener('DOMContentLoaded', function() {
-  const messageElements = document.querySelectorAll('[data-message-type]');
-  messageElements.forEach(el => {
-    const type = el.dataset.messageType;
-    const message = el.textContent.trim();
-    if (message) {
-      notifications.show(message, { type });
-    }
-  });
-
-  // Handle form submission messages via data attributes
-  document.querySelectorAll('form[data-success-message]').forEach(form => {
-    form.addEventListener('submit', function() {
-      const message = this.dataset.successMessage;
-      const type = this.dataset.messageType || 'success';
-      if (message) {
-        // Store for display after redirect
-        sessionStorage.setItem('pendingNotification', JSON.stringify({ message, type }));
-      }
+document.addEventListener('DOMContentLoaded', () => {
+  // Capture Django messages
+  const msgEl = document.getElementById('django-messages');
+  if (msgEl) {
+    msgEl.querySelectorAll('div').forEach(m => {
+      notifications.show(m.textContent.trim(), { type: m.dataset.messageType });
     });
-  });
-
-  // Check for pending notification from previous page
-  const pending = sessionStorage.getItem('pendingNotification');
-  if (pending) {
-    try {
-      const { message, type } = JSON.parse(pending);
-      notifications.show(message, { type });
-      sessionStorage.removeItem('pendingNotification');
-    } catch (e) {
-      console.warn('Failed to parse pending notification:', e);
-    }
   }
 });
-
-// Export for external use
-window.notifications = notifications;

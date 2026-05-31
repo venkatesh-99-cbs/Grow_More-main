@@ -1,74 +1,128 @@
-{% extends "base.html" %} {% load static %} {% block title %}Grow More | Summer
-Menswear{% endblock %} {% block content %}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Grow More | Summer Menswear{% endblock %}
+
+{% block content %}
 <main>
-  <!-- HERO SECTION - Dynamically rendered from backend -->
+  <!-- HERO SECTION -->
   <section class="hero container">
     <div class="hero-wrap" id="hero-wrap">
-      <div class="hero-slide active">
-        <img
-          src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=1600&q=80"
-          alt="Loading..."
-        />
-      </div>
-      <div class="hero-content">
-        <h1>Own The Heat. Stay Cool. Move Bold.</h1>
-        <p id="hero-subtitle">
-          High-energy summer menswear built with breathable fabrics, clean cuts,
-          and ocean-cool color tones.
-        </p>
-        <a class="cta-btn" href="{% url 'products:shop' %}"
-          >Explore the Seasons</a
-        >
-        <div class="stat-row" id="hero-stat-tabs">
-          <button type="button" class="stat stat-tab active">
-            100% Summer Ready
-          </button>
-          <button type="button" class="stat stat-tab">100% pure cotton</button>
-          <button type="button" class="stat stat-tab">Fast delivery</button>
+      {% if banners %}
+        {% for banner in banners %}
+        <div class="hero-slide {% if forloop.first %}active{% endif %}" data-banner-id="{{ banner.id }}" data-theme="{{ banner.theme }}" data-animation="{{ banner.animation_type }}">
+          <img src="{{ banner.display_image }}" alt="{{ banner.title }}" />
+          <div class="hero-content">
+            <h1 class="animate-slide-up">{{ banner.title }}</h1>
+            <p id="hero-subtitle" class="animate-slide-up" style="animation-delay: 0.1s;">{{ banner.subtitle }}</p>
+            <a class="cta-btn animate-slide-up" style="animation-delay: 0.2s;" href="{{ banner.button_url }}">{{ banner.button_label }}</a>
+            <div class="stat-row animate-slide-up" style="animation-delay: 0.3s;">
+              <span class="stat">100% Summer Ready</span>
+              <span class="stat">Premium Quality</span>
+              <span class="stat">Fast Shipping</span>
+            </div>
+          </div>
         </div>
-      </div>
+        {% endfor %}
+      {% else %}
+        <!-- Fallback Hero using Featured Products or Default -->
+        <div class="hero-slide active" data-theme="summer" data-animation="scale">
+          <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=1600&q=80" alt="Grow More" />
+          <div class="hero-content">
+            <h1 class="animate-slide-up">Own The Heat. Stay Cool.</h1>
+            <p class="animate-slide-up" style="animation-delay: 0.1s;">Premium summer menswear for the energetic soul.</p>
+            <a class="cta-btn animate-slide-up" style="animation-delay: 0.2s;" href="{% url 'products:shop' %}">Shop the Collection</a>
+          </div>
+        </div>
+      {% endif %}
     </div>
   </section>
 
-  <!-- FEATURED PRODUCTS SECTION -->
-  <section class="section container">
-    <h2>Hero Entry Products</h2>
-    <div class="grid" id="featured-products">
-      <p class="muted">Loading featured products...</p>
+  <!-- FEATURED COLLECTIONS -->
+  <section class="section container reveal">
+    <div class="section-header" style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:32px;">
+        <div>
+            <span class="product-category" style="color:var(--bright-blue);">Summer 2026</span>
+            <h2 style="font-family:var(--font-brand); font-size:2.5rem; margin:0;">Featured Arrivals</h2>
+        </div>
+        <a href="{% url 'products:shop' %}" class="text-action" style="font-weight:700; border-bottom:2px solid var(--bright-blue);">View All</a>
+    </div>
+    <div class="product-grid-fixed">
+      {% for product in featured_products %}
+        {% include "partials/product_card.html" with product=product %}
+      {% empty %}
+         <!-- Even deeper fallback: Show any active products if no featured -->
+         {% for product in deal_products %}
+            {% include "partials/product_card.html" with product=product %}
+         {% endfor %}
+      {% endfor %}
     </div>
   </section>
 
-  
-
-  <!-- CURRENT DEALS SECTION -->
-  <section class="section container" id="deals-section" style="display: none">
-    <h2>Current Deals</h2>
-    <div class="product-grid-fixed" id="deal-products"></div>
+  <!-- DEALS SECTION -->
+  {% if deal_products %}
+  <section class="section" style="background: rgba(81, 226, 245, 0.05);">
+    <div class="container reveal">
+        <div class="section-header" style="margin-bottom:32px; text-align:center;">
+            <span class="product-category" style="color:#ff4757;">Limited Time</span>
+            <h2 style="font-family:var(--font-brand); font-size:2.5rem; margin:0;">Exclusive Summer Deals</h2>
+        </div>
+        <div class="product-grid-fixed">
+          {% for product in deal_products %}
+            {% include "partials/product_card.html" with product=product %}
+          {% endfor %}
+        </div>
+    </div>
   </section>
+  {% endif %}
 
   <!-- BRAND FEATURES SECTION -->
-  <section class="section container grid">
-    <article class="info-card reveal">
-      <h3>Young & Energetic</h3>
-      <p>Athletic-inspired silhouettes designed for movement and confidence.</p>
+  <section class="section container grid reveal">
+    <article class="card" style="padding: 40px; text-align:center;">
+      <div style="font-size:3rem; margin-bottom:20px;">⚡</div>
+      <h3>Energetic Design</h3>
+      <p>Athletic-inspired silhouettes designed for movement and confidence in the summer heat.</p>
     </article>
-    <article class="info-card reveal">
-      <h3>Cooling Sensation</h3>
-      <p>
-        Visual temperature control using aqua and sky tones with warm
-        highlights.
-      </p>
+    <article class="card" style="padding: 40px; text-align:center;">
+      <div style="font-size:3rem; margin-bottom:20px;">🌊</div>
+      <h3>Ocean Cool</h3>
+      <p>Visual temperature control using breathable fabrics and a palette inspired by coastal vibes.</p>
     </article>
-    <article class="info-card reveal">
-      <h3>Real World Utility</h3>
-      <p>Mix-and-match pieces from beach mornings to city nights.</p>
+    <article class="card" style="padding: 40px; text-align:center;">
+      <div style="font-size:3rem; margin-bottom:20px;">🌍</div>
+      <h3>Real Utility</h3>
+      <p>From beach mornings to rooftop nights, our pieces are built for your energetic lifestyle.</p>
     </article>
   </section>
 </main>
-{% endblock %} {% block scripts %}
-<script type="module" src="{% static 'js/homepage/hero-slider.js' %}"></script>
-<script
-  type="module"
-  src="{% static 'js/homepage/dynamic-homepage.js' %}"
-></script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Basic Hero Slider Logic
+    const slides = document.querySelectorAll('.hero-slide');
+    if (slides.length > 1) {
+        let current = 0;
+        setInterval(() => {
+            slides[current].classList.remove('active');
+            current = (current + 1) % slides.length;
+            slides[current].classList.add('active');
+        }, 6000);
+    } else if (slides.length === 1) {
+        // Trigger animations for single slide
+        setTimeout(() => slides[0].classList.add('active'), 100);
+    }
+
+    // Scroll reveal logic
+    const reveal = () => {
+        document.querySelectorAll('.reveal').forEach(el => {
+            const top = el.getBoundingClientRect().top;
+            if (top < window.innerHeight * 0.8) el.classList.add('active');
+        });
+    };
+    window.addEventListener('scroll', reveal);
+    reveal();
+});
+</script>
 {% endblock %}

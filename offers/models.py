@@ -16,6 +16,7 @@ class PromotionalOffer(models.Model):
         ("homepage", "Homepage only"),
         ("product", "Product specific"),
         ("category", "Category based"),
+        ("brand", "Brand based"),
         ("trending", "Trending products"),
         ("featured", "Featured products"),
     ]
@@ -42,6 +43,7 @@ class PromotionalOffer(models.Model):
     offer_type = models.CharField(max_length=20, choices=OFFER_TYPES, default="site_wide")
     products = models.ManyToManyField("products.Product", blank=True, related_name="assigned_offers")
     categories = models.ManyToManyField("products.Category", blank=True, related_name="assigned_offers")
+    brands = models.ManyToManyField("products.Brand", blank=True, related_name="assigned_offers")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -107,6 +109,8 @@ class PromotionalOffer(models.Model):
             return any(item.pk == product.pk for item in self.products.all())
         if self.offer_type == "category":
             return any(item.pk == product.category_id for item in self.categories.all())
+        if self.offer_type == "brand":
+            return any(item.pk == product.brand_id for item in self.brands.all())
         if self.offer_type == "trending":
             return product.is_trending
         if self.offer_type == "featured":

@@ -3,243 +3,90 @@
   data-product-id="{{ product.id }}"
   data-product-url="{{ product.get_absolute_url }}"
 >
-  <div class="product-media" aria-label="{{ product.name }}">
-    <div class="flip-inner">
-      <img
-        class="front"
-        src="{{ product.main_image_url }}"
-        alt="{{ product.name }} front"
-        loading="lazy"
-      />
-      <img
-        class="back"
-        src="{% if product.gallery_images.1 %}{{ product.gallery_images.1 }}{% else %}{{ product.main_image_url }}{% endif %}"
-        alt="{{ product.name }} back"
-        loading="lazy"
-      />
+  <div class="product-media">
+    <img
+      src="{{ product.main_image_url }}"
+      alt="{{ product.name }}"
+      loading="lazy"
+      class="primary-image"
+    />
+    {% if product.gallery_images.1 %}
+    <img
+      src="{{ product.gallery_images.1 }}"
+      alt="{{ product.name }}"
+      loading="lazy"
+      class="secondary-image"
+      style="position: absolute; inset: 0; opacity: 0; transition: opacity 0.4s ease;"
+    >
+    {% endif %}
+
+    {% if product.discount_percent %}
+    <div class="discount-badge">
+      -{{ product.discount_percent }}%
     </div>
+    {% endif %}
+
     <button
       type="button"
       class="fav-btn"
       data-favorite-id="{{ product.id }}"
-      title="Add to favorites"
+      aria-label="Add to favorites"
     >
-      &#10084;
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+      </svg>
     </button>
-    <div class="flip-hint">Tap to flip</div>
-
-    {# Premium Discount Badge #} {% if product.discount_percent %}
-    <div style="position: absolute; top: 10px; right: 10px; z-index: 2">
-      <div
-        style="
-          background: linear-gradient(
-            135deg,
-            var(--bright-blue),
-            var(--pink-sand)
-          );
-          color: #2b2025;
-          border-radius: 999px;
-          padding: 6px 12px;
-          font-weight: 800;
-          font-size: 0.85rem;
-          text-align: center;
-          box-shadow: 0 4px 12px rgba(81, 226, 245, 0.25);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          min-width: 50px;
-        "
-      >
-        <span style="font-size: 0.7rem; opacity: 0.8; letter-spacing: 0.02em"
-          >SAVE</span
-        >
-        <span style="font-size: 1.1rem; line-height: 1"
-          >{{ product.discount_percent }}%</span
-        >
-      </div>
-    </div>
-    {% endif %}
   </div>
 
   <div class="product-body">
-    {# Category & Brand #}
-    <div
-      style="
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-        margin-bottom: 0.35rem;
-        flex-wrap: wrap;
-      "
-    >
-      <p class="chip">{{ product.category.name }}</p>
+    <div class="product-header">
+      <span class="product-category">{{ product.category.name }}</span>
       {% if product.brand %}
-      <p
-        class="chip"
-        style="background: rgba(47, 141, 161, 0.18); color: #245f6d"
-      >
-        {{ product.brand.name }}
-      </p>
+      <span class="product-brand" style="font-size: 0.7rem; font-weight: 800; color: var(--bright-blue); margin-left: 8px;">{{ product.brand.name }}</span>
       {% endif %}
     </div>
 
-    <h3>{{ product.name }}</h3>
-    <p class="tiny">{{ product.description|truncatewords:12 }}</p>
+    <h3 class="product-title">{{ product.name }}</h3>
 
-    {# Premium Pricing Block #} {% with offer=product.active_offer %}
-    <div
-      class="price-block {% if offer %}has-offer{% endif %}"
-      {%
-      if
-      offer
-      %}data-offer-expirable
-      data-offer-id="{{ offer.id }}"
-      {%
-      endif
-      %}
-    >
-      <div class="price-line">
-        <span class="price-now">Rs. {{ product.current_price }}</span>
-        {% if product.discount_percent %}
-        <span class="price-old">Rs. {{ product.original_price }}</span>
-        <span class="price-off">{{ product.discount_percent }}% OFF</span>
-        {% endif %}
-      </div>
-      {% if product.offer_highlight %}
-      <div class="save-line">{{ product.offer_highlight }}</div>
-      {% endif %} {% if offer %}
-      <div class="offer-chip-row">
-        <span class="offer-label-chip">{{ product.offer_label }}</span>
-        {% if product.is_trending %}<span class="offer-label-chip muted-chip"
-          >Trending Deal</span
-        >{% endif %}
-      </div>
-      <div
-        class="limited-badge"
-        data-offer-countdown
-        data-offer-end="{{ product.offer_countdown_target }}"
-      >
-        Limited time
-      </div>
+    <div class="product-price-row">
+      <span class="price-now">Rs. {{ product.current_price }}</span>
+      {% if product.discount_percent %}
+      <span class="price-old">Rs. {{ product.original_price }}</span>
       {% endif %}
     </div>
-    {% endwith %} {# Size & Color Variants #}
-    <div class="variant-stack">
-      {# Size Selection with Stock Indicators #}
-      <label
-        style="
-          font-weight: 600;
-          font-size: 0.78rem;
-          color: #5f5860;
-          text-transform: uppercase;
-          letter-spacing: 0.03em;
-          margin-bottom: 0.3rem;
-        "
-      >
-        Size
-        <span
-          style="
-            display: inline-block;
-            background: rgba(81, 226, 245, 0.15);
-            color: #2f8da1;
-            border-radius: 4px;
-            padding: 2px 6px;
-            font-size: 0.65rem;
-            margin-left: 4px;
-            font-weight: 700;
-          "
-        >
-          Size Guide
-        </span>
-      </label>
-<div class="radio-row" data-role="size">
+
+    <div class="variant-selectors">
+      <div class="swatches-row" data-role="size">
         {% for size in product.sizes %}
-        {% with size_stock=product.size_stock_list|slice:forloop.counter0 %}
-        <button
-          type="button"
-          class="radio-pill {% if forloop.first %}active{% endif %}"
-          data-value="{{ size }}"
-          {% if size_stock and size_stock.is_out_of_stock %}disabled style="opacity: 0.5; cursor: not-allowed"{% endif %}
-          title="{% if size_stock %}{% if size_stock.is_out_of_stock %}Out of stock{% elif size_stock.is_low_stock %}Only {{ size_stock.available_quantity }} left{% endif %}{% endif %}"
-        >
-          {{ size }} {% if size_stock %}{% if size_stock.is_out_of_stock %}
-          <span
-            style="
-              display: block;
-              font-size: 0.6rem;
-              margin-top: 2px;
-              opacity: 0.8;
-            "
-            >Out</span
+          <button
+            type="button"
+            class="size-pill"
+            data-value="{{ size }}"
           >
-          {% elif size_stock.is_low_stock %}
-          <span
-            style="
-              display: block;
-              font-size: 0.6rem;
-              margin-top: 2px;
-              opacity: 0.8;
-            "
-            >{{ size_stock.available_quantity }} left</span
-          >
-          {% endif %}{% endif %}
-        </button>
-        {% endwith %}
+            {{ size }}
+          </button>
         {% endfor %}
       </div>
 
-      {# Color Selection with Visual Swatches #} {% if product.colors.all %}
-      <label
-        style="
-          font-weight: 600;
-          font-size: 0.78rem;
-          color: #5f5860;
-          text-transform: uppercase;
-          letter-spacing: 0.03em;
-          margin-top: 0.6rem;
-          margin-bottom: 0.3rem;
-          display: block;
-        "
-        >Color</label
-      >
-      <div class="radio-row" data-role="color">
+      {% if product.colors.all %}
+      <div class="swatches-row" data-role="color">
         {% for color in product.colors.all %}
         <button
           type="button"
-          class="radio-pill color-pill {% if forloop.first %}active{% endif %}"
+          class="swatch-btn"
           data-value="{{ color.name }}"
-          style="--swatch: {{ color.hex_code }};"
+          style="background-color: {{ color.hex_code }};"
           title="{{ color.name }}"
-        >
-          <span
-            class="swatch"
-            style="background-color: {{ color.hex_code }}; border: 1px solid rgba(58, 47, 51, 0.26);"
-          ></span>
-          <span class="pill-text">{{ color.name }}</span>
-        </button>
+        ></button>
         {% endfor %}
       </div>
       {% endif %}
     </div>
 
-    {# Call-to-Action #} {% if product.in_stock %}
-    <button
-      class="add-btn"
-      type="button"
-      data-add-cart
-      style="margin-top: 0.6rem"
-    >
-      Add to cart
+    <div class="stock-status"></div>
+
+    <button class="add-btn" type="button" data-add-cart {% if not product.in_stock %}disabled{% endif %}>
+      {% if product.in_stock %}Add to Cart{% else %}Out of Stock{% endif %}
     </button>
-    {% else %}
-    <button
-      class="add-btn"
-      type="button"
-      disabled
-      style="opacity: 0.6; cursor: not-allowed; margin-top: 0.6rem"
-    >
-      Out of stock
-    </button>
-    {% endif %}
   </div>
 </article>

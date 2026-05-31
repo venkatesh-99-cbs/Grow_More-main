@@ -14,88 +14,101 @@ class ProductCardManager {
 
   init() {
     this.attachEventListeners();
+    // Pre-select first available size and color
+    this.autoSelectDefaults();
+  }
+
+  autoSelectDefaults() {
+    const firstSize = this.card.querySelector('[data-role="size"] button:not([disabled])');
+    if (firstSize) this.selectSize(firstSize);
+
+    const firstColor = this.card.querySelector('[data-role="color"] button');
+    if (firstColor) this.selectColor(firstColor);
   }
 
   attachEventListeners() {
     // Size selection
-    const sizeButtons = this.card.querySelectorAll('[data-role="size"] button');
-    sizeButtons.forEach(btn => {
-      btn.addEventListener('click', (e) => this.handleSizeSelect(e, btn));
+    this.card.querySelectorAll('[data-role="size"] button').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.selectSize(btn);
+      });
     });
 
     // Color selection
-    const colorButtons = this.card.querySelectorAll('[data-role="color"] button');
-    colorButtons.forEach(btn => {
-      btn.addEventListener('click', (e) => this.handleColorSelect(e, btn));
+    this.card.querySelectorAll('[data-role="color"] button').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.selectColor(btn);
+      });
     });
 
     // Add to cart
     const addBtn = this.card.querySelector('[data-add-cart]');
     if (addBtn) {
-      addBtn.addEventListener('click', () => this.handleAddToCart());
+      addBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.handleAddToCart();
+      });
     }
 
     // Favorite button
     const favBtn = this.card.querySelector('[data-favorite-id]');
     if (favBtn) {
-      favBtn.addEventListener('click', () => this.handleFavorite(favBtn));
+      favBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.handleFavorite(favBtn);
+      });
     }
+
+    // Make entire card clickable to go to detail page
+    this.card.addEventListener('click', (e) => {
+        // Don't navigate if clicking an action button
+        if (e.target.closest('button') || e.target.closest('.radio-pill')) return;
+        const url = this.card.dataset.productUrl;
+        if (url) window.location.href = url;
+    });
   }
 
-  handleSizeSelect(e, btn) {
-    e.preventDefault();
+  selectSize(btn) {
     if (btn.disabled) return;
-
-    // Update active state
-    this.card.querySelectorAll('[data-role="size"] button').forEach(b => {
-      b.classList.remove('active');
-    });
+    this.card.querySelectorAll('[data-role="size"] button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     this.selectedSize = btn.dataset.value;
 
-    // Show stock info
-    const stockInfo = btn.querySelector('[style*="display: block"]');
-    if (stockInfo) {
-      notifications.info(`${btn.dataset.value} size selected - ${stockInfo.textContent.trim()}`, {
-        title: 'Size Selected',
-        duration: 2000
-      });
+    // Update stock message if applicable
+    const stockMsg = btn.title;
+    const statusEl = this.card.querySelector('.stock-status');
+    if (statusEl) {
+        statusEl.textContent = stockMsg;
+        statusEl.className = 'stock-status ' + (stockMsg.includes('Only') ? 'low' : '');
     }
   }
 
-  handleColorSelect(e, btn) {
-    e.preventDefault();
-
-    // Update active state
-    this.card.querySelectorAll('[data-role="color"] button').forEach(b => {
-      b.classList.remove('active');
-    });
+  selectColor(btn) {
+    this.card.querySelectorAll('[data-role="color"] button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     this.selectedColor = btn.dataset.value;
-
-    // Animate color change
-    const colorName = btn.querySelector('.pill-text')?.textContent || btn.dataset.value;
-    notifications.info(`Color: ${colorName}`, {
-      title: 'Color Selected',
-      duration: 1500
-    });
   }
 
   handleAddToCart() {
-    const size = this.selectedSize || this.card.querySelector('[data-role="size"] button.active')?.dataset.value;
-    const color = this.selectedColor || this.card.querySelector('[data-role="color"] button.active')?.dataset.value;
-
-    if (!size) {
-      notifications.warning('Please select a size', { title: 'Size Required' });
+    if (!this.selectedSize) {
+      if (window.notifications) {
+        window.notifications.warning('Please select a size first');
+      }
       return;
     }
 
-    // Trigger custom event for cart system
+    // Dispatch event that cart.js listens for
     const event = new CustomEvent('add-to-cart', {
       detail: {
         productId: this.productId,
-        size: size,
-        color: color,
+        size: this.selectedSize,
+        color: this.selectedColor,
         quantity: 1
       }
     });
@@ -105,47 +118,36 @@ class ProductCardManager {
   handleFavorite(btn) {
     const id = btn.dataset.favoriteId;
     const isActive = btn.classList.contains('active');
-
-    // Toggle active state
     btn.classList.toggle('active');
 
-    // Trigger custom event
     const event = new CustomEvent('toggle-favorite', {
-      detail: {
-        productId: id,
-        isFavorite: !isActive
-      }
+      detail: { productId: id, isFavorite: !isActive }
     });
     document.dispatchEvent(event);
+
+    if (window.notifications) {
+        window.notifications.success(isActive ? 'Removed from favorites' : 'Added to favorites');
+    }
   }
 
   static initAll() {
     document.querySelectorAll('.product-card').forEach(card => {
-      new ProductCardManager(card);
+      if (!card.dataset.initialized) {
+        new ProductCardManager(card);
+        card.dataset.initialized = 'true';
+      }
     });
   }
 }
 
-// Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
   ProductCardManager.initAll();
 });
 
-// Listen for dynamically added cards
-const observer = new MutationObserver((mutations) => {
-  mutations.forEach(mutation => {
-    mutation.addedNodes.forEach(node => {
-      if (node.classList && node.classList.contains('product-card')) {
-        new ProductCardManager(node);
-      }
-    });
-  });
+// Watch for new products (e.g. from infinite scroll or filters)
+const observer = new MutationObserver(() => {
+  ProductCardManager.initAll();
 });
+observer.observe(document.body, { childList: true, subtree: true });
 
-observer.observe(document.body, {
-  childList: true,
-  subtree: true
-});
-
-// Export for external use
 window.ProductCardManager = ProductCardManager;
