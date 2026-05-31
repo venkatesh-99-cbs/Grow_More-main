@@ -145,8 +145,8 @@
       >
       {% endif %}
     </button>
-    {% endif %} {# Premium Toast Notifications and Modal Auth #} {% if
-    messages%}
+    {% endif %} {# Premium Toast Notifications and Modal Auth #}
+    {% if messages%}
     <div id="django-messages" style="display: none">
       {% for message in messages %}
       <div data-message-type="{{ message.tags|default:'info' }}">
@@ -154,7 +154,8 @@
       </div>
       {% endfor %}
     </div>
-    {% endif %} {% block content %} {% endblock %} {% block cart %}
+    {% endif %} 
+    {% block content %} {% endblock %} {% block cart %}
     <aside class="cart-sidebar" id="cart-sidebar">
       <h3>My Cart</h3>
       <div class="cart-items" id="cart-items"></div>
