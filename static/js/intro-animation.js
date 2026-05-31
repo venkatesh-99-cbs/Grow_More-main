@@ -1,128 +1,59 @@
 /**
- * Premium Intro/Loading Animation
- * Cinematic logo reveal with luxury effects
- * Plays before homepage loads
+ * Cinematic Website Intro Animation
  */
 
 class IntroAnimation {
-  constructor() {
-    this.isPlaying = false;
-    this.duration = 3500; // 3.5 seconds
-    this.init();
-  }
-
-  init() {
-    // Only show if not previously shown in this session
-    if (sessionStorage.getItem('introShown')) {
-      this.skip();
-      return;
+    constructor() {
+        this.intro = document.getElementById('intro-animation');
+        this.hasSeenIntro = sessionStorage.getItem('hasSeenIntro');
+        this.init();
     }
 
-    this.createIntroScreen();
-    this.startAnimation();
-    sessionStorage.setItem('introShown', 'true');
-  }
+    init() {
+        if (!this.intro) return;
 
-  createIntroScreen() {
-    const intro = document.createElement('div');
-    intro.id = 'intro-animation';
-    intro.innerHTML = `
-      <div class="intro-overlay">
-        <div class="intro-container">
-          {# Background with animated gradients #}
-          <div class="intro-bg">
-            <div class="intro-gradient-1"></div>
-            <div class="intro-gradient-2"></div>
-            <div class="intro-particles"></div>
-          </div>
+        if (this.hasSeenIntro) {
+            this.intro.remove();
+            document.body.style.overflow = '';
+            return;
+        }
 
-          {# Logo and branding #}
-          <div class="intro-content">
-            <div class="intro-logo-wrapper">
-              <img 
-                src="/media/logo/Grow_More_logo.png" 
-                alt="Grow More"
-                class="intro-logo"
-              />
-              <div class="intro-logo-glow"></div>
-            </div>
-
-            <h1 class="intro-title">GROW MORE</h1>
-            <p class="intro-tagline">Own The Heat. Stay Cool. Move Bold.</p>
-
-            <div class="intro-progress">
-              <div class="intro-progress-bar"></div>
-            </div>
-          </div>
-
-          {# Skip button #}
-          <button class="intro-skip" id="intro-skip-btn">Skip</button>
-        </div>
-      </div>
-    `;
-
-    document.body.insertBefore(intro, document.body.firstChild);
-    this.setupEventListeners();
-  }
-
-  setupEventListeners() {
-    const skipBtn = document.getElementById('intro-skip-btn');
-    if (skipBtn) {
-      skipBtn.addEventListener('click', () => this.skip());
+        this.animate();
     }
 
-    // Also skip on any key press
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') this.skip();
-    }, { once: true });
-  }
+    animate() {
+        document.body.style.overflow = 'hidden';
 
-  startAnimation() {
-    this.isPlaying = true;
-    const intro = document.getElementById('intro-animation');
-    
-    // Trigger animations
-    setTimeout(() => {
-      intro.classList.add('intro-active');
-    }, 100);
+        setTimeout(() => {
+            if (this.intro) this.intro.classList.add('phase-2');
+        }, 1500);
 
-    // Auto-finish after duration
-    setTimeout(() => {
-      this.finish();
-    }, this.duration);
-  }
+        setTimeout(() => {
+            this.finishAnimation();
+        }, 4000);
 
-  finish() {
-    const intro = document.getElementById('intro-animation');
-    if (intro) {
-      intro.classList.add('intro-exit');
-      setTimeout(() => {
-        intro.remove();
-        // Unblock main content
+        const skipBtn = this.intro.querySelector('.intro-skip');
+        if (skipBtn) {
+            skipBtn.onclick = (e) => {
+                e.preventDefault();
+                this.finishAnimation();
+            };
+        }
+    }
+
+    finishAnimation() {
+        if (!this.intro) return;
+
+        this.intro.classList.add('intro-exit-process');
         document.body.style.overflow = '';
-      }, 500);
-    }
-    this.isPlaying = false;
-  }
+        sessionStorage.setItem('hasSeenIntro', 'true');
 
-  skip() {
-    if (!this.isPlaying) return;
-    const intro = document.getElementById('intro-animation');
-    if (intro) {
-      intro.classList.add('intro-skip-exit');
-      setTimeout(() => {
-        intro.remove();
-        document.body.style.overflow = '';
-      }, 400);
+        setTimeout(() => {
+            this.intro.remove();
+        }, 1000);
     }
-    this.isPlaying = false;
-  }
 }
 
-// Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-  new IntroAnimation();
+    new IntroAnimation();
 });
-
-// Export for external use
-window.IntroAnimation = IntroAnimation;

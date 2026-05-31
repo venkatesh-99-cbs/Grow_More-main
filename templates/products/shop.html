@@ -2,28 +2,225 @@
 {% load static %}
 {% block title %}Shop | Grow More{% endblock %}
 {% block content %}
-  <main class="container page-hero">
-    <h1>Summer Collection 2026</h1>
-    <div class="controls shop-controls">
-      <input id="search-input" type="search" placeholder="Search product" />
-      <select id="category-filter">
-        <option value="all">All</option>
-        {% for category in categories %}<option value="{{ category.slug }}">{{ category.name }}</option>{% endfor %}
-      </select>
-      <select id="sort-by">
-        <option value="featured">Featured</option>
-        <option value="price-low">Price Low</option>
-        <option value="price-high">Price High</option>
-        <option value="name">Name A-Z</option>
-      </select>
-    </div>
-    <section class="section">
+<main class="container page-hero">
+  <div class="products-container">
+    <!-- Modern Animated Filters -->
+    <aside class="shop-sidebar">
+      <div class="filter-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <h2 class="filter-title" style="margin-bottom:0;">Filters</h2>
+        <button id="clear-filters" class="text-action" style="background:none; border:none; padding:0; text-decoration:underline; cursor:pointer;">Clear All</button>
+      </div>
+
+      <div class="filter-section">
+        <span class="filter-title">Search</span>
+        <div class="search-box">
+          <input type="text" id="shop-search" placeholder="Search collection...">
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <span class="filter-title">Categories</span>
+        <ul class="filter-list">
+          <li class="filter-item">
+            <label><input type="checkbox" name="category" value="all" checked> All Categories</label>
+          </li>
+          {% for category in categories %}
+          <li class="filter-item">
+            <label><input type="checkbox" name="category" value="{{ category.slug }}"> {{ category.name }}</label>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="filter-section">
+        <span class="filter-title">Brands</span>
+        <ul class="filter-list">
+          {% for brand in brands %}
+          <li class="filter-item">
+            <label><input type="checkbox" name="brand" value="{{ brand.slug }}"> {{ brand.name }}</label>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="filter-section">
+        <span class="filter-title">Price Range</span>
+        <div class="price-range">
+          <input type="number" id="min-price" placeholder="Min">
+          <input type="number" id="max-price" placeholder="Max">
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <span class="filter-title">Sizes</span>
+        <div class="swatches-row">
+            {% for s_val, s_name in size_choices %}
+            <button type="button" class="size-pill filter-size" data-size="{{ s_val }}">{{ s_val }}</button>
+            {% endfor %}
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <span class="filter-title">Sort By</span>
+        <select id="shop-sort">
+          <option value="featured">Featured</option>
+          <option value="price-low">Price: Low to High</option>
+          <option value="price-high">Price: High to Low</option>
+          <option value="newest">Newest Arrivals</option>
+        </select>
+      </div>
+    </aside>
+
+    <!-- Products Grid -->
+    <section class="shop-main">
+      <div class="shop-toolbar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <p id="results-count" style="font-weight:600; color:#666;">Showing {{ products.count }} products</p>
+      </div>
+
       <div class="product-grid-fixed" id="product-grid">
-        {% for product in products %}{% include "partials/product_card.html" with product=product %}{% endfor %}
+        {% for product in products %}
+          {% include "partials/product_card.html" with product=product %}
+        {% endfor %}
       </div>
     </section>
-  </main>
+  </div>
+</main>
 {% endblock %}
+
 {% block scripts %}
-  <script type="module" src="{% static 'js/shop/products.js' %}"></script>
+<script type="module">
+import { apiGet } from "{% static 'js/services/api-service.js' %}";
+
+class ShopManager {
+    constructor() {
+        this.grid = document.getElementById('product-grid');
+        this.resultsCount = document.getElementById('results-count');
+        this.filters = {
+            q: '',
+            categories: [],
+            brands: [],
+            minPrice: '',
+            maxPrice: '',
+            sizes: [],
+            sort: 'featured'
+        };
+        this.init();
+    }
+
+    init() {
+        this.bindEvents();
+        this.triggerReveal();
+    }
+
+    bindEvents() {
+        // Search
+        document.getElementById('shop-search').addEventListener('input', (e) => {
+            this.filters.q = e.target.value;
+            this.debouncedFetch();
+        });
+
+        // Categories & Brands
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            cb.addEventListener('change', () => {
+                const name = cb.name;
+                const value = cb.value;
+                if (name === 'category') {
+                    if (value === 'all') {
+                        if (cb.checked) {
+                            this.filters.categories = [];
+                            document.querySelectorAll('input[name="category"]:not([value="all"])').forEach(c => c.checked = false);
+                        }
+                    } else {
+                        if (cb.checked) {
+                            document.querySelector('input[name="category"][value="all"]').checked = false;
+                            this.filters.categories.push(value);
+                        } else {
+                            this.filters.categories = this.filters.categories.filter(v => v !== value);
+                        }
+                    }
+                } else if (name === 'brand') {
+                    if (cb.checked) this.filters.brands.push(value);
+                    else this.filters.brands = this.filters.brands.filter(v => v !== value);
+                }
+                this.fetchProducts();
+            });
+        });
+
+        // Prices
+        ['min-price', 'max-price'].forEach(id => {
+            document.getElementById(id).addEventListener('input', (e) => {
+                this.filters[id === 'min-price' ? 'minPrice' : 'maxPrice'] = e.target.value;
+                this.debouncedFetch();
+            });
+        });
+
+        // Sizes
+        document.querySelectorAll('.filter-size').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                const size = btn.dataset.size;
+                if (btn.classList.contains('active')) this.filters.sizes.push(size);
+                else this.filters.sizes = this.filters.sizes.filter(s => s !== size);
+                this.fetchProducts();
+            });
+        });
+
+        // Sort
+        document.getElementById('shop-sort').addEventListener('change', (e) => {
+            this.filters.sort = e.target.value;
+            this.fetchProducts();
+        });
+
+        // Clear
+        document.getElementById('clear-filters').addEventListener('click', () => {
+            window.location.href = window.location.pathname;
+        });
+    }
+
+    debouncedFetch() {
+        clearTimeout(this.timeout);
+        this.timeout = setTimeout(() => this.fetchProducts(), 500);
+    }
+
+    async fetchProducts() {
+        this.grid.style.opacity = '0.5';
+        await this.fetchRenderedGrid(this.filters);
+        this.grid.style.opacity = '1';
+    }
+
+    async fetchRenderedGrid(filters) {
+        const params = new URLSearchParams();
+        if (filters.q) params.append('q', filters.q);
+        filters.categories.forEach(c => params.append('category', c));
+        filters.brands.forEach(b => params.append('brand', b));
+        if (filters.minPrice) params.append('min_price', filters.minPrice);
+        if (filters.maxPrice) params.append('max_price', filters.maxPrice);
+        filters.sizes.forEach(s => params.append('size', s));
+        params.append('sort', filters.sort);
+        params.append('partial', 'true');
+
+        const response = await fetch(\`/shop/?\${params.toString()}\`);
+        const html = await response.text();
+        this.grid.innerHTML = html;
+
+        // Update count
+        const count = this.grid.querySelectorAll('.product-card').length;
+        this.resultsCount.textContent = \`Showing \${count} products\`;
+
+        // Trigger reveal & interactions
+        this.triggerReveal();
+        if (window.ProductCardManager) window.ProductCardManager.initAll();
+    }
+
+    triggerReveal() {
+        this.grid.querySelectorAll('.reveal').forEach((el, i) => {
+            setTimeout(() => el.classList.add('active'), i * 100);
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    new ShopManager();
+});
+</script>
 {% endblock %}

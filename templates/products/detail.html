@@ -1,17 +1,173 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}{{ product.name }} | Grow More{% endblock %}
+{% block extra_css %}
+<style>
+  .detail-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    margin-top: 40px;
+  }
+  .detail-media {
+    position: sticky;
+    top: 100px;
+    height: fit-content;
+  }
+  .detail-main-frame {
+    border-radius: 32px;
+    overflow: hidden;
+    background: #f0f0f0;
+    aspect-ratio: 4/5;
+    position: relative;
+    border: 1px solid var(--border);
+  }
+  .detail-main-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .detail-thumbs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 20px;
+  }
+  .thumb-btn {
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 1;
+    border: 2px solid transparent;
+    cursor: pointer;
+    padding: 0;
+  }
+  .thumb-btn.active {
+    border-color: var(--bright-blue);
+  }
+  .thumb-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .detail-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .detail-header h1 {
+    font-size: 2.5rem;
+    font-family: var(--font-brand);
+    margin: 8px 0;
+  }
+  .detail-price {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .detail-price .price-now {
+    font-size: 2rem;
+    font-weight: 800;
+  }
+  .detail-price .price-old {
+    font-size: 1.2rem;
+    text-decoration: line-through;
+    color: #999;
+  }
+  .detail-desc {
+    color: #666;
+    line-height: 1.6;
+    font-size: 1.05rem;
+  }
+  .variant-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .variant-group label {
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+  }
+  .qty-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f8f8f8;
+    padding: 6px;
+    border-radius: 12px;
+    width: fit-content;
+  }
+  .qty-selector button {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: none;
+    background: white;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .qty-selector input {
+    width: 40px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-weight: 700;
+  }
+  .action-buttons {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    margin-top: 20px;
+  }
+  .primary-btn {
+    background: var(--ink-900);
+    color: white;
+    padding: 18px;
+    border-radius: 16px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+  }
+  .primary-btn:hover:not(:disabled) {
+    background: #555;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+  }
+  .secondary-btn {
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .secondary-btn svg { transition: all 0.3s ease; }
+  .secondary-btn.active svg { fill: #ff4757; stroke: #ff4757; }
+
+  @media (max-width: 900px) {
+    .detail-wrap { grid-template-columns: 1fr; gap: 40px; }
+    .detail-media { position: relative; top: 0; }
+  }
+</style>
+{% endblock %}
 {% block content %}
   <main class="container page-hero">
-    <section id="product-detail" class="detail-wrap" data-product-id="{{ product.id }}">
+    <div id="product-detail-scope" class="product-card" data-product-id="{{ product.id }}" data-product-url="{{ product.get_absolute_url }}" style="background:transparent; border:none; box-shadow:none; padding:0; display:block;">
+    <section class="detail-wrap">
       <div class="detail-media">
         <div class="detail-main-frame">
-          <button type="button" class="img-nav prev" data-dir="-1" aria-label="Previous image">&#10094;</button>
           <img src="{{ product.gallery_images.0 }}" alt="{{ product.name }}" id="detail-main-img" />
-          <button type="button" class="img-nav next" data-dir="1" aria-label="Next image">&#10095;</button>
-        </div>
-        <div class="swipe-dots" id="swipe-dots">
-          {% for image in product.gallery_images %}<span class="swipe-dot {% if forloop.first %}active{% endif %}" data-dot-index="{{ forloop.counter0 }}"></span>{% endfor %}
+          {% if product.discount_percent %}
+          <div class="discount-badge" style="top: 24px; right: 24px; font-size: 1rem; padding: 8px 16px;">
+            -{{ product.discount_percent }}%
+          </div>
+          {% endif %}
         </div>
         <div class="detail-thumbs">
           {% for image in product.gallery_images %}
@@ -20,63 +176,112 @@
         </div>
       </div>
       <div class="detail-copy">
-        <p class="chip">{{ product.category.name }}</p>
-        <h1>{{ product.name }}</h1>
-        <p>{{ product.description }}</p>
-        {% with offer=product.active_offer %}
-          <div class="price-block big {% if offer %}has-offer{% endif %}" {% if offer %}data-offer-expirable data-offer-id="{{ offer.id }}"{% endif %}>
-            <div class="price-line">
-              <span class="price-now">Rs. {{ product.current_price }}</span>
-              {% if product.discount_percent %}
-                <span class="price-old">Rs. {{ product.original_price }}</span>
-                <span class="price-off">{{ product.discount_percent }}% OFF</span>
-              {% endif %}
-            </div>
-            {% if product.offer_highlight %}<div class="save-line">{{ product.offer_highlight }}</div>{% endif %}
-            {% if offer %}
-              <div class="offer-detail-panel">
-                <span class="offer-label-chip">{{ product.offer_label }}</span>
-                {% if offer.description %}<p>{{ offer.description }}</p>{% endif %}
-                <div class="limited-badge" data-offer-countdown data-offer-end="{{ product.offer_countdown_target }}">Limited time</div>
-              </div>
+        <div class="detail-header">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span class="product-category">{{ product.category.name }}</span>
+            {% if product.brand %}
+            <span style="font-weight:800; color:var(--bright-blue);">{{ product.brand.name }}</span>
             {% endif %}
           </div>
-        {% endwith %}
-<div class="variant-stack">
-          <label>Size</label>
-          <div class="radio-row" data-role="size">
-            {% for size in product.sizes %}<button type="button" class="radio-pill {% if forloop.first %}active{% endif %}" data-value="{{ size }}">{{ size }}</button>{% endfor %}
+          <h1>{{ product.name }}</h1>
+          <div class="detail-price">
+            <span class="price-now">Rs. {{ product.current_price }}</span>
+            {% if product.discount_percent %}
+              <span class="price-old">Rs. {{ product.original_price }}</span>
+            {% endif %}
           </div>
-          {% if product.colors.exists %}
-             <label>Color</label>
-             <div class="radio-row" data-role="color">
-             {% for color in product.colors.all %}
-               <button type="button" class="radio-pill color-pill {% if forloop.first %}active{% endif %}" data-value="{{ color.name }}" style="--swatch: {{ color.hex_code }};" title="{{ color.name }}"><span class="swatch" style="background-color: {{ color.hex_code }}; border: 1px solid rgba(58, 47, 51, 0.26);"></span><span class="pill-text">{{ color.name }}</span></button>{% endfor %}
-             </div>
-           {% endif %}
         </div>
-        <div class="qty-wrap">
+
+        <p class="detail-desc">{{ product.description }}</p>
+
+        <div class="variant-group">
+          <label>Select Size</label>
+          <div class="swatches-row" data-role="size">
+            {% for size, size_stock in product.size_stock_items %}
+              <button
+                type="button"
+                class="size-pill"
+                data-value="{{ size }}"
+                style="padding: 12px 20px; font-size: 1rem;"
+                {% if size_stock and size_stock.is_out_of_stock %}disabled class="size-pill disabled"{% endif %}
+                title="{% if size_stock %}{% if size_stock.is_out_of_stock %}Out of Stock{% elif size_stock.is_low_stock %}Only {{ size_stock.available_quantity }} left!{% endif %}{% endif %}"
+              >
+                {{ size }}
+              </button>
+            {% endfor %}
+          </div>
+        </div>
+
+        {% if product.colors.exists %}
+        <div class="variant-group">
+          <label>Color</label>
+          <div class="swatches-row" data-role="color">
+            {% for color in product.colors.all %}
+            <button
+              type="button"
+              class="swatch-btn"
+              data-value="{{ color.name }}"
+              style="background-color: {{ color.hex_code }}; width: 36px; height: 36px;"
+              title="{{ color.name }}"
+            ></button>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="variant-group">
           <label>Quantity</label>
-          <div class="qty-stepper">
-            <button type="button" class="qty-btn" data-action="minus">-</button>
-            <input id="detail-qty" class="qty-input" type="number" min="1" value="1" />
-            <button type="button" class="qty-btn" data-action="plus">+</button>
+          <div class="qty-selector">
+            <button type="button" data-action="minus">-</button>
+            <input id="detail-qty" type="number" min="1" value="1" readonly />
+            <button type="button" data-action="plus">+</button>
           </div>
         </div>
-        <div class="product-actions">
-          <button class="add-btn" type="button" data-add-cart>Add to cart</button>
-          <button class="fav-action-btn" type="button" data-favorite-id="{{ product.id }}">Add to Favorite</button>
+
+        <div class="stock-status" style="font-size: 0.9rem;"></div>
+
+        <div class="action-buttons">
+          <button class="primary-btn" type="button" data-add-cart {% if not product.in_stock %}disabled{% endif %}>
+            {% if product.in_stock %}Add to Cart{% else %}Out of Stock{% endif %}
+          </button>
+          <button class="secondary-btn fav-btn" type="button" data-favorite-id="{{ product.id }}">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+          </button>
         </div>
       </div>
     </section>
-    <section class="related-section">
-      <h2>Related Products</h2>
+    </div>
+
+    <section class="section">
+      <h2 style="font-family: var(--font-brand); margin-bottom: 32px;">Complete the Look</h2>
       <div class="product-grid-fixed" id="related-products">
-        {% for product in related %}{% include "partials/product_card.html" with product=product %}{% endfor %}
+        {% for p in related %}{% include "partials/product_card.html" with product=p %}{% endfor %}
       </div>
     </section>
   </main>
 {% endblock %}
 {% block scripts %}
   <script type="module" src="{% static 'js/shop/product-detail.js' %}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const qtyInput = document.getElementById('detail-qty');
+        const minus = document.querySelector('[data-action="minus"]');
+        const plus = document.querySelector('[data-action="plus"]');
+
+        minus.addEventListener('click', () => {
+            if (qtyInput.value > 1) qtyInput.value = parseInt(qtyInput.value) - 1;
+        });
+        plus.addEventListener('click', () => {
+            qtyInput.value = parseInt(qtyInput.value) + 1;
+        });
+
+        // Product detail page interaction glue
+        const scope = document.getElementById('product-detail-scope');
+        if (scope && window.ProductCardManager) {
+            new ProductCardManager(scope);
+        }
+    });
+  </script>
 {% endblock %}

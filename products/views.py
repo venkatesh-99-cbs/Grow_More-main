@@ -1,9 +1,9 @@
-from django.db.models import Q
-from django.http import JsonResponse
+from django.db.models import Q, Max, Min
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import ensure_csrf_cookie
 
-from products.models import Category, Product
+from products.models import Category, Product, Brand, SizeStock
 
 
 def product_payload(product):
@@ -34,9 +34,57 @@ def product_payload(product):
 
 @ensure_csrf_cookie
 def shop(request):
-    products = Product.objects.filter(is_active=True).select_related("category")
+    products = Product.objects.filter(is_active=True).select_related("category", "brand")
+
+    # Apply filters
+    q = request.GET.get("q", "").strip()
+    categories_filter = request.GET.getlist("category")
+    brands_filter = request.GET.getlist("brand")
+    min_price = request.GET.get("min_price")
+    max_price = request.GET.get("max_price")
+    sizes_filter = request.GET.getlist("size")
+    sort = request.GET.get("sort", "featured")
+
+    if q:
+        products = products.filter(Q(name__icontains=q) | Q(description__icontains=q))
+
+    if categories_filter and "all" not in categories_filter:
+        products = products.filter(category__slug__in=categories_filter)
+
+    if brands_filter:
+        products = products.filter(brand__slug__in=brands_filter)
+
+    if min_price:
+        products = products.filter(price__gte=min_price)
+    if max_price:
+        products = products.filter(price__lte=max_price)
+
+    if sizes_filter:
+        products = products.filter(size_stocks__size__in=sizes_filter, size_stocks__stock_quantity__gt=0).distinct()
+
+    # Sorting
+    if sort == "price-low":
+        products = products.order_by("price")
+    elif sort == "price-high":
+        products = products.order_by("-price")
+    elif sort == "newest":
+        products = products.order_by("-created_at")
+    else:
+        products = products.order_by("-is_featured", "-is_trending", "name")
+
+    if request.GET.get("partial") == "true":
+        return render(request, "partials/product_grid.html", {"products": products})
+
     categories = Category.objects.filter(is_active=True)
-    return render(request, "products/shop.html", {"products": products, "categories": categories})
+    brands = Brand.objects.filter(is_active=True)
+    size_choices = SizeStock.SIZE_CHOICES
+
+    return render(request, "products/shop.html", {
+        "products": products,
+        "categories": categories,
+        "brands": brands,
+        "size_choices": size_choices
+    })
 
 
 @ensure_csrf_cookie
