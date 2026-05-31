@@ -1,0 +1,44 @@
+/* Seasonal Hero Themes */
+
+.hero-slide[data-theme="summer"] {
+    --theme-accent: var(--bright-blue);
+    --theme-overlay: linear-gradient(135deg, rgba(81, 226, 245, 0.4), rgba(157, 249, 239, 0.2));
+}
+
+.hero-slide[data-theme="winter"] {
+    --theme-accent: #a5d8ff;
+    --theme-overlay: linear-gradient(135deg, rgba(165, 216, 255, 0.4), rgba(208, 235, 255, 0.2));
+}
+
+.hero-slide[data-theme="luxury"] {
+    --theme-accent: #d4af37;
+    --theme-overlay: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(58, 47, 51, 0.4));
+}
+
+.hero-slide[data-theme="festival"] {
+    --theme-accent: #ff4757;
+    --theme-overlay: linear-gradient(135deg, rgba(255, 71, 87, 0.4), rgba(255, 107, 129, 0.2));
+}
+
+.hero-slide[data-theme="streetwear"] {
+    --theme-accent: #2f3542;
+    --theme-overlay: linear-gradient(135deg, rgba(47, 53, 66, 0.6), rgba(87, 96, 111, 0.3));
+}
+
+.hero-slide::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--theme-overlay, linear-gradient(135deg, rgba(0,0,0,0.3), transparent));
+    z-index: 1;
+}
+
+/* Animations */
+.hero-slide .animate-slide-up { transform: translateY(30px); opacity: 0; transition: all 0.8s cubic-bezier(0.165, 0.84, 0.44, 1); }
+.hero-slide.active .animate-slide-up { transform: translateY(0); opacity: 1; }
+
+.hero-slide[data-animation="scale"] img { transform: scale(1.1); transition: transform 6s linear; }
+.hero-slide[data-animation="scale"].active img { transform: scale(1); }
+
+.hero-slide[data-animation="fade"] { opacity: 0; transition: opacity 1s ease; }
+.hero-slide[data-animation="fade"].active { opacity: 1; }

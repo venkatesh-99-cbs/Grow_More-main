@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import ensure_csrf_cookie
 
+from core.services import send_order_confirmation
 from orders.forms import CheckoutForm
 from orders.models import CartItem, Order, Payment
 from orders.services import create_order_from_cart, create_payment_record, get_or_create_cart, verify_razorpay_signature
@@ -118,6 +119,7 @@ def checkout(request):
             payment.status = "paid"
             payment.save(update_fields=["status"])
             cart.items.all().delete()
+            send_order_confirmation(order)
             return redirect("orders:success", order_number=order.order_number)
         return render(request, "orders/payment.html", {"order": order, "payment": payment, "razorpay_key_id": settings.RAZORPAY_KEY_ID})
     return render(request, "orders/checkout.html", {"form": form, "cart": cart})
@@ -139,6 +141,7 @@ def verify_payment(request):
         payment.order.status = "confirmed"
         payment.order.save(update_fields=["status"])
         get_or_create_cart(request).items.all().delete()
+        send_order_confirmation(payment.order)
         return redirect("orders:success", order_number=payment.order.order_number)
     payment.status = "failed"
     payment.raw_response = dict(request.POST.items())
@@ -180,10 +183,14 @@ def download_payment_receipt(request, order_number):
 @login_required  
 def download_shipping_sheet(request, order_number):
     """Download order shipping sheet as PDF."""
+    if not request.user.is_staff:
+        messages.error(request, "Access denied. Only staff can access shipping sheets.")
+        return redirect("orders:detail", order_number=order_number)
+
     from orders.services import generate_delivery_sheet_pdf
     from django.http import FileResponse
 
-    order = get_object_or_404(Order.objects.prefetch_related("items"), order_number=order_number, user=request.user)
+    order = get_object_or_404(Order.objects.prefetch_related("items"), order_number=order_number)
     pdf_buffer = generate_delivery_sheet_pdf(order)
 
     if pdf_buffer is None:

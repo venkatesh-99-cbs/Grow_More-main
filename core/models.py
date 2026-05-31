@@ -5,12 +5,29 @@ from core.validators import validate_store_image
 
 
 class HeroBanner(models.Model):
+    THEME_CHOICES = [
+        ('summer', 'Summer Theme'),
+        ('winter', 'Winter Theme'),
+        ('luxury', 'Luxury Theme'),
+        ('festival', 'Festival Theme'),
+        ('streetwear', 'Streetwear Theme'),
+    ]
+
+    ANIMATION_CHOICES = [
+        ('fade', 'Fade In'),
+        ('slide-up', 'Slide Up'),
+        ('scale', 'Scale In'),
+        ('parallax', 'Parallax Effect'),
+    ]
+
     title = models.CharField(max_length=160)
     subtitle = models.TextField(blank=True)
     button_label = models.CharField(max_length=80, default="Shop Now")
     button_url = models.CharField(max_length=255, default="/shop/")
     image = models.FileField(upload_to="hero/", validators=[validate_store_image], blank=True)
     image_url = models.URLField(blank=True)
+    theme = models.CharField(max_length=20, choices=THEME_CHOICES, default='summer')
+    animation_type = models.CharField(max_length=20, choices=ANIMATION_CHOICES, default='fade')
     is_active = models.BooleanField(default=True)
     sort_order = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -1,0 +1,36 @@
+.container { width: min(1140px, 92vw); margin: 0 auto; }
+
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 140;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.86);
+  border-bottom: 1px solid var(--border);
+  padding-top: env(safe-area-inset-top);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 74px;
+}
+
+.section { padding: 4rem 0; }
+.page-hero { padding: 6rem 0 2rem; }
+
+.footer {
+  margin-top: 4rem;
+  padding: 3rem 0;
+  text-align: center;
+  color: #666;
+  border-top: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 900px) {
+  .section { padding: 2.5rem 0; }
+}
