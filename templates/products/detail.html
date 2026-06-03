@@ -256,8 +256,19 @@
 
     <section class="section">
       <h2 style="font-family: var(--font-brand); margin-bottom: 32px;">Complete the Look</h2>
-      <div class="product-grid-fixed" id="related-products">
-        {% for p in related %}{% include "partials/product_card.html" with product=p %}{% endfor %}
+      <div
+        class="product-grid-fixed"
+        id="related-products"
+        data-lazy-section
+        data-lazy-url="{% url 'products:detail' product.slug %}?lazy=true"
+        style="min-height: 400px; transition: opacity 0.5s ease;"
+      >
+        <!-- Lazy Loaded Skeletons -->
+        <div class="grid-fixed-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; width: 100%;">
+            {% include "partials/skeletons/product_card.html" %}
+            {% include "partials/skeletons/product_card.html" %}
+            {% include "partials/skeletons/product_card.html" %}
+        </div>
       </div>
     </section>
   </main>

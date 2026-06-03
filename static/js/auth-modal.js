@@ -44,9 +44,9 @@ class AuthModalManager {
           <div class="auth-error" style="display: none;"></div>
           <div class="input-group">
             <input
-              type="email"
+              type="text"
               class="auth-input"
-              placeholder="Email address"
+              placeholder="Username or Email"
               name="username"
               required
             />

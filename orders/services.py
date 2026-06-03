@@ -84,9 +84,25 @@ def create_order_from_cart(cart, user, form_data):
             offer_discount_percent=active_offer.discount_percent if active_offer else 0,
         )
         total += product.current_price * cart_item.quantity
+
+        # Reduced stock for the specific size if it exists
+        if cart_item.size:
+            from products.models import SizeStock
+            size_stock = SizeStock.objects.filter(product=product, size=cart_item.size).first()
+            if size_stock:
+                if size_stock.stock_quantity >= cart_item.quantity:
+                    size_stock.stock_quantity -= cart_item.quantity
+                    size_stock.save(update_fields=["stock_quantity"])
+                else:
+                    # If somehow we got here with insufficient stock, set to 0
+                    size_stock.stock_quantity = 0
+                    size_stock.save(update_fields=["stock_quantity"])
+
+        # Also reduce global product stock as a fallback/sync
         if product.stock >= cart_item.quantity:
             product.stock -= cart_item.quantity
             product.save(update_fields=["stock"])
+
     order.total_amount = total
     order.save(update_fields=["total_amount"])
     return order

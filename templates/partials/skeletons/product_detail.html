@@ -1,0 +1,57 @@
+<div class="product-detail-skeleton" aria-hidden="true">
+    <div class="product-grid">
+        <!-- Stage 1: Image & Basic Info -->
+        <div class="product-gallery">
+            <div class="skeleton skeleton-image main-gallery-skeleton"></div>
+        </div>
+        <div class="product-main-info">
+            <div class="skeleton skeleton-line h1-size"></div>
+            <div class="skeleton skeleton-line short"></div>
+            <div class="skeleton skeleton-line price-large"></div>
+
+            <div class="size-selection-skeleton">
+                <div class="skeleton skeleton-line label"></div>
+                <div class="size-chips">
+                    <div class="skeleton chip"></div>
+                    <div class="skeleton chip"></div>
+                    <div class="skeleton chip"></div>
+                </div>
+            </div>
+
+            <div class="skeleton-button"></div>
+        </div>
+    </div>
+
+    <!-- Stage 2: Details & Description -->
+    <div class="product-description-skeleton section-spacer">
+        <div class="skeleton skeleton-line h2-size"></div>
+        <div class="skeleton skeleton-line"></div>
+        <div class="skeleton skeleton-line"></div>
+        <div class="skeleton skeleton-line short"></div>
+    </div>
+</div>
+
+<style>
+.product-detail-skeleton .product-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 40px;
+}
+.main-gallery-skeleton {
+    width: 100%;
+    aspect-ratio: 4/5;
+    border-radius: 16px;
+}
+.h1-size { height: 40px; width: 70%; margin-bottom: 20px; }
+.h2-size { height: 32px; width: 30%; margin-bottom: 20px; }
+.price-large { height: 36px; width: 40%; margin-bottom: 30px; }
+.size-chips { display: flex; gap: 10px; margin: 15px 0; }
+.chip { width: 50px; height: 50px; border-radius: 8px; }
+.skeleton-button { height: 56px; border-radius: 12px; background: rgba(162, 128, 137, 0.1); width: 100%; }
+.section-spacer { margin-top: 60px; }
+
+@media (max-width: 768px) {
+    .product-detail-skeleton .product-grid { grid-template-columns: 1fr; }
+}
+</style>

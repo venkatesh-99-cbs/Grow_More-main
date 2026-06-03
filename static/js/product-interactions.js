@@ -96,12 +96,15 @@ class ProductCardManager {
   }
 
   handleAddToCart() {
-    if (!this.selectedSize) {
+    if (!this.selectedSize && this.card.querySelector('[data-role="size"]')) {
       if (window.notifications) {
         window.notifications.warning('Please select a size first');
       }
       return;
     }
+
+    const qtyInput = this.card.querySelector('#detail-qty') || this.card.querySelector('[name="quantity"]');
+    const quantity = qtyInput ? parseInt(qtyInput.value) : 1;
 
     // Dispatch event that cart.js listens for
     const event = new CustomEvent('add-to-cart', {
@@ -109,7 +112,7 @@ class ProductCardManager {
         productId: this.productId,
         size: this.selectedSize,
         color: this.selectedColor,
-        quantity: 1
+        quantity: quantity
       }
     });
     document.dispatchEvent(event);

@@ -1,5 +1,5 @@
 import { storage } from "../services/storage-service.js";
-import { apiGet } from "../services/api-service.js";
+import { apiGet, apiPost } from "../services/api-service.js";
 import { initReveal, money, showToast } from "../core/utilities.js";
 import { initProductOffers } from "../offers/product-offers.js";
 
@@ -11,20 +11,33 @@ const COLOR_MAP = {
   "Dark Sand": "#a28089",
 };
 
-function favorites() {
-  return storage.get("gm_favorites", []);
+let cachedFavorites = null;
+
+async function getFavorites() {
+  if (cachedFavorites !== null) return cachedFavorites;
+
+  // Try to get from API if logged in
+  const response = await apiGet("/api/wishlist/");
+  if (response && Array.isArray(response.ids)) {
+    cachedFavorites = response.ids;
+  } else {
+    cachedFavorites = storage.get("gm_favorites", []);
+  }
+  return cachedFavorites;
 }
 
-function setFavorites(ids) {
+function setFavoritesLocally(ids) {
+  cachedFavorites = ids;
   storage.set("gm_favorites", ids);
   updateFavoriteCount();
 }
 
-export function updateFavoriteCount() {
+export async function updateFavoriteCount() {
+  const favs = await getFavorites();
   const count = document.getElementById("fav-count");
-  if (count) count.textContent = String(favorites().length);
+  if (count) count.textContent = String(favs.length);
   document.querySelectorAll("[data-favorite-id]").forEach((btn) => {
-    btn.classList.toggle("active", favorites().includes(Number(btn.dataset.favoriteId)));
+    btn.classList.toggle("active", favs.includes(Number(btn.dataset.favoriteId)));
   });
 }
 
@@ -32,21 +45,44 @@ export function initFavoriteUI() {
   updateFavoriteCount();
   if (document.body.dataset.favoriteBound === "1") return;
   document.body.dataset.favoriteBound = "1";
-  document.addEventListener("click", (event) => {
+  document.addEventListener("click", async (event) => {
     const button = event.target.closest("[data-favorite-id]");
     if (!button) return;
+
     const id = Number(button.dataset.favoriteId);
-    const current = favorites();
-    const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id];
-    setFavorites(next);
-    showToast(next.includes(id) ? "Added to favorites" : "Removed from favorites");
+
+    try {
+      const response = await apiPost("/api/wishlist/toggle/", { product_id: id });
+      if (response && typeof response.added !== 'undefined') {
+        // Logged in user
+        const current = await getFavorites();
+        const next = response.added ? [...current, id] : current.filter(fid => fid !== id);
+        cachedFavorites = next;
+        updateFavoriteCount();
+        showToast(response.added ? "Added to favorites" : "Removed from favorites");
+      } else {
+        // Fallback for non-logged in or error (though API returns 401)
+        const current = await getFavorites();
+        const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id];
+        setFavoritesLocally(next);
+        showToast(next.includes(id) ? "Added to favorites" : "Removed from favorites");
+      }
+    } catch (err) {
+      // Typically 401 Unauthorized
+      const current = await getFavorites();
+      const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id];
+      setFavoritesLocally(next);
+      showToast(next.includes(id) ? "Added to favorites" : "Removed from favorites");
+    }
+
     renderFavoritesPage();
     event.preventDefault();
   });
 }
 
-function productCard(product) {
-  const favoriteActive = favorites().includes(product.id) ? "active" : "";
+async function productCard(product) {
+  const favs = await getFavorites();
+  const favoriteActive = favs.includes(product.id) ? "active" : "";
   const images = product.images || product.gallery_images || [];
   const front = images[0] || product.main_image || product.thumbnail || "";
   const back = images[1] || front;
@@ -92,7 +128,10 @@ async function initShopControls() {
   const apply = async () => {
     const params = new URLSearchParams({ q: search?.value || "", category: category?.value || "all", sort: sort?.value || "featured" });
     const data = await apiGet(`/api/products/?${params.toString()}`);
-    grid.innerHTML = data.products.map(productCard).join("") || "<p class='muted'>No matching products.</p>";
+
+    const cardHtmls = await Promise.all(data.products.map(productCard));
+    grid.innerHTML = cardHtmls.join("") || "<p class='muted'>No matching products.</p>";
+
     initReveal();
     initProductOffers();
     updateFavoriteCount();
@@ -125,11 +164,11 @@ function initCardNavigation() {
   });
 }
 
-function renderFavoritesPage() {
+async function renderFavoritesPage() {
   const target = document.getElementById("favorites-grid");
   const source = document.querySelector(".hidden-product-source");
   if (!target || !source) return;
-  const wanted = favorites();
+  const wanted = await getFavorites();
   const cards = [...source.querySelectorAll(".product-card")].filter((card) => wanted.includes(Number(card.dataset.productId)));
   target.innerHTML = cards.length ? cards.map((card) => card.outerHTML).join("") : "<p class='muted'>No favorites yet. Tap the heart on products.</p>";
   updateFavoriteCount();

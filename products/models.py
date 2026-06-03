@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
@@ -150,6 +151,16 @@ class Category(models.Model):
         return self.name
 
 
+class Wishlist(models.Model):
+    """User wishlist for saving favorite products."""
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="wishlist")
+    products = models.ManyToManyField('Product', related_name="wishlisted_by", blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Wishlist"
+
+
 class Product(models.Model):
     name = models.CharField(max_length=160)
     slug = models.SlugField(max_length=180, unique=True, blank=True)
@@ -247,21 +258,37 @@ class Product(models.Model):
 
     @property
     def main_image_url(self):
+        url = ""
         if self.main_image:
-            return self.main_image.url
-        return self.image_url
+            url = self.main_image.url
+        else:
+            url = self.image_url
+
+        if url and "res.cloudinary.com" in url:
+            # Add auto-optimization parameters
+            if "/upload/" in url:
+                return url.replace("/upload/", "/upload/f_auto,q_auto/")
+        return url
 
     @property
     def gallery_images(self):
-        images = [self.main_image_url]
+        raw_images = [self.main_image_url]
         files = [self.gallery_image_1, self.gallery_image_2, self.gallery_image_3]
         urls = [self.gallery_url_1, self.gallery_url_2, self.gallery_url_3]
         for file_obj, url in zip(files, urls):
             if file_obj:
-                images.append(file_obj.url)
+                raw_images.append(file_obj.url)
             elif url:
-                images.append(url)
-        return [img for img in images if img]
+                raw_images.append(url)
+
+        processed_images = []
+        for img in raw_images:
+            if img:
+                if "res.cloudinary.com" in img and "/upload/" in img:
+                    processed_images.append(img.replace("/upload/", "/upload/f_auto,q_auto/"))
+                else:
+                    processed_images.append(img)
+        return processed_images
 
     @property
     def in_stock(self):

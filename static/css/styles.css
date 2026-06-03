@@ -1,6 +1,17 @@
+/* Modular CSS Imports */
+@import "modules/base.css";
+@import "modules/layout.css";
+@import "modules/components.css";
+@import "modules/animations.css";
+@import "modules/auth.css";
+@import "modules/products.css";
+@import "modules/shop.css";
+@import "modules/themes.css";
+
 /*
   Grow More - Summer Menswear
   Premium Production Styles (Main Overrides)
+  Ensuring full design parity while keeping beneficial new enhancements.
 */
 
 :root {
@@ -9,120 +20,30 @@
 
 body {
     -webkit-font-smoothing: antialiased;
-    scroll-behavior: smooth;
 }
 
 /* Navbar Premium Overrides */
-.topbar {
-    height: 80px;
-    display: flex;
-    align-items: center;
-    transition: all 0.3s ease;
-}
-
 .topbar.scrolled {
-    height: 70px;
     background: rgba(255, 255, 255, 0.95);
     box-shadow: 0 10px 30px rgba(0,0,0,0.05);
 }
 
-.brand-logo img {
-    height: 50px;
-    width: auto;
-}
-
-/* Hero Section Refinements */
-.hero {
-    padding-top: 20px;
-}
-
-.hero-wrap {
-    height: 80vh;
-    border-radius: 40px;
-    background: #111;
-}
-
-.hero-content h1 {
-    font-size: clamp(2.5rem, 6vw, 4.5rem);
-    margin-bottom: 20px;
-}
-
-/* Skeleton Shimmers */
+/* Skeleton Shimmers - Enhanced with style2.css logic */
 .skeleton {
-    background: #eee;
-    background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
-    border-radius: 5px;
     background-size: 200% 100%;
-    animation: 1.5s shine linear infinite;
-}
-
-@keyframes shine {
-    to { background-position-x: -200%; }
-}
-
-.skeleton-card {
-    height: 400px;
-}
-
-.skeleton-line {
-    height: 15px;
-    margin-bottom: 10px;
-    border-radius: 10px;
 }
 
 /* Product Card Polish */
 .product-card {
-    border: none;
-    background: transparent;
-}
-
-.product-media {
-    border-radius: 28px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.03);
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .fav-btn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 44px;
-    height: 44px;
-    background: white;
-    border: none;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    z-index: 5;
     transition: all 0.3s ease;
 }
 
 .fav-btn:hover {
     transform: scale(1.1);
-}
-
-/* Cart Sidebar Customization */
-.cart-sidebar {
-    width: 420px;
-    padding: 40px;
-    border: none;
-    box-shadow: -20px 0 60px rgba(0,0,0,0.1);
-}
-
-.cart-sidebar h3 {
-    font-family: var(--font-brand);
-    font-size: 2rem;
-    margin-bottom: 30px;
-}
-
-.cart-row-rich {
-    padding: 20px 0;
-}
-
-.cart-row-rich img {
-    border-radius: 16px;
 }
 
 /* Utility Classes */

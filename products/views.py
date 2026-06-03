@@ -1,9 +1,12 @@
+import json
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Max, Min
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_POST
 
-from products.models import Category, Product, Brand, SizeStock
+from products.models import Category, Product, Brand, SizeStock, Wishlist
 
 
 def product_payload(product):
@@ -90,14 +93,53 @@ def shop(request):
 @ensure_csrf_cookie
 def detail(request, slug):
     product = get_object_or_404(Product.objects.select_related("category"), slug=slug, is_active=True)
-    related = Product.objects.filter(is_active=True, category=product.category).exclude(pk=product.pk).select_related("category")[:3]
-    return render(request, "products/detail.html", {"product": product, "related": related})
+
+    if request.GET.get("lazy") == "true":
+        related = Product.objects.filter(is_active=True, category=product.category).exclude(pk=product.pk).select_related("category")[:3]
+        return render(request, "partials/product_grid.html", {"products": related})
+
+    return render(request, "products/detail.html", {"product": product})
 
 
 @ensure_csrf_cookie
 def favorites(request):
-    products = Product.objects.filter(is_active=True).select_related("category")
+    if request.user.is_authenticated:
+        wishlist, _ = Wishlist.objects.get_or_create(user=request.user)
+        products = wishlist.products.all().select_related("category")
+    else:
+        # For non-authenticated, the JS will handle it or we can show empty
+        products = Product.objects.none()
     return render(request, "products/favorites.html", {"products": products})
+
+
+@require_POST
+def toggle_wishlist(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Login required"}, status=401)
+
+    data = json.loads(request.body)
+    product_id = data.get("product_id")
+    product = get_object_or_404(Product, id=product_id)
+    wishlist, _ = Wishlist.objects.get_or_create(user=request.user)
+
+    if wishlist.products.filter(id=product.id).exists():
+        wishlist.products.remove(product)
+        added = False
+    else:
+        wishlist.products.add(product)
+        added = True
+
+    return JsonResponse({
+        "added": added,
+        "count": wishlist.products.count()
+    })
+
+
+def wishlist_api(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"ids": []})
+    wishlist, _ = Wishlist.objects.get_or_create(user=request.user)
+    return JsonResponse({"ids": list(wishlist.products.values_list("id", flat=True))})
 
 
 def product_api(request):

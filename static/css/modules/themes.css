@@ -1,3 +1,35 @@
+/* Hero Section Refinements from style2.css */
+
+.hero { padding: 2.6rem 0 1.6rem; }
+.hero-wrap { border-radius: 28px; overflow: hidden; min-height: 72vh; position: relative; box-shadow: var(--shadow); }
+.hero-slide { position: absolute; inset: 0; opacity: 0; transform: scale(1.05); transition: opacity 1.05s ease, transform 1.6s ease; }
+.hero-slide.active { opacity: 1; transform: scale(1); }
+.hero-slide img { width: 100%; height: 100%; object-fit: cover; }
+
+.hero-content { position: relative; z-index: 5; color: var(--white); max-width: 640px; padding: 11vh 8%; }
+
+.hero h1 {
+  font-family: var(--font-hero);
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1.05;
+  margin-bottom: .9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  background: linear-gradient(120deg, #ffffff 0%, var(--bright-blue) 35%, var(--dusty-white) 70%, #ffffff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 8px 24px rgba(81,226,245,.38);
+}
+
+.hero p { font-family: var(--font-tag); margin-bottom: 1.2rem; font-weight: 300; font-size: 1.03rem; }
+
+.stat-row { display: flex; gap: .9rem; flex-wrap: wrap; margin-top: .35rem; }
+.stat { background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.35); padding: .55rem .8rem; border-radius: 12px; font-weight: 600; }
+.stat-tab { border: none; cursor: pointer; backdrop-filter: blur(3px); transition: transform .24s ease, box-shadow .24s ease, background .24s ease; background: linear-gradient(120deg, rgba(81,226,245,.35), rgba(157,249,239,.3)); animation: tabWaveLoop 2.2s ease-in-out infinite; }
+.stat-tab:hover { transform: translateY(-4px); background: linear-gradient(120deg, rgba(81,226,245,.68), rgba(157,249,239,.62)); }
+.stat-tab.active { transform: translateY(-5px); background: linear-gradient(120deg, rgba(81,226,245,.72), rgba(255,168,182,.68)); box-shadow: 0 10px 22px rgba(58, 47, 51, .22); }
+
 /* Seasonal Hero Themes */
 
 .hero-slide[data-theme="summer"] {
@@ -29,7 +61,7 @@
     content: "";
     position: absolute;
     inset: 0;
-    background: var(--theme-overlay, linear-gradient(135deg, rgba(0,0,0,0.3), transparent));
+    background: var(--theme-overlay, linear-gradient(115deg, rgba(58, 47, 51, 0.72), rgba(58, 47, 51, 0.1)));
     z-index: 1;
 }
 
@@ -40,5 +72,17 @@
 .hero-slide[data-animation="scale"] img { transform: scale(1.1); transition: transform 6s linear; }
 .hero-slide[data-animation="scale"].active img { transform: scale(1); }
 
-.hero-slide[data-animation="fade"] { opacity: 0; transition: opacity 1s ease; }
-.hero-slide[data-animation="fade"].active { opacity: 1; }
+@media (max-width: 900px) {
+  .hero-wrap { min-height: 62vh; }
+  .hero-content { max-width: 100%; padding: 8vh 7%; }
+  .stat-tab { flex: 1 1 calc(50% - .65rem); min-height: 42px; text-align: center; }
+  .stat-tab:last-child { flex-basis: 100%; }
+}
+
+@keyframes tabWaveLoop {
+  0% { transform: translateY(0); }
+  25% { transform: translateY(-4px); }
+  50% { transform: translateY(1px); }
+  75% { transform: translateY(-2px); }
+  100% { transform: translateY(0); }
+}
