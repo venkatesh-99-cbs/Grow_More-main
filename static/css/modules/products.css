@@ -13,12 +13,40 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  /* Prevent layout shift */
+  min-height: 540px;
 }
 
 .product-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 16px 32px rgba(81, 226, 245, 0.2);
   border-color: rgba(81, 226, 245, 0.3);
+}
+
+/* Blur-up Image Effect */
+.blur-up-image {
+  filter: blur(10px);
+  transition: filter 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(1.05);
+  background: #f0f0f0;
+}
+
+.blur-up-image.loaded {
+  filter: blur(0);
+  transform: scale(1);
+}
+
+.loading-progressive {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-progressive::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: skeletonShimmer 2s infinite;
 }
 
 .product-media {

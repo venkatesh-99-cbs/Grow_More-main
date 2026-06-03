@@ -12,17 +12,19 @@ from products.models import Product
 @ensure_csrf_cookie
 def home(request):
     from offers.services import active_offers
+
+    if request.GET.get("lazy") == "deals":
+        deal_products = [product for product in Product.objects.filter(is_active=True).select_related("category") if product.active_offer][:6]
+        return render(request, "partials/product_grid.html", {"products": deal_products})
+
     banners = HeroBanner.objects.filter(is_active=True)
     featured_products = Product.objects.filter(is_active=True, is_featured=True).select_related("category")[:4]
-    deal_products = [product for product in Product.objects.filter(is_active=True).select_related("category") if product.active_offer][:6]
     sections = HomepageSection.objects.filter(is_active=True)
-
     current_offers = active_offers()
 
     return render(request, "core/home.html", {
         "banners": banners,
         "featured_products": featured_products,
-        "deal_products": deal_products,
         "sections": sections,
         "active_offers": current_offers
     })

@@ -1,0 +1,32 @@
+<!-- Product Card Skeleton -->
+<div class="product-card skeleton-card" aria-hidden="true">
+    <div class="product-image-wrapper">
+        <div class="skeleton skeleton-image"></div>
+    </div>
+    <div class="product-info">
+        <div class="skeleton skeleton-line title"></div>
+        <div class="skeleton skeleton-line short"></div>
+        <div class="product-price">
+            <div class="skeleton skeleton-line price-block"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+.skeleton-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 0;
+    overflow: hidden;
+    height: 100%;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+.skeleton-image {
+    width: 100%;
+    aspect-ratio: 4/5;
+}
+.price-block {
+    height: 24px;
+    width: 40%;
+}
+</style>

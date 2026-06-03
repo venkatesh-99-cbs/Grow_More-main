@@ -93,8 +93,12 @@ def shop(request):
 @ensure_csrf_cookie
 def detail(request, slug):
     product = get_object_or_404(Product.objects.select_related("category"), slug=slug, is_active=True)
-    related = Product.objects.filter(is_active=True, category=product.category).exclude(pk=product.pk).select_related("category")[:3]
-    return render(request, "products/detail.html", {"product": product, "related": related})
+
+    if request.GET.get("lazy") == "true":
+        related = Product.objects.filter(is_active=True, category=product.category).exclude(pk=product.pk).select_related("category")[:3]
+        return render(request, "partials/product_grid.html", {"products": related})
+
+    return render(request, "products/detail.html", {"product": product})
 
 
 @ensure_csrf_cookie

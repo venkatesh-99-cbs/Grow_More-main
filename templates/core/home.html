@@ -102,22 +102,27 @@
     </div>
   </section>
 
-  <!-- DEALS SECTION -->
-  {% if deal_products %}
+  <!-- DEALS SECTION (LAZY LOADED) -->
   <section class="section" style="background: rgba(81, 226, 245, 0.05);">
     <div class="container reveal">
         <div class="section-header" style="margin-bottom:32px; text-align:center;">
             <span class="product-category" style="color:#ff4757;">Limited Time</span>
             <h2 style="font-family:var(--font-brand); font-size:2.5rem; margin:0;">Exclusive Summer Deals</h2>
         </div>
-        <div class="product-grid-fixed">
-          {% for product in deal_products %}
-            {% include "partials/product_card.html" with product=product %}
-          {% endfor %}
+        <div
+          class="product-grid-fixed"
+          data-lazy-section
+          data-lazy-url="{% url 'core:home' %}?lazy=deals"
+          style="min-height: 400px; transition: opacity 0.5s ease;"
+        >
+          <div class="grid-fixed-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; width: 100%;">
+              {% include "partials/skeletons/product_card.html" %}
+              {% include "partials/skeletons/product_card.html" %}
+              {% include "partials/skeletons/product_card.html" %}
+          </div>
         </div>
     </div>
   </section>
-  {% endif %}
 
   <!-- BRAND FEATURES SECTION -->
   <section class="section container grid reveal">
