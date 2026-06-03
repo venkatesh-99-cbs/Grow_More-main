@@ -40,20 +40,6 @@ def about(request):
 def contact(request):
     form = ContactForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
-<<<<<<< HEAD
-        try:
-            send_mail(
-                f"Grow More contact from {form.cleaned_data['name']}",
-                f"Message from {form.cleaned_data['name']} ({form.cleaned_data['email']}):\n\n{form.cleaned_data['message']}",
-                form.cleaned_data["email"],
-                [settings.CONTACT_EMAIL],
-                fail_silently=False,
-            )
-            messages.success(request, "Thanks, we will contact you soon.")
-        except Exception:
-            messages.error(request, "Sorry, there was an error sending your message. Please try again later.")
-
-=======
         send_mail(
             f"Grow More contact from {form.cleaned_data['name']}",
             form.cleaned_data["message"],
@@ -62,6 +48,5 @@ def contact(request):
             fail_silently=False,
         )
         messages.success(request, "Thanks, we will contact you soon.")
->>>>>>> origin/main
         return redirect("core:contact")
     return render(request, "core/contact.html", {"form": form})

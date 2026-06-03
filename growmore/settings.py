@@ -2,6 +2,7 @@ import os
 import importlib.util
 from pathlib import Path
 
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 def _load_dotenv(path: Path) -> None:
