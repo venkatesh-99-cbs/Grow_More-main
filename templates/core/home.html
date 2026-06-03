@@ -59,6 +59,49 @@
     </div>
   </section>
 
+  <!-- OFFERS SLIDER SECTION -->
+  <section id="homepage-offers-slider" class="section reveal" style="background: var(--ink-900); color: white; overflow: hidden; padding: 60px 0;">
+    <div class="container">
+      <div class="offer-slider-wrap">
+        <!-- Loaded dynamically or rendered if available -->
+         <div class="offer-slides" id="offer-slides-container">
+            {% for offer in active_offers %}
+            <div class="offer-slide-item {% if forloop.first %}active{% endif %}" data-offer-id="{{ offer.id }}">
+              <div class="offer-slide-grid">
+                <div class="offer-slide-content">
+                  <span class="offer-mini-label">{{ offer.offer_label }}</span>
+                  <h2 class="offer-slide-title">{{ offer.title }}</h2>
+                  <p class="offer-slide-desc">{{ offer.description }}</p>
+                  <div class="offer-slide-discount">
+                    <span class="discount-val">{{ offer.discount_percent }}% OFF</span>
+                    <span class="discount-sub">Limited Time Only</span>
+                  </div>
+                  <div class="offer-timer" data-ends="{{ offer.countdown_target.isoformat }}">
+                    <div class="timer-segment"><span class="timer-val">00</span><small>HRS</small></div>
+                    <div class="timer-segment"><span class="timer-val">00</span><small>MIN</small></div>
+                    <div class="timer-segment"><span class="timer-val">00</span><small>SEC</small></div>
+                  </div>
+                  <a href="{{ offer.cta_link }}" class="cta-btn primary" style="background:var(--bright-blue); color:var(--ink-900); border:none;">{{ offer.cta_text }}</a>
+                </div>
+                <div class="offer-slide-media">
+                   <div class="offer-img-frame">
+                      <img src="{{ offer.display_image }}" alt="{{ offer.title }}">
+                   </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+         </div>
+         {% if active_offers|length > 1 %}
+         <div class="offer-nav">
+            <button class="nav-prev">←</button>
+            <button class="nav-next">→</button>
+         </div>
+         {% endif %}
+      </div>
+    </div>
+  </section>
+
   <!-- DEALS SECTION -->
   {% if deal_products %}
   <section class="section" style="background: rgba(81, 226, 245, 0.05);">
@@ -98,22 +141,9 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{% static 'js/homepage/hero-slider.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // Basic Hero Slider Logic
-    const slides = document.querySelectorAll('.hero-slide');
-    if (slides.length > 1) {
-        let current = 0;
-        setInterval(() => {
-            slides[current].classList.remove('active');
-            current = (current + 1) % slides.length;
-            slides[current].classList.add('active');
-        }, 6000);
-    } else if (slides.length === 1) {
-        // Trigger animations for single slide
-        setTimeout(() => slides[0].classList.add('active'), 100);
-    }
-
     // Scroll reveal logic
     const reveal = () => {
         document.querySelectorAll('.reveal').forEach(el => {

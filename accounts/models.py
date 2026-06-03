@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class Address(models.Model):
@@ -24,5 +26,12 @@ class Address(models.Model):
 
     def __str__(self):
         return f"{self.full_name}, {self.city}"
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_user_wishlist(sender, instance, created, **kwargs):
+    if created:
+        from products.models import Wishlist
+        Wishlist.objects.get_or_create(user=instance)
 
 # Create your models here.

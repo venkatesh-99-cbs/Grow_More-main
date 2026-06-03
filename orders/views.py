@@ -49,8 +49,31 @@ def add_to_cart(request):
     data = json.loads(request.body.decode("utf-8") or "{}") if request.body else request.POST
     product = get_object_or_404(Product, pk=data.get("product_id"), is_active=True)
     quantity = max(1, int(data.get("quantity", 1)))
-    size = str(data.get("size", product.sizes[0] if product.sizes else "")).strip()
-    color = str(data.get("color", product.colors[0] if product.colors else "")).strip()
+    size = str(data.get("size", data.get("size", ""))).strip()
+    color = str(data.get("color", data.get("color", ""))).strip()
+
+    # Validate size selection if product has sizes
+    if product.sizes and not size:
+        return JsonResponse({"success": False, "error": "Please select a size"}, status=400)
+
+    # Check stock for the specific size
+    if size:
+        from products.models import SizeStock
+        size_stock = SizeStock.objects.filter(product=product, size=size).first()
+        if size_stock:
+            available = size_stock.available_quantity
+            # Check existing items in cart for same product/size
+            existing_in_cart = CartItem.objects.filter(cart=cart, product=product, size=size).first()
+            requested_total = quantity + (existing_in_cart.quantity if existing_in_cart else 0)
+
+            if available < requested_total:
+                return JsonResponse({
+                    "success": False,
+                    "error": f"Only {available} items available for size {size}"
+                }, status=400)
+    elif product.stock < quantity:
+         return JsonResponse({"success": False, "error": "Insufficient stock"}, status=400)
+
     item, created = CartItem.objects.get_or_create(
         cart=cart,
         product=product,

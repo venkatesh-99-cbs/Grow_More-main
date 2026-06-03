@@ -7,16 +7,25 @@ from offers.models import PromotionalOffer
 
 
 def active_offers():
-    now = timezone.now()
-    return (
-        PromotionalOffer.objects.filter(is_active=True, starts_at__lte=now, ends_at__gte=now)
-        .prefetch_related("products", "categories")
-        .order_by("display_priority", "-discount_percent")
-    )
+    cache_key = "active_promotional_offers"
+    offers = cache.get(cache_key)
+    if offers is None:
+        now = timezone.now()
+        offers = list(
+            PromotionalOffer.objects.filter(is_active=True, starts_at__lte=now, ends_at__gte=now)
+            .prefetch_related("products", "categories", "brands")
+            .order_by("display_priority", "-discount_percent")
+        )
+        cache.set(cache_key, offers, 300)  # Cache for 5 minutes
+    return offers
 
 
 def active_popup_offer():
-    return active_offers().filter(show_on_homepage=True).first()
+    offers = active_offers()
+    for offer in offers:
+        if offer.show_on_homepage:
+            return offer
+    return None
 
 
 def best_offer_for_product(product):

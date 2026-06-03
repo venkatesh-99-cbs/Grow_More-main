@@ -57,11 +57,13 @@
 
     <div class="variant-selectors">
       <div class="swatches-row" data-role="size">
-        {% for size in product.sizes %}
+        {% for size, size_stock in product.size_stock_items %}
           <button
             type="button"
             class="size-pill"
             data-value="{{ size }}"
+            {% if size_stock and size_stock.is_out_of_stock %}disabled class="size-pill disabled"{% endif %}
+            title="{% if size_stock %}{% if size_stock.is_out_of_stock %}Out of Stock{% elif size_stock.is_low_stock %}Only {{ size_stock.available_quantity }} left!{% endif %}{% endif %}"
           >
             {{ size }}
           </button>

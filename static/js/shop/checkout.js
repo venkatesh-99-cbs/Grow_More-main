@@ -18,7 +18,26 @@ function initCheckoutSteps() {
   document.getElementById("to-review")?.addEventListener("click", () => {
     if (!validateStep(form.querySelector(".step[data-step='2']"))) return;
     const review = document.getElementById("review-block");
-    review.innerHTML = `<p><strong>Name:</strong> ${form.full_name.value}</p><p><strong>Email:</strong> ${form.email.value}</p><p><strong>Address:</strong> ${form.shipping_address.value}, ${form.shipping_city.value} ${form.shipping_postal_code.value}</p><p><strong>Payment:</strong> ${form.payment_method.value.toUpperCase()}</p>`;
+    const method = form.payment_method.value === 'razorpay' ? 'Razorpay (Online)' : 'Cash on Delivery';
+    review.innerHTML = `
+      <div class="review-details">
+        <div class="review-group">
+          <label>Contact Info</label>
+          <p><strong>${form.full_name.value}</strong></p>
+          <p>${form.email.value}</p>
+          <p>${form.phone.value}</p>
+        </div>
+        <div class="review-group">
+          <label>Shipping To</label>
+          <p>${form.shipping_address.value}</p>
+          <p>${form.shipping_city.value}, ${form.shipping_state.value} ${form.shipping_postal_code.value}</p>
+        </div>
+        <div class="review-group">
+          <label>Payment Method</label>
+          <p>${method}</p>
+        </div>
+      </div>
+    `;
     showStep(3);
   });
   document.getElementById("back-shipping")?.addEventListener("click", () => showStep(1));

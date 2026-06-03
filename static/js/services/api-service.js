@@ -19,6 +19,16 @@ export async function apiPost(url, payload = {}) {
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+
+  if (!response.ok) {
+    let errorData;
+    try {
+      errorData = await response.json();
+    } catch (e) {
+      throw new Error(`Request failed: ${response.status}`);
+    }
+    throw errorData;
+  }
+
   return response.json();
 }

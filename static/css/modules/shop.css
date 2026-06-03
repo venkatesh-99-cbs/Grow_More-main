@@ -1,8 +1,14 @@
-/* Shop Filter Styles */
+.products-container {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+/* Shop Sidebar & Filters */
 .shop-sidebar {
   position: sticky;
   top: 100px;
-  height: fit-content;
   background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(12px);
   border-radius: 24px;
@@ -38,6 +44,11 @@
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.filter-item label:hover {
+  color: var(--bright-blue);
 }
 
 .filter-item input[type="checkbox"] {
@@ -57,4 +68,27 @@
 .price-range input {
   padding: 8px 12px;
   font-size: 0.85rem;
+  border-radius: 8px;
+}
+
+.shop-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.4);
+  padding: 12px 20px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+}
+
+@media (max-width: 900px) {
+  .products-container {
+    grid-template-columns: 1fr;
+  }
+
+  .shop-sidebar {
+    position: static;
+    margin-bottom: 30px;
+  }
 }

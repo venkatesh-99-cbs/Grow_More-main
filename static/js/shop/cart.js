@@ -80,7 +80,7 @@ export function toggleCart(force) {
 
 async function addToCart(productId, size, color, quantity = 1) {
   try {
-    const response = await apiPost("/cart/add/", {
+    const cart = await apiPost("/cart/add/", {
       product_id: productId,
       quantity: quantity,
       size: size,
@@ -95,8 +95,9 @@ async function addToCart(productId, size, color, quantity = 1) {
     }
   } catch (err) {
     console.error("Add to cart failed:", err);
+    const errorMsg = err.error || "Failed to add to cart";
     if (window.notifications) {
-      window.notifications.error("Failed to add to cart");
+      window.notifications.error(errorMsg);
     }
   }
 }

@@ -9,6 +9,8 @@ urlpatterns = [
     path("products/<slug:slug>/", views.detail, name="detail"),
     path("favorites/", views.favorites, name="favorites"),
     path("api/products/", views.product_api, name="api"),
+    path("api/wishlist/", views.wishlist_api, name="wishlist_api"),
+    path("api/wishlist/toggle/", views.toggle_wishlist, name="wishlist_toggle"),
     
     # Advanced filtering API
     path("api/filter/", api.filter_products, name="api_filter"),
