@@ -1,7 +1,12 @@
 {% extends "dashboard/base.html" %}
 {% load static %}
 {% block dashboard_content %}
-<h1>Orders</h1>
+<div class="admin-heading">
+  <div>
+    <h1>Orders</h1>
+    <p class="admin-subtitle">Review order status, payment receipts, and shipping sheets.</p>
+  </div>
+</div>
 <div class="admin-table-wrap">
   <table class="admin-table">
     <thead>
@@ -32,7 +37,7 @@
           </form>
         </td>
         <td>
-          <div class="action-buttons">
+          <div class="admin-actions">
             <a href="{% url 'dashboard:admin_download_payment_receipt' order.pk %}" class="btn-small invoice-btn" target="_blank" title="Download payment receipt PDF" download>Receipt</a>
             <a href="{% url 'dashboard:admin_download_shipping_sheet' order.pk %}" class="btn-small" title="Download shipping sheet" download>Shipping</a>
           </div>
@@ -46,27 +51,6 @@
     </tbody>
   </table>
 </div>
-<style>
-  .action-buttons {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .btn-small {
-    display: inline-block;
-    padding: 6px 10px;
-    background-color: #0066cc;
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  .btn-small:hover {
-    background-color: #0052a3;
-  }
-</style>
 {% endblock %}
 {% block scripts %}
   {{ block.super }}

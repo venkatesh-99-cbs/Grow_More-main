@@ -1,6 +1,10 @@
 export const money = (value) => `Rs. ${Number(value || 0).toFixed(2)}`;
 
 export function showToast(message) {
+  if (window.notifications) {
+    window.notifications.info(message);
+    return;
+  }
   let toast = document.getElementById("gm-toast");
   if (!toast) {
     toast = document.createElement("div");

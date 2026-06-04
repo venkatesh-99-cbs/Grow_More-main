@@ -26,6 +26,11 @@
       -{{ product.discount_percent }}%
     </div>
     {% endif %}
+    {% if product.in_stock %}
+    <div class="stock-badge in-stock">In stock</div>
+    {% else %}
+    <div class="stock-badge out-stock">Sold out</div>
+    {% endif %}
 
     <button
       type="button"
@@ -61,9 +66,9 @@
         {% for size, size_stock in product.size_stock_items %}
           <button
             type="button"
-            class="size-pill"
+            class="size-pill{% if size_stock and size_stock.is_out_of_stock %} disabled{% endif %}"
             data-value="{{ size }}"
-            {% if size_stock and size_stock.is_out_of_stock %}disabled class="size-pill disabled"{% endif %}
+            {% if size_stock and size_stock.is_out_of_stock %}disabled{% endif %}
             title="{% if size_stock %}{% if size_stock.is_out_of_stock %}Out of Stock{% elif size_stock.is_low_stock %}Only {{ size_stock.available_quantity }} left!{% endif %}{% endif %}"
           >
             {{ size }}
@@ -71,19 +76,19 @@
         {% endfor %}
       </div>
 
-      {% if product.colors.all %}
+      {% with colors=product.get_colors_display %}
       <div class="swatches-row" data-role="color">
-        {% for color in product.colors.all %}
+        {% for color in colors %}
         <button
           type="button"
           class="swatch-btn"
-          data-value="{{ color.name }}"
-          style="background-color: {{ color.hex_code }};"
-          title="{{ color.name }}"
+          data-value="{{ color.hex }}"
+          style="background-color: {{ color.hex }};"
+          title="{{ color.hex }}"
         ></button>
         {% endfor %}
       </div>
-      {% endif %}
+      {% endwith %}
     </div>
 
     <div class="stock-status"></div>

@@ -65,23 +65,29 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("name", "brand", "category", "current_price", "total_stock", "is_active", "is_featured", "is_trending", "preview")
+    list_display = ("name", "brand", "category", "current_price", "color_preview", "total_stock", "is_active", "is_featured", "is_trending", "preview")
     list_filter = ("brand", "category", "is_active", "is_featured", "is_trending")
     list_editable = ("is_active", "is_featured", "is_trending")
     search_fields = ("name", "description", "brand__name")
     prepopulated_fields = {"slug": ("name",)}
     readonly_fields = ("image_preview", "created_at", "updated_at")
     inlines = (SizeStockInline,)
-    filter_horizontal = ("colors",)
     fieldsets = (
         ("Basics", {"fields": ("name", "slug", "category", "brand", "description")}),
         ("Pricing", {"fields": ("price", "discount_price")}),
-        ("Stock Management", {"fields": ("stock", "sizes")}),
-        ("Variants", {"fields": ("colors",)}),
+        ("Stock Management", {"fields": ("stock", "sizes", "color_hex")}),
         ("Visibility", {"fields": ("is_active", "is_featured", "is_trending")}),
-        ("Images", {"fields": ("main_image", "image_url", "gallery_image_1", "gallery_image_2", "gallery_image_3", "gallery_url_1", "gallery_url_2", "gallery_url_3", "image_preview")}),
+        ("Images", {"fields": ("main_image", "image_url", "cloudinary_public_id", "gallery_image_1", "gallery_image_2", "gallery_image_3", "gallery_url_1", "gallery_url_2", "gallery_url_3", "image_preview")}),
         ("Timestamps", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
     )
+
+    @admin.display(description="Color")
+    def color_preview(self, obj):
+        return format_html(
+            '<span style="display:inline-flex;align-items:center;gap:6px;"><span style="display:inline-block;width:22px;height:22px;background:{};border-radius:999px;border:1px solid #ccc;"></span>{}</span>',
+            obj.safe_color_hex,
+            obj.safe_color_hex,
+        )
 
     @admin.display(description="Preview")
     def preview(self, obj):
@@ -133,4 +139,3 @@ class SizeStockAdmin(admin.ModelAdmin):
             '<span style="background-color:{};color:white;padding:3px 8px;border-radius:12px;font-weight:bold;font-size:0.85em;">{}</span>',
             badge_color, status_text
         )
-

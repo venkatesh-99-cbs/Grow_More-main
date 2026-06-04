@@ -15,7 +15,8 @@ def _load_dotenv(path: Path) -> None:
         key, value = line.split("=", 1)
         os.environ.setdefault(key.strip(), value.strip().strip("\"'"))
 
-_load_dotenv(BASE_DIR / ".env")
+if os.environ.get("SKIP_DOTENV") != "1":
+    _load_dotenv(BASE_DIR / ".env")
 
 def env_bool(name: str, default: bool = False) -> bool:
     return os.environ.get(name, str(default)).lower() in {"1", "true", "yes", "on"}
@@ -48,7 +49,17 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
 ]
 
-USE_CLOUDINARY = env_bool("USE_CLOUDINARY", bool(os.environ.get("CLOUDINARY_URL")))
+USE_CLOUDINARY = env_bool(
+    "USE_CLOUDINARY",
+    bool(
+        os.environ.get("CLOUDINARY_URL")
+        or (
+            os.environ.get("CLOUDINARY_CLOUD_NAME")
+            and os.environ.get("CLOUDINARY_API_KEY")
+            and os.environ.get("CLOUDINARY_API_SECRET")
+        )
+    ),
+)
 if USE_CLOUDINARY and importlib.util.find_spec("cloudinary_storage") and importlib.util.find_spec("cloudinary"):
     INSTALLED_APPS = ['cloudinary_storage', 'cloudinary'] + INSTALLED_APPS
 

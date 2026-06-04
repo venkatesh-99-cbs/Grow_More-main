@@ -3,14 +3,6 @@ import { apiGet, apiPost } from "../services/api-service.js";
 import { initReveal, money, showToast } from "../core/utilities.js";
 import { initProductOffers } from "../offers/product-offers.js";
 
-const COLOR_MAP = {
-  "Bright Blue": "#51e2f5",
-  "Blue Green": "#9df9ef",
-  "Dusty White": "#edf756",
-  "Pink Sand": "#ffa8b6",
-  "Dark Sand": "#a28089",
-};
-
 let cachedFavorites = null;
 
 async function getFavorites() {
@@ -87,7 +79,10 @@ async function productCard(product) {
   const front = images[0] || product.main_image || product.thumbnail || "";
   const back = images[1] || front;
   const sizes = (product.sizes || []).map((size, index) => `<button type="button" class="radio-pill ${index === 0 ? "active" : ""}" data-value="${size}">${size}</button>`).join("");
-  const colors = (product.colors || []).map((color, index) => `<button type="button" class="radio-pill color-pill ${index === 0 ? "active" : ""}" data-value="${color}" style="--swatch:${COLOR_MAP[color] || "#fff"}"><span class="swatch"></span><span class="pill-text">${color}</span></button>`).join("");
+  const colors = (product.colors || []).map((color, index) => {
+    const hex = color.hex || color.hex_code || color.name || product.color_hex || "#51E2F5";
+    return `<button type="button" class="radio-pill color-pill ${index === 0 ? "active" : ""}" data-value="${hex}" style="--swatch:${hex}"><span class="swatch"></span><span class="pill-text">${hex}</span></button>`;
+  }).join("");
   const offerMarkup = product.offer ? `
     <div class="offer-chip-row">
       <span class="offer-label-chip">${product.offer.label}</span>

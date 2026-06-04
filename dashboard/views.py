@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db.models import Count, ProtectedError
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
@@ -12,6 +13,7 @@ from offers.forms import PromotionalOfferForm
 from offers.models import PromotionalOffer
 from orders.models import Order, Payment
 from products.forms import CategoryForm, ProductForm
+from products.cloudinary_utils import delete_product_image
 from products.models import Category, Product
 
 
@@ -39,9 +41,13 @@ def product_form(request, pk=None):
     product = get_object_or_404(Product, pk=pk) if pk else None
     form = ProductForm(request.POST or None, request.FILES or None, instance=product)
     if request.method == "POST" and form.is_valid():
-        form.save()
-        messages.success(request, "Product saved.")
-        return redirect("dashboard:products")
+        try:
+            form.save()
+            messages.success(request, "Product saved.")
+            return redirect("dashboard:products")
+        except ValidationError as exc:
+            form.add_error(None, exc)
+            messages.error(request, "Please check the product image and try again.")
     return render(request, "dashboard/product_form.html", {"form": form, "product": product})
 
 
@@ -51,7 +57,9 @@ def product_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
     name = product.name
     try:
+        public_id = product.cloudinary_public_id
         product.delete()
+        delete_product_image(public_id)
         messages.success(request, f"{name} removed.")
     except ProtectedError:
         product.is_active = False

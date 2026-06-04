@@ -1,11 +1,22 @@
 from decimal import Decimal
+import re
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
 
 from core.validators import validate_store_image
+
+
+HEX_COLOR_PATTERN = re.compile(r"^#[0-9A-Fa-f]{6}$")
+DEFAULT_PRODUCT_COLOR = "#51E2F5"
+
+
+def validate_hex_color(value):
+    if not HEX_COLOR_PATTERN.match(value or ""):
+        raise ValidationError("Enter a valid HEX color, for example #3498DB.")
 
 
 class Brand(models.Model):
@@ -170,13 +181,14 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     discount_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     sizes = models.JSONField(default=list, help_text="Example: ['S', 'M', 'L', 'XL']")
-    colors = models.ManyToManyField(ColorVariant, blank=True, related_name="products")
+    color_hex = models.CharField(max_length=7, default=DEFAULT_PRODUCT_COLOR, validators=[validate_hex_color])
     stock = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     is_trending = models.BooleanField(default=False)
     is_featured = models.BooleanField(default=False)
     main_image = models.FileField(upload_to="products/main/", validators=[validate_store_image], blank=True)
     image_url = models.URLField(blank=True)
+    cloudinary_public_id = models.CharField(max_length=255, blank=True, null=True)
     gallery_image_1 = models.FileField(upload_to="products/gallery/", validators=[validate_store_image], blank=True)
     gallery_image_2 = models.FileField(upload_to="products/gallery/", validators=[validate_store_image], blank=True)
     gallery_image_3 = models.FileField(upload_to="products/gallery/", validators=[validate_store_image], blank=True)
@@ -316,9 +328,15 @@ class Product(models.Model):
     def get_total_stock(self):
         """Calculate total stock across all sizes."""
         return sum(ss.available_quantity for ss in self.size_stocks.all()) or self.stock
+
+    @property
+    def safe_color_hex(self):
+        """Return a valid display color even if old data contains an invalid value."""
+        color = (self.color_hex or "").strip()
+        return color.upper() if HEX_COLOR_PATTERN.match(color) else DEFAULT_PRODUCT_COLOR
     
     def get_colors_display(self):
-        """Get color variants for frontend display."""
-        return [{'name': c.name, 'hex': c.hex_code} for c in self.colors.all()]
+        """Compatibility shape for templates and APIs that expect a swatch list."""
+        return [{"name": self.safe_color_hex, "hex": self.safe_color_hex}]
 
 # Create your models here.

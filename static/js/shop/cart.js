@@ -20,7 +20,11 @@ export async function refreshCart() {
         <img src="${item.image}" alt="${item.name}">
         <div>
           <p>${item.name}</p>
-          <small>${item.size || ""}${item.color ? `, ${item.color}` : ""} x${item.qty}</small>
+          <small class="cart-variant-line">
+            ${item.size || ""}
+            ${item.color ? `<span class="cart-color-chip"><span class="cart-color-dot" style="background:${item.color}"></span>${item.color}</span>` : ""}
+            x${item.qty}
+          </small>
           ${item.offerLabel ? `<small class="offer-mini">${item.offerLabel}</small>` : ""}
         </div>
         <div class="cart-row-actions">

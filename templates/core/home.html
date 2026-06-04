@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% load static %}
 
 {% block title %}Grow More | Summer Menswear{% endblock %}
@@ -94,8 +94,8 @@
          </div>
          {% if active_offers|length > 1 %}
          <div class="offer-nav">
-            <button class="nav-prev">←</button>
-            <button class="nav-next">→</button>
+            <button class="nav-prev">â†</button>
+            <button class="nav-next">â†’</button>
          </div>
          {% endif %}
       </div>
@@ -125,20 +125,20 @@
   </section>
 
   <!-- BRAND FEATURES SECTION -->
-  <section class="section container grid reveal">
-    <article class="card" style="padding: 40px; text-align:center;">
-      <div style="font-size:3rem; margin-bottom:20px;">⚡</div>
+  <section class="section container brand-features reveal" aria-label="Grow More brand features">
+    <article class="feature-card">
       <h3>Energetic Design</h3>
+      <div class="feature-icon" aria-hidden="true">01</div>
       <p>Athletic-inspired silhouettes designed for movement and confidence in the summer heat.</p>
     </article>
-    <article class="card" style="padding: 40px; text-align:center;">
-      <div style="font-size:3rem; margin-bottom:20px;">🌊</div>
+    <article class="feature-card">
       <h3>Ocean Cool</h3>
+      <div class="feature-icon" aria-hidden="true">02</div>
       <p>Visual temperature control using breathable fabrics and a palette inspired by coastal vibes.</p>
     </article>
-    <article class="card" style="padding: 40px; text-align:center;">
-      <div style="font-size:3rem; margin-bottom:20px;">🌍</div>
+    <article class="feature-card">
       <h3>Real Utility</h3>
+      <div class="feature-icon" aria-hidden="true">03</div>
       <p>From beach mornings to rooftop nights, our pieces are built for your energetic lifestyle.</p>
     </article>
   </section>

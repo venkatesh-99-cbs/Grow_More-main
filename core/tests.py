@@ -2,22 +2,21 @@ from datetime import timedelta
 from django.test import TestCase
 from django.utils import timezone
 from offers.models import PromotionalOffer
-from products.models import Category, Product, ColorVariant
+from products.models import Category, Product
 
 class CoreApiTests(TestCase):
     def setUp(self):
         self.category = Category.objects.create(name="API Category")
-        self.color = ColorVariant.objects.create(name="Blue", hex_code="#0000FF")
         self.product = Product.objects.create(
             name="API Product",
             category=self.category,
             description="API product",
             price=125,
             sizes=["M"],
+            color_hex="#0000FF",
             stock=3,
             is_active=True,
         )
-        self.product.colors.add(self.color)
 
     def test_products_api_supports_shop_filter_payload(self):
         response = self.client.get("/api/products/", {"q": "API Product", "category": "all", "sort": "featured"})
@@ -25,6 +24,7 @@ class CoreApiTests(TestCase):
         product = response.json()["products"][0]
         self.assertEqual(product["url"], self.product.get_absolute_url())
         self.assertEqual(product["categoryName"], self.category.name)
+        self.assertEqual(product["color_hex"], "#0000FF")
         self.assertIn("originalPrice", product)
         self.assertIn("discountPercent", product)
 

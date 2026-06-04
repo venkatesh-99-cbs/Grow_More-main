@@ -1,11 +1,58 @@
 {% extends "dashboard/base.html" %}
 {% load static %}
 {% block dashboard_content %}
-  <h1>{% if product %}Edit{% else %}Add{% endif %} Product</h1>
-  <form class="card form admin-form" method="post" enctype="multipart/form-data">
+  <div class="admin-heading">
+    <div>
+      <h1>{% if product %}Edit{% else %}Add{% endif %} Product</h1>
+      <p class="admin-subtitle">Create polished catalog entries with one HEX color and Cloudinary-backed imagery.</p>
+    </div>
+    <a class="text-action" href="{% url 'dashboard:products' %}">Back to Products</a>
+  </div>
+  <form class="card form admin-form product-editor-form" method="post" enctype="multipart/form-data" data-product-form>
     {% csrf_token %}
-    {{ form.as_p }}
-    <div class="image-preview-grid" data-image-preview></div>
+    {{ form.non_field_errors }}
+    <div class="admin-form-grid">
+      <div class="admin-form-section">
+        <h2>Product Details</h2>
+        {% for field in form %}
+          {% if field.name != "main_image" and field.name != "gallery_image_1" and field.name != "gallery_image_2" and field.name != "gallery_image_3" and field.name != "gallery_url_1" and field.name != "gallery_url_2" and field.name != "gallery_url_3" %}
+          <p class="field-row field-{{ field.name }}">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+            {{ field.errors }}
+          </p>
+          {% endif %}
+        {% endfor %}
+      </div>
+      <div class="admin-form-section media-uploader">
+        <h2>Product Image</h2>
+        <label class="upload-dropzone" for="{{ form.main_image.id_for_label }}" data-upload-dropzone>
+          <span class="upload-icon">+</span>
+          <strong>Drop image here or browse</strong>
+          <small>JPG, JPEG, PNG, or WEBP. Max 5 MB. Uploaded to Cloudinary on save.</small>
+          {{ form.main_image }}
+        </label>
+        {{ form.main_image.errors }}
+        <div class="upload-progress" data-upload-progress aria-hidden="true">
+          <span></span>
+        </div>
+        <div class="image-preview-grid" data-image-preview>
+          {% if product and product.main_image_url %}
+            <img src="{{ product.main_image_url }}" alt="{{ product.name }}">
+          {% endif %}
+        </div>
+        <details class="gallery-fields">
+          <summary>Optional gallery images</summary>
+          {{ form.gallery_image_1.label_tag }} {{ form.gallery_image_1 }} {{ form.gallery_image_1.errors }}
+          {{ form.gallery_image_2.label_tag }} {{ form.gallery_image_2 }} {{ form.gallery_image_2.errors }}
+          {{ form.gallery_image_3.label_tag }} {{ form.gallery_image_3 }} {{ form.gallery_image_3.errors }}
+          {{ form.gallery_url_1.label_tag }} {{ form.gallery_url_1 }} {{ form.gallery_url_1.errors }}
+          {{ form.gallery_url_2.label_tag }} {{ form.gallery_url_2 }} {{ form.gallery_url_2.errors }}
+          {{ form.gallery_url_3.label_tag }} {{ form.gallery_url_3 }} {{ form.gallery_url_3.errors }}
+        </details>
+      </div>
+    </div>
     <button class="submit-btn" type="submit">Save Product</button>
   </form>
 {% endblock %}

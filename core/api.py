@@ -94,7 +94,8 @@ def api_product_detail(request, product_id):
             "original_price": float(product.original_price),
             "discount_percent": product.discount_percent,
             "sizes": product.sizes,
-            "colors": [c.name for c in product.colors.all()],
+            "colors": product.get_colors_display(),
+            "color_hex": product.safe_color_hex,
             "stock": product.stock,
             "is_featured": product.is_featured,
             "is_trending": product.is_trending,
@@ -220,7 +221,8 @@ def _serialize_product(product):
         "images": product.gallery_images,
         "gallery_images": product.gallery_images,
         "sizes": product.sizes,
-        "colors": [c.name for c in product.colors.all()],
+        "colors": product.get_colors_display(),
+        "color_hex": product.safe_color_hex,
         "offer": _serialize_offer(offer) if offer else None,
     }
 

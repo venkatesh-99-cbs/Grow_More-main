@@ -1,6 +1,6 @@
 """
 Product filtering API endpoints
-Handles advanced product filtering with brand, category, color, size, and price filters
+Handles advanced product filtering with brand, category, HEX color, size, and price filters
 """
 
 from django.http import JsonResponse
@@ -10,7 +10,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q, F, DecimalField, Case, When, Value
 import json
 
-from products.models import Product, Brand, Category, ColorVariant, SizeStock
+from products.models import Product, Brand, Category, SizeStock
 
 
 @csrf_exempt
@@ -22,7 +22,7 @@ def filter_products(request):
     Query Parameters:
     - brands: Comma-separated brand IDs
     - categories: Comma-separated category IDs
-    - colors: Comma-separated color IDs
+    - colors: Comma-separated HEX colors
     - sizes: Comma-separated sizes (XS, S, M, L, XL, 2XL, 3XL, 4XL)
     - price_min: Minimum price
     - price_max: Maximum price
@@ -58,11 +58,11 @@ def filter_products(request):
             if categories:
                 queryset = queryset.filter(category_id__in=categories)
         
-        # Apply color filter (M2M)
+        # Apply single HEX color filter
         if colors and colors != ['']:
-            colors = [c for c in colors if c]  # Remove empty strings
+            colors = [c.upper() for c in colors if c]  # Remove empty strings
             if colors:
-                queryset = queryset.filter(colors__id__in=colors).distinct()
+                queryset = queryset.filter(color_hex__in=colors)
         
         # Apply size filter (through SizeStock)
         if sizes and sizes != ['']:
@@ -70,8 +70,8 @@ def filter_products(request):
             if sizes:
                 # Filter products that have stock for selected sizes
                 queryset = queryset.filter(
-                    sizestock__size__in=sizes,
-                    sizestock__stock_quantity__gt=0
+                    size_stocks__size__in=sizes,
+                    size_stocks__stock_quantity__gt=0
                 ).distinct()
         
         # Apply price filter (use discount_price if available, else price)
@@ -126,14 +126,8 @@ def filter_products(request):
                 'in_stock': product.in_stock,
                 'is_featured': product.is_featured,
                 'is_trending': product.is_trending,
-                'colors': [
-                    {
-                        'id': color.id,
-                        'name': color.name,
-                        'hex_code': color.hex_code
-                    }
-                    for color in product.colors.all()
-                ],
+                'colors': product.get_colors_display(),
+                'color_hex': product.safe_color_hex,
                 'available_sizes': [
                     {
                         'size': ss.size,
@@ -201,7 +195,14 @@ def get_filter_options(request):
         categories = Category.objects.filter(is_active=True).values('id', 'name', 'slug').order_by('name')
         
         # Colors
-        colors = ColorVariant.objects.filter(is_active=True).values('id', 'name', 'hex_code').order_by('sort_order')
+        color_values = (
+            Product.objects.filter(is_active=True)
+            .exclude(color_hex="")
+            .values_list("color_hex", flat=True)
+            .distinct()
+            .order_by("color_hex")
+        )
+        colors = [{"id": value, "name": value, "hex_code": value} for value in color_values]
         
         # Sizes (from SizeStock)
         sizes = (

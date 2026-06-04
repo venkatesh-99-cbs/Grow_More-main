@@ -1,26 +1,37 @@
 from django import forms
 
-from products.models import Category, Product
+from products.cloudinary_utils import CloudinaryUploadError, delete_product_image, upload_product_image
+from products.models import Category, Product, validate_hex_color
 
 
 class ProductForm(forms.ModelForm):
     sizes_text = forms.CharField(help_text="Comma-separated sizes, e.g. S,M,L,XL")
-    colors_text = forms.CharField(required=False, help_text="Comma-separated colors")
+    color_hex = forms.CharField(
+        max_length=7,
+        help_text="Single HEX color only, for example #3498DB.",
+        validators=[validate_hex_color],
+        widget=forms.TextInput(attrs={"placeholder": "#3498DB", "pattern": r"#[0-9A-Fa-f]{6}"}),
+    )
 
     class Meta:
         model = Product
         fields = (
             "name", "slug", "category", "description", "price", "discount_price",
-            "stock", "is_active", "is_featured", "is_trending", "main_image",
-            "image_url", "gallery_image_1", "gallery_image_2", "gallery_image_3",
+            "stock", "brand", "color_hex", "is_active", "is_featured", "is_trending", "main_image",
+            "gallery_image_1", "gallery_image_2", "gallery_image_3",
             "gallery_url_1", "gallery_url_2", "gallery_url_3",
         )
+        widgets = {
+            "main_image": forms.ClearableFileInput(attrs={"accept": ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"}),
+            "gallery_image_1": forms.ClearableFileInput(attrs={"accept": ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"}),
+            "gallery_image_2": forms.ClearableFileInput(attrs={"accept": ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"}),
+            "gallery_image_3": forms.ClearableFileInput(attrs={"accept": ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.pk:
             self.fields["sizes_text"].initial = ", ".join(self.instance.sizes)
-            self.fields["colors_text"].initial = ", ".join(self.instance.colors)
 
     def clean_sizes_text(self):
         values = [item.strip() for item in self.cleaned_data["sizes_text"].split(",") if item.strip()]
@@ -28,8 +39,39 @@ class ProductForm(forms.ModelForm):
             raise forms.ValidationError("Add at least one size.")
         return values
 
-    def clean_colors_text(self):
-        return [item.strip() for item in self.cleaned_data.get("colors_text", "").split(",") if item.strip()]
+    def clean_color_hex(self):
+        return self.cleaned_data["color_hex"].upper()
+
+    def _validate_image(self, field_name):
+        image = self.cleaned_data.get(field_name)
+        if not image:
+            return image
+
+        allowed_content_types = {"image/jpeg", "image/png", "image/webp"}
+        allowed_extensions = {".jpg", ".jpeg", ".png", ".webp"}
+        name = (getattr(image, "name", "") or "").lower()
+        content_type = getattr(image, "content_type", "")
+        max_size = 5 * 1024 * 1024
+
+        if content_type and content_type not in allowed_content_types:
+            raise forms.ValidationError("Upload a JPG, JPEG, PNG, or WEBP image.")
+        if not any(name.endswith(ext) for ext in allowed_extensions):
+            raise forms.ValidationError("Upload a JPG, JPEG, PNG, or WEBP image.")
+        if image.size > max_size:
+            raise forms.ValidationError("Image must be 5 MB or smaller.")
+        return image
+
+    def clean_main_image(self):
+        return self._validate_image("main_image")
+
+    def clean_gallery_image_1(self):
+        return self._validate_image("gallery_image_1")
+
+    def clean_gallery_image_2(self):
+        return self._validate_image("gallery_image_2")
+
+    def clean_gallery_image_3(self):
+        return self._validate_image("gallery_image_3")
 
     def clean(self):
         cleaned_data = super().clean()
@@ -47,7 +89,21 @@ class ProductForm(forms.ModelForm):
     def save(self, commit=True):
         product = super().save(commit=False)
         product.sizes = self.cleaned_data["sizes_text"]
-        product.colors = self.cleaned_data["colors_text"]
+
+        uploaded_main = self.cleaned_data.get("main_image")
+        if uploaded_main:
+            old_public_id = self.instance.cloudinary_public_id if self.instance and self.instance.pk else None
+            try:
+                upload_result = upload_product_image(uploaded_main)
+            except CloudinaryUploadError as exc:
+                raise forms.ValidationError(str(exc)) from exc
+            if upload_result:
+                product.image_url = upload_result.secure_url
+                product.cloudinary_public_id = upload_result.public_id
+                product.main_image = ""
+                if old_public_id and old_public_id != upload_result.public_id:
+                    delete_product_image(old_public_id)
+
         if commit:
             product.save()
             self.save_m2m()

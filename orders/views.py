@@ -50,7 +50,7 @@ def add_to_cart(request):
     product = get_object_or_404(Product, pk=data.get("product_id"), is_active=True)
     quantity = max(1, int(data.get("quantity", 1)))
     size = str(data.get("size", data.get("size", ""))).strip()
-    color = str(data.get("color", data.get("color", ""))).strip()
+    color = str(data.get("color", data.get("color", "")) or product.safe_color_hex).strip()
 
     # Validate size selection if product has sizes
     if product.sizes and not size:

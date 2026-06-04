@@ -1,161 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}{{ product.name }} | Grow More{% endblock %}
-{% block extra_css %}
-<style>
-  .detail-wrap {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 60px;
-    margin-top: 40px;
-  }
-  .detail-media {
-    position: sticky;
-    top: 100px;
-    height: fit-content;
-  }
-  .detail-main-frame {
-    border-radius: 32px;
-    overflow: hidden;
-    background: #f0f0f0;
-    aspect-ratio: 4/5;
-    position: relative;
-    border: 1px solid var(--border);
-  }
-  .detail-main-frame img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .detail-thumbs {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-top: 20px;
-  }
-  .thumb-btn {
-    border-radius: 12px;
-    overflow: hidden;
-    aspect-ratio: 1;
-    border: 2px solid transparent;
-    cursor: pointer;
-    padding: 0;
-  }
-  .thumb-btn.active {
-    border-color: var(--bright-blue);
-  }
-  .thumb-btn img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .detail-copy {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
-  .detail-header h1 {
-    font-size: 2.5rem;
-    font-family: var(--font-brand);
-    margin: 8px 0;
-  }
-  .detail-price {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .detail-price .price-now {
-    font-size: 2rem;
-    font-weight: 800;
-  }
-  .detail-price .price-old {
-    font-size: 1.2rem;
-    text-decoration: line-through;
-    color: #999;
-  }
-  .detail-desc {
-    color: #666;
-    line-height: 1.6;
-    font-size: 1.05rem;
-  }
-  .variant-group {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .variant-group label {
-    font-weight: 700;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.05em;
-  }
-  .qty-selector {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: #f8f8f8;
-    padding: 6px;
-    border-radius: 12px;
-    width: fit-content;
-  }
-  .qty-selector button {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    border: none;
-    background: white;
-    font-weight: 700;
-    cursor: pointer;
-  }
-  .qty-selector input {
-    width: 40px;
-    text-align: center;
-    border: none;
-    background: transparent;
-    font-weight: 700;
-  }
-  .action-buttons {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 16px;
-    margin-top: 20px;
-  }
-  .primary-btn {
-    background: var(--ink-900);
-    color: white;
-    padding: 18px;
-    border-radius: 16px;
-    font-weight: 700;
-    border: none;
-    cursor: pointer;
-    font-size: 1.1rem;
-    transition: all 0.3s ease;
-  }
-  .primary-btn:hover:not(:disabled) {
-    background: #555;
-    transform: translateY(-2px);
-    box-shadow: 0 12px 24px rgba(0,0,0,0.1);
-  }
-  .secondary-btn {
-    width: 58px;
-    height: 58px;
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-  }
-  .secondary-btn svg { transition: all 0.3s ease; }
-  .secondary-btn.active svg { fill: #ff4757; stroke: #ff4757; }
-
-  @media (max-width: 900px) {
-    .detail-wrap { grid-template-columns: 1fr; gap: 40px; }
-    .detail-media { position: relative; top: 0; }
-  }
-</style>
-{% endblock %}
 {% block content %}
   <main class="container page-hero">
     <div id="product-detail-scope" class="product-card" data-product-id="{{ product.id }}" data-product-url="{{ product.get_absolute_url }}" style="background:transparent; border:none; box-shadow:none; padding:0; display:block;">
@@ -200,10 +45,9 @@
             {% for size, size_stock in product.size_stock_items %}
               <button
                 type="button"
-                class="size-pill"
+                class="size-pill{% if size_stock and size_stock.is_out_of_stock %} disabled{% endif %}"
                 data-value="{{ size }}"
-                style="padding: 12px 20px; font-size: 1rem;"
-                {% if size_stock and size_stock.is_out_of_stock %}disabled class="size-pill disabled"{% endif %}
+                {% if size_stock and size_stock.is_out_of_stock %}disabled{% endif %}
                 title="{% if size_stock %}{% if size_stock.is_out_of_stock %}Out of Stock{% elif size_stock.is_low_stock %}Only {{ size_stock.available_quantity }} left!{% endif %}{% endif %}"
               >
                 {{ size }}
@@ -212,22 +56,22 @@
           </div>
         </div>
 
-        {% if product.colors.exists %}
         <div class="variant-group">
           <label>Color</label>
+          {% with colors=product.get_colors_display %}
           <div class="swatches-row" data-role="color">
-            {% for color in product.colors.all %}
+            {% for color in colors %}
             <button
               type="button"
               class="swatch-btn"
-              data-value="{{ color.name }}"
-              style="background-color: {{ color.hex_code }}; width: 36px; height: 36px;"
-              title="{{ color.name }}"
+              data-value="{{ color.hex }}"
+              style="background-color: {{ color.hex }};"
+              title="{{ color.hex }}"
             ></button>
             {% endfor %}
           </div>
+          {% endwith %}
         </div>
-        {% endif %}
 
         <div class="variant-group">
           <label>Quantity</label>

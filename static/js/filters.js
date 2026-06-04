@@ -298,34 +298,30 @@ class ProductFilterManager {
    * Render individual product card
    */
   renderProductCard(product) {
-    // This should match your product card template HTML
     const discount = product.discount_percentage || 0;
-    const discountBadge = discount > 0 ? `
-      <div class="discount-badge" style="position: absolute; top: 16px; right: 16px; background: linear-gradient(135deg, #ff6b35, #ffa8b6); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
-        ${discount}% OFF
-      </div>
-    ` : '';
+    const color = product.color_hex || product.colors?.[0]?.hex || product.colors?.[0]?.hex_code || "#51E2F5";
+    const url = product.slug ? `/products/${product.slug}/` : "#";
 
     return `
-      <div class="product-card" data-product-id="${product.id}">
-        <div class="product-image-container" style="position: relative;">
-          ${discountBadge}
-          <img src="${product.image || '/media/placeholder.jpg'}" alt="${product.name}" class="product-image" />
+      <article class="product-card reveal" data-product-id="${product.id}" data-product-url="${url}">
+        <div class="product-media">
+          <img src="${product.image || '/media/placeholder.jpg'}" alt="${product.name}" class="primary-image" loading="lazy" />
+          ${discount > 0 ? `<div class="discount-badge">-${discount}%</div>` : ""}
+          <button type="button" class="fav-btn" data-favorite-id="${product.id}" aria-label="Add to favorites">&hearts;</button>
         </div>
-        <div class="product-info">
-          <div class="product-category" style="font-size: 0.85rem; color: rgba(0,0,0,0.6); text-transform: uppercase; letter-spacing: 0.05em;">
-            ${product.brand || product.category}
+        <div class="product-body">
+          <span class="product-category">${product.brand || product.category}</span>
+          <h3 class="product-title">${product.name}</h3>
+          <div class="product-price-row">
+            <span class="price-now">Rs. ${product.current_price}</span>
+            ${product.original_price && product.original_price > product.current_price ? `<span class="price-old">Rs. ${product.original_price}</span>` : ""}
           </div>
-          <h3 class="product-name">${product.name}</h3>
-          <div class="product-price-block">
-            <span class="product-price">Rs. ${product.current_price}</span>
-            ${product.original_price && product.original_price > product.current_price ? `
-              <span class="product-original-price">Rs. ${product.original_price}</span>
-            ` : ''}
+          <div class="swatches-row" data-role="color">
+            <button type="button" class="swatch-btn active" data-value="${color}" style="background-color:${color}" title="${color}"></button>
           </div>
-          <button class="add-btn" data-add-to-cart="${product.id}">Add to Cart</button>
+          <button class="add-btn" type="button" data-add-cart>Add to Cart</button>
         </div>
-      </div>
+      </article>
     `;
   }
 

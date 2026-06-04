@@ -56,6 +56,10 @@ async function loadHeroBanners() {
 function renderProductCard(product) {
   const mainImage = product.main_image || product.thumbnail || product.images?.[0];
   const galleryImage = product.images?.[1] || mainImage;
+  const colorButtons = (product.colors || []).map((color, idx) => {
+    const hex = color.hex || color.hex_code || color.name || product.color_hex || '#51E2F5';
+    return `<button type="button" class="radio-pill color-pill ${idx === 0 ? 'active' : ''}" data-value="${hex}" style="--swatch:${hex}"><span class="swatch"></span><span class="pill-text">${hex}</span></button>`;
+  }).join('');
   const offerHTML = product.offer 
     ? `<div class="price-block has-offer" data-offer-expirable data-offer-id="${product.offer.id}">
         <div class="price-line">
@@ -91,10 +95,10 @@ function renderProductCard(product) {
           <div class="radio-row" data-role="size">
             ${product.sizes.map((size, idx) => `<button type="button" class="radio-pill ${idx === 0 ? 'active' : ''}" data-value="${size}">${size}</button>`).join('')}
           </div>
-          ${product.colors && product.colors.length > 0 
+          ${colorButtons
             ? `<label>Color</label>
                <div class="radio-row" data-role="color">
-                 ${product.colors.map((color, idx) => `<button type="button" class="radio-pill color-pill ${idx === 0 ? 'active' : ''}" data-value="${color}"><span class="swatch"></span><span class="pill-text">${color}</span></button>`).join('')}
+                 ${colorButtons}
                </div>`
             : ''}
         </div>
