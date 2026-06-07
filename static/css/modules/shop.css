@@ -16,8 +16,13 @@
   padding: 24px;
 }
 
-.filter-section {
+.filter-section,
+.filter-group {
   margin-bottom: 24px;
+}
+
+.filter-group:last-child {
+  margin-bottom: 0;
 }
 
 .filter-title {
@@ -59,6 +64,72 @@
   accent-color: var(--bright-blue);
 }
 
+.filter-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filter-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: color var(--transition);
+}
+
+.filter-checkbox input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--bright-blue);
+}
+
+.filter-checkbox label {
+  flex: 1;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: color var(--transition);
+}
+
+.filter-checkbox:hover label {
+  color: var(--bright-blue);
+}
+
+.filter-count {
+  font-size: 0.85rem;
+  color: rgba(0, 0, 0, 0.6);
+  margin-bottom: 16px;
+  display: block;
+}
+
+.search-box {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 10px 16px;
+  border: 1px solid rgba(162, 128, 137, 0.25);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: border-color var(--transition);
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: var(--bright-blue);
+  box-shadow: 0 0 0 3px rgba(81, 226, 245, 0.1);
+}
+
+.shop-controls {
+  display: grid;
+  grid-template-columns: 1.4fr 0.8fr 0.8fr;
+  gap: 0.55rem;
+  max-width: 860px;
+}
+
 .price-range {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -82,13 +153,82 @@
   border: 1px solid var(--border);
 }
 
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 40px;
+}
+
+.page-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid rgba(162, 128, 137, 0.2);
+  background: #fff;
+  color: #5f5860;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+}
+
+.page-btn:hover {
+  border-color: var(--bright-blue);
+  color: #2f8da1;
+  background: rgba(81, 226, 245, 0.05);
+}
+
+.page-btn.active {
+  background: var(--bright-blue);
+  color: #fff;
+  border-color: var(--bright-blue);
+  box-shadow: 0 8px 16px rgba(81, 226, 245, 0.25);
+}
+
 @media (max-width: 900px) {
   .products-container {
     grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .product-filters {
+    position: relative;
+    top: 0;
   }
 
   .shop-sidebar {
     position: static;
     margin-bottom: 30px;
+  }
+}
+
+@media (max-width: 640px) {
+  .products-container {
+    padding: 20px 0;
+  }
+
+  .product-filters {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .filter-group {
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .pagination {
+    gap: 4px;
+  }
+
+  .page-btn {
+    padding: 6px 10px;
+    font-size: 0.8rem;
   }
 }

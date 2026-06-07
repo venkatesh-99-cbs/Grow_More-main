@@ -15,15 +15,15 @@
       <tbody>
         {% for product in products %}
           <tr>
-            <td>
+            <td data-label="Product">
               <strong>{{ product.name }}</strong>
               {% if product.slug %}<br><small>{{ product.slug }}</small>{% endif %}
             </td>
-            <td>{{ product.category.name }}</td>
-            <td>Rs. {{ product.current_price|floatformat:2 }}</td>
-            <td>{{ product.stock }}</td>
-            <td><span class="status-pill {% if product.is_active %}status-live{% else %}status-muted{% endif %}">{{ product.is_active|yesno:"Live,Hidden" }}</span></td>
-            <td>
+            <td data-label="Category">{{ product.category.name }}</td>
+            <td data-label="Price">Rs. {{ product.current_price|floatformat:2 }}</td>
+            <td data-label="Stock">{{ product.stock }}</td>
+            <td data-label="Visible"><span class="status-pill {% if product.is_active %}status-live{% else %}status-muted{% endif %}">{{ product.is_active|yesno:"Live,Hidden" }}</span></td>
+            <td data-label="Actions">
               <div class="admin-actions">
                 <a class="text-action" href="{% url 'dashboard:product_edit' product.pk %}">Edit</a>
                 <form method="post" action="{% url 'dashboard:product_delete' product.pk %}" data-confirm="Remove this product from the storefront?">

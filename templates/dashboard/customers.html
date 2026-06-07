@@ -14,11 +14,11 @@
       <tbody>
         {% for customer in customers %}
           <tr>
-            <td><strong>{{ customer.get_full_name|default:customer.username }}</strong><br><small>{{ customer.username }}</small></td>
-            <td>{{ customer.email }}</td>
-            <td>{{ customer.orders.count }}</td>
-            <td>{{ customer.addresses.count }}</td>
-            <td>
+            <td data-label="User"><strong>{{ customer.get_full_name|default:customer.username }}</strong><br><small>{{ customer.username }}</small></td>
+            <td data-label="Email">{{ customer.email }}</td>
+            <td data-label="Orders">{{ customer.orders.count }}</td>
+            <td data-label="Addresses">{{ customer.addresses.count }}</td>
+            <td data-label="Recent Products">
               <div class="mini-history-list">
                 {% for order in customer.orders.all|slice:":3" %}
                   <div class="mini-history-item">
