@@ -22,11 +22,11 @@
     <tbody>
       {% for order in orders %}
       <tr>
-        <td>{{ order.order_number }}</td>
-        <td>{{ order.full_name }}<br><small>{{ order.email }}</small></td>
-        <td>Rs. {{ order.total_amount }}</td>
-        <td>{{ order.get_payment_method_display }}</td>
-        <td>
+        <td data-label="Order">{{ order.order_number }}</td>
+        <td data-label="Customer">{{ order.full_name }}<br><small>{{ order.email }}</small></td>
+        <td data-label="Total">Rs. {{ order.total_amount }}</td>
+        <td data-label="Payment">{{ order.get_payment_method_display }}</td>
+        <td data-label="Status">
           <form method="post" action="{% url 'dashboard:order_status' order.pk %}">
             {% csrf_token %}
             <select name="status" onchange="this.form.submit()">
@@ -36,7 +36,7 @@
             </select>
           </form>
         </td>
-        <td>
+        <td data-label="Actions">
           <div class="admin-actions">
             <a href="{% url 'dashboard:admin_download_payment_receipt' order.pk %}" class="btn-small invoice-btn" target="_blank" title="Download payment receipt PDF" download>Receipt</a>
             <a href="{% url 'dashboard:admin_download_shipping_sheet' order.pk %}" class="btn-small" title="Download shipping sheet" download>Shipping</a>
