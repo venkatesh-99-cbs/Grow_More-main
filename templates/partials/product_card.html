@@ -3,6 +3,7 @@
   data-product-id="{{ product.id }}"
   data-product-url="{{ product.get_absolute_url }}"
 >
+  <div class="flip-hint">Touch to Flip</div>
   <div class="product-media">
     <img
       src="{{ product.main_image_url }}"
@@ -23,13 +24,17 @@
 
     {% if product.discount_percent %}
     <div class="discount-badge">
-      -{{ product.discount_percent }}%
+      {{ product.discount_percent }}% OFF
     </div>
     {% endif %}
     {% if product.in_stock %}
-    <div class="stock-badge in-stock">In stock</div>
+      {% if product.get_total_stock <= 10 %}
+        <div class="stock-badge low-stock">Only {{ product.get_total_stock }} Left</div>
+      {% else %}
+        <div class="stock-badge in-stock">In Stock</div>
+      {% endif %}
     {% else %}
-    <div class="stock-badge out-stock">Sold out</div>
+      <div class="stock-badge out-stock">Sold Out</div>
     {% endif %}
 
     <button
@@ -84,7 +89,7 @@
           class="swatch-btn"
           data-value="{{ color.hex }}"
           style="background-color: {{ color.hex }};"
-          title="{{ color.hex }}"
+          title="{{ color.name|default:color.hex }}"
         ></button>
         {% endfor %}
       </div>

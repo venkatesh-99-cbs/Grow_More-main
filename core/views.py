@@ -17,7 +17,7 @@ def home(request):
         deal_products = [product for product in Product.objects.filter(is_active=True).select_related("category") if product.active_offer][:6]
         return render(request, "partials/product_grid.html", {"products": deal_products})
 
-    banners = HeroBanner.objects.filter(is_active=True)
+    banners = HeroBanner.objects.filter(is_active=True).select_related('group')
     featured_products = Product.objects.filter(is_active=True, is_featured=True).select_related("category")[:4]
     sections = HomepageSection.objects.filter(is_active=True)
     current_offers = active_offers()

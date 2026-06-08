@@ -45,6 +45,35 @@
   animation: slideUpFade 0.4s ease-out;
 }
 
+.premium-highlight {
+  position: relative;
+  z-index: 1;
+  color: #2f8da1;
+}
+
+.premium-highlight::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 4px;
+  width: 100%;
+  height: 12px;
+  background: rgba(81, 226, 245, 0.3);
+  z-index: -1;
+  transform: skewX(-15deg);
+}
+
+h2.animate-slide-up {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+h2.animate-slide-up.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .animate-pulse {
   animation: pulse 2s ease-in-out infinite;
 }

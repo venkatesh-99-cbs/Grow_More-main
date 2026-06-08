@@ -182,6 +182,7 @@ class Product(models.Model):
     discount_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     sizes = models.JSONField(default=list, help_text="Example: ['S', 'M', 'L', 'XL']")
     color_hex = models.CharField(max_length=7, default=DEFAULT_PRODUCT_COLOR, validators=[validate_hex_color])
+    color_name = models.CharField(max_length=50, blank=True, help_text="Example: Navy Blue")
     stock = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     is_trending = models.BooleanField(default=False)
@@ -335,8 +336,15 @@ class Product(models.Model):
         color = (self.color_hex or "").strip()
         return color.upper() if HEX_COLOR_PATTERN.match(color) else DEFAULT_PRODUCT_COLOR
     
+    @property
+    def display_color_name(self):
+        if self.color_name:
+            return self.color_name
+        # Fallback to ColorVariant search if possible or just use HEX
+        return self.color_hex
+
     def get_colors_display(self):
         """Compatibility shape for templates and APIs that expect a swatch list."""
-        return [{"name": self.safe_color_hex, "hex": self.safe_color_hex}]
+        return [{"name": self.display_color_name, "hex": self.safe_color_hex}]
 
 # Create your models here.
