@@ -9,17 +9,40 @@
   <section class="hero container">
     <div class="hero-wrap" id="hero-wrap">
       {% if banners %}
+      <div class="slider-indicators">
+        {% for banner in banners %}
+        <span class="indicator {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}"></span>
+        {% endfor %}
+      </div>
         {% for banner in banners %}
         <div class="hero-slide {% if forloop.first %}active{% endif %}" data-banner-id="{{ banner.id }}" data-theme="{{ banner.theme }}" data-animation="{{ banner.animation_type }}">
-          <img src="{{ banner.display_image }}" alt="{{ banner.title }}" />
+          <img src="{{ banner.display_image }}" alt="{{ banner.display_title }}" />
           <div class="hero-content">
-            <h1 class="animate-slide-up">{{ banner.title }}</h1>
-            <p id="hero-subtitle" class="animate-slide-up" style="animation-delay: 0.1s;">{{ banner.subtitle }}</p>
-            <a class="cta-btn animate-slide-up" style="animation-delay: 0.2s;" href="{{ banner.button_url }}">{{ banner.button_label }}</a>
+            <h1 class="animate-slide-up">{{ banner.display_title }}</h1>
+            <p id="hero-subtitle" class="animate-slide-up" style="animation-delay: 0.1s;">{{ banner.display_subtitle }}</p>
+            <a class="cta-btn animate-slide-up" style="animation-delay: 0.2s;" href="{{ banner.display_button_url }}">{{ banner.display_button_label }}</a>
             <div class="stat-row animate-slide-up" style="animation-delay: 0.3s;">
-              <span class="stat">100% Summer Ready</span>
-              <span class="stat">Premium Quality</span>
-              <span class="stat">Fast Shipping</span>
+                <div class="stat-tab premium-card active">
+                    <span class="stat-icon">🔥</span>
+                    <div class="stat-info">
+                        <strong>100% Ready</strong>
+                        <small>Summer 2026</small>
+                    </div>
+                </div>
+                <div class="stat-tab premium-card">
+                    <span class="stat-icon">✨</span>
+                    <div class="stat-info">
+                        <strong>Premium</strong>
+                        <small>Handpicked Quality</small>
+                    </div>
+                </div>
+                <div class="stat-tab premium-card">
+                    <span class="stat-icon">🚚</span>
+                    <div class="stat-info">
+                        <strong>Fast Ship</strong>
+                        <small>Worldwide Delivery</small>
+                    </div>
+                </div>
             </div>
           </div>
         </div>
@@ -43,7 +66,7 @@
     <div class="section-header" style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:32px;">
         <div>
             <span class="product-category" style="color:var(--bright-blue);">Summer 2026</span>
-            <h2 style="font-family:var(--font-brand); font-size:2.5rem; margin:0;">Featured Arrivals</h2>
+            <h2 class="animate-slide-up" style="font-family:var(--font-brand); font-size:2.5rem; margin:0;">Featured <span class="premium-highlight">Arrivals</span></h2>
         </div>
         <a href="{% url 'products:shop' %}" class="text-action" style="font-weight:700; border-bottom:2px solid var(--bright-blue);">View All</a>
     </div>
@@ -107,7 +130,7 @@
     <div class="container reveal">
         <div class="section-header" style="margin-bottom:32px; text-align:center;">
             <span class="product-category" style="color:#ff4757;">Limited Time</span>
-            <h2 style="font-family:var(--font-brand); font-size:2.5rem; margin:0;">Exclusive Summer Deals</h2>
+            <h2 class="animate-slide-up" style="font-family:var(--font-brand); font-size:2.5rem; margin:0;">Exclusive Summer <span class="premium-highlight">Deals</span></h2>
         </div>
         <div
           class="product-grid-fixed"
@@ -158,6 +181,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     window.addEventListener('scroll', reveal);
     reveal();
+
+    // Observe animate-slide-up headings
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('h2.animate-slide-up').forEach(h2 => observer.observe(h2));
 });
 </script>
 {% endblock %}

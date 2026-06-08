@@ -11,7 +11,10 @@ export function initOfferCountdowns() {
 }
 
 export function tick() {
-  const now = Date.now();
+  const serverStart = Date.parse(document.body.dataset.serverTime || new Date().toISOString());
+  const clientStart = window._clientStartTime || (window._clientStartTime = Date.now());
+  const now = serverStart + (Date.now() - clientStart);
+
   timers.forEach((node) => {
     if (!document.body.contains(node)) {
       timers.delete(node);

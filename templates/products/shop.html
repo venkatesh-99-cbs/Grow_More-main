@@ -5,58 +5,74 @@
 <main class="container page-hero">
   <div class="products-container">
     <!-- Modern Animated Filters -->
-    <aside class="shop-sidebar">
+    <button class="mobile-filter-trigger" id="mobile-filter-trigger">
+        <span class="trigger-icon">â–¼</span> Filters
+    </button>
+    <aside class="shop-sidebar" id="shop-sidebar">
       <div class="filter-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
         <h2 class="filter-title" style="margin-bottom:0;">Filters</h2>
-        <button id="clear-filters" class="text-action" style="background:none; border:none; padding:0; text-decoration:underline; cursor:pointer;">Clear All</button>
-      </div>
-
-      <div class="filter-section">
-        <span class="filter-title">Search</span>
-        <div class="search-box">
-          <input type="text" id="shop-search" placeholder="Search collection...">
+        <div style="display:flex; gap: 1rem; align-items:center;">
+            <button id="clear-filters" class="text-action" style="background:none; border:none; padding:0; text-decoration:underline; cursor:pointer;">Clear All</button>
+            <button class="mobile-filter-close" id="mobile-filter-close">&times;</button>
         </div>
       </div>
 
-      <div class="filter-section">
-        <span class="filter-title">Categories</span>
-        <ul class="filter-list">
-          <li class="filter-item">
-            <label><input type="checkbox" name="category" value="all" checked> All Categories</label>
-          </li>
-          {% for category in categories %}
-          <li class="filter-item">
-            <label><input type="checkbox" name="category" value="{{ category.slug }}"> {{ category.name }}</label>
-          </li>
-          {% endfor %}
-        </ul>
-      </div>
-
-      <div class="filter-section">
-        <span class="filter-title">Brands</span>
-        <ul class="filter-list">
-          {% for brand in brands %}
-          <li class="filter-item">
-            <label><input type="checkbox" name="brand" value="{{ brand.slug }}"> {{ brand.name }}</label>
-          </li>
-          {% endfor %}
-        </ul>
-      </div>
-
-      <div class="filter-section">
-        <span class="filter-title">Price Range</span>
-        <div class="price-range">
-          <input type="number" id="min-price" placeholder="Min">
-          <input type="number" id="max-price" placeholder="Max">
+      <div class="filter-section collapsible active">
+        <button class="filter-toggle">Search <span class="toggle-icon">+</span></button>
+        <div class="filter-content">
+            <div class="search-box">
+              <input type="text" id="shop-search" placeholder="Search collection...">
+            </div>
         </div>
       </div>
 
-      <div class="filter-section">
-        <span class="filter-title">Sizes</span>
-        <div class="swatches-row">
-            {% for s_val, s_name in size_choices %}
-            <button type="button" class="size-pill filter-size" data-size="{{ s_val }}">{{ s_val }}</button>
-            {% endfor %}
+      <div class="filter-section collapsible active">
+        <button class="filter-toggle">Categories <span class="toggle-icon">+</span></button>
+        <div class="filter-content">
+            <ul class="filter-list">
+              <li class="filter-item">
+                <label><input type="checkbox" name="category" value="all" checked> All Categories</label>
+              </li>
+              {% for category in categories %}
+              <li class="filter-item">
+                <label><input type="checkbox" name="category" value="{{ category.slug }}"> {{ category.name }}</label>
+              </li>
+              {% endfor %}
+            </ul>
+        </div>
+      </div>
+
+      <div class="filter-section collapsible">
+        <button class="filter-toggle">Brands <span class="toggle-icon">+</span></button>
+        <div class="filter-content">
+            <ul class="filter-list">
+              {% for brand in brands %}
+              <li class="filter-item">
+                <label><input type="checkbox" name="brand" value="{{ brand.slug }}"> {{ brand.name }}</label>
+              </li>
+              {% endfor %}
+            </ul>
+        </div>
+      </div>
+
+      <div class="filter-section collapsible">
+        <button class="filter-toggle">Price Range <span class="toggle-icon">+</span></button>
+        <div class="filter-content">
+            <div class="price-range">
+              <input type="number" id="min-price" placeholder="Min">
+              <input type="number" id="max-price" placeholder="Max">
+            </div>
+        </div>
+      </div>
+
+      <div class="filter-section collapsible">
+        <button class="filter-toggle">Sizes <span class="toggle-icon">+</span></button>
+        <div class="filter-content">
+            <div class="swatches-row">
+                {% for s_val, s_name in size_choices %}
+                <button type="button" class="size-pill filter-size" data-size="{{ s_val }}">{{ s_val }}</button>
+                {% endfor %}
+            </div>
         </div>
       </div>
 

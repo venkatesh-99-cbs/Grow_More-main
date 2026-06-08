@@ -56,7 +56,19 @@ body {
     isolation: isolate;
     background: var(--ink-900);
 }
-.hero-slide { display: grid; align-items: center; }
+.hero-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    display: grid;
+    align-items: center;
+    transition: opacity 1s ease, transform 1.2s ease;
+    transform: scale(1.02);
+}
+.hero-slide.active {
+    opacity: 1;
+    transform: scale(1);
+}
 .hero-slide img {
     position: absolute;
     inset: 0;
@@ -97,8 +109,6 @@ body {
     letter-spacing: 0;
     text-transform: none;
     color: #fff;
-    -webkit-text-fill-color: initial;
-    background: none;
     text-shadow: 0 18px 42px rgba(0, 0, 0, .24);
 }
 .hero-content p,
@@ -124,6 +134,20 @@ body {
     background: rgba(255,255,255,.14);
     border-color: rgba(255,255,255,.26);
     backdrop-filter: blur(10px);
+}
+
+.hero-content .premium-card {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.hero-content .premium-card.active,
+.hero-content .premium-card:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: var(--bright-blue);
+    transform: translateY(-5px);
 }
 
 /* Brand Features */
@@ -184,23 +208,8 @@ body {
 .product-card:hover { box-shadow: 0 22px 46px rgba(81,226,245,.2); }
 .product-media { aspect-ratio: 4 / 5; height: auto; background: linear-gradient(135deg, rgba(157,249,239,.25), rgba(255,168,182,.18)); }
 .product-media::after {
-    content: "Quick view";
-    position: absolute;
-    left: 50%;
-    bottom: 14px;
-    z-index: 4;
-    transform: translate(-50%, 12px);
-    opacity: 0;
-    border-radius: 999px;
-    padding: .45rem .8rem;
-    background: rgba(255,255,255,.88);
-    color: var(--ink-900);
-    font-size: .78rem;
-    font-weight: 700;
-    backdrop-filter: blur(10px);
-    transition: opacity var(--transition), transform var(--transition);
+    display: none;
 }
-.product-card:hover .product-media::after { opacity: 1; transform: translate(-50%, 0); }
 .stock-badge {
     position: absolute;
     top: 12px;

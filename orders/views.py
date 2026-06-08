@@ -50,7 +50,13 @@ def add_to_cart(request):
     product = get_object_or_404(Product, pk=data.get("product_id"), is_active=True)
     quantity = max(1, int(data.get("quantity", 1)))
     size = str(data.get("size", data.get("size", ""))).strip()
-    color = str(data.get("color", data.get("color", "")) or product.safe_color_hex).strip()
+    color_val = str(data.get("color", data.get("color", "")) or product.safe_color_hex).strip()
+
+    # If color_val is a hex code matching the product, use color_name if available
+    if color_val.lower() == product.safe_color_hex.lower() and product.color_name:
+        color = product.color_name
+    else:
+        color = color_val
 
     # Validate size selection if product has sizes
     if product.sizes and not size:
@@ -192,6 +198,14 @@ def download_payment_receipt(request, order_number):
     from django.http import FileResponse
 
     order = get_object_or_404(Order.objects.prefetch_related("items"), order_number=order_number, user=request.user)
+
+    # Security: Only allow for SUCCESSFUL status (confirmed/delivered/shipped)
+    # The requirement said "SUCCESSFUL", which usually means paid or confirmed.
+    # Block access for: Pending, Failed, Cancelled
+    if order.status in ['pending', 'failed', 'cancelled']:
+        messages.error(request, f"Receipt download is not available for orders with status: {order.status.upper()}.")
+        return redirect("orders:detail", order_number=order_number)
+
     pdf_buffer = generate_order_invoice_pdf(order)
 
     if pdf_buffer is None:
