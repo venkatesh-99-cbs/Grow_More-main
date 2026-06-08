@@ -7,8 +7,8 @@
     <section class="detail-wrap">
       <div class="detail-media">
         <div class="detail-main-frame">
-          <button type="button" class="img-nav prev" aria-label="Previous image">â†</button>
-          <button type="button" class="img-nav next" aria-label="Next image">â†’</button>
+          <button type="button" class="img-nav prev" aria-label="Previous image"> < </button>
+          <button type="button" class="img-nav next" aria-label="Next image">></button>
           <img src="{{ product.gallery_images.0 }}" alt="{{ product.name }}" id="detail-main-img" />
           {% if product.discount_percent %}
           <div class="discount-badge" style="top: 24px; right: 24px; font-size: 1rem; padding: 8px 16px;">
@@ -78,7 +78,7 @@
         <div class="variant-group">
           <label>Quantity</label>
           <div class="qty-stepper">
-            <button type="button" class="qty-btn" data-action="minus">âˆ’</button>
+            <button type="button" class="qty-btn" data-action="minus">-</button>
             <input id="detail-qty" type="number" min="1" value="1" readonly class="qty-input" />
             <button type="button" class="qty-btn" data-action="plus">+</button>
           </div>
