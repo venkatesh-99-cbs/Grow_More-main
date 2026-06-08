@@ -5,65 +5,6 @@
   align-items: start;
 }
 
-.mobile-filter-trigger {
-  display: none;
-  width: 100%;
-  padding: 14px;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  font-weight: 700;
-  text-align: left;
-  margin-bottom: 20px;
-  cursor: pointer;
-  align-items: center;
-  gap: 10px;
-}
-
-.mobile-filter-close {
-  display: none;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-
-.filter-section.collapsible .filter-toggle {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: none;
-  border: none;
-  padding: 10px 0;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-.filter-section.collapsible .filter-content {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-}
-
-.filter-section.collapsible.active .filter-content {
-  max-height: 500px;
-  margin-bottom: 20px;
-}
-
-.filter-section.collapsible.active .toggle-icon {
-  transform: rotate(45deg);
-}
-
-.toggle-icon {
-  transition: transform 0.3s ease;
-  display: inline-block;
-  font-size: 1.2rem;
-}
-
 /* Shop Sidebar & Filters */
 .shop-sidebar {
   position: sticky;
@@ -255,36 +196,14 @@
     gap: 24px;
   }
 
-  .mobile-filter-trigger {
-    display: flex;
-  }
-
-  .shop-sidebar {
-    position: fixed;
-    top: 0;
-    left: -100%;
-    width: 85%;
-    max-width: 320px;
-    height: 100vh;
-    background: #fff;
-    z-index: 1000;
-    padding: 24px;
-    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
-    transition: left 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-    overflow-y: auto;
-  }
-
-  .shop-sidebar.active {
-    left: 0;
-  }
-
-  .mobile-filter-close {
-    display: block;
-  }
-
   .product-filters {
     position: relative;
     top: 0;
+  }
+
+  .shop-sidebar {
+    position: static;
+    margin-bottom: 30px;
   }
 }
 

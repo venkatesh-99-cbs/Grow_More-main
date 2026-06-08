@@ -66,13 +66,10 @@ export function initCartUI() {
   document.addEventListener("click", handleCartClick);
 
   // Listen for the custom event from ProductCardManager
-  if (!window._cartListenerAdded) {
-    document.addEventListener("add-to-cart", (e) => {
-      const { productId, size, color, quantity } = e.detail;
-      addToCart(productId, size, color, quantity);
-    });
-    window._cartListenerAdded = true;
-  }
+  document.addEventListener("add-to-cart", (e) => {
+    const { productId, size, color, quantity } = e.detail;
+    addToCart(productId, size, color, quantity);
+  });
 
   refreshCart().catch(() => {});
 }

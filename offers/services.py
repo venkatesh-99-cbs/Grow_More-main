@@ -29,42 +29,29 @@ def active_popup_offer():
 
 
 def best_offer_for_product(product):
-    """
-    Find the highest priority active offer that provides a better discount
-    than the product's manual discount_price.
-    """
     offers = active_offers()
+    best = None
     base_sale_price = product.discount_price or product.price
-
-    best_offer = None
     best_price = base_sale_price
-
     for offer in offers:
-        if offer.applies_to_product(product):
-            offer_price = offer.discount_price_for(product.price)
-            # If this offer is better than current best (including manual discount)
-            if offer_price < best_price:
-                best_price = offer_price
-                best_offer = offer
-
-            # Since active_offers() is sorted by priority, if we found an offer
-            # that is better than the manual discount, we should stick with priority
-            # unless a lower priority offer is EVEN better?
-            # For now, we take the absolute best price among all applicable offers.
-
-    return best_offer
+        if not offer.applies_to_product(product):
+            continue
+        offer_price = offer.discount_price_for(product.price)
+        if offer_price < best_price:
+            best = offer
+            best_price = offer_price
+    return best
 
 
 def price_for_product(product):
-    """Returns (current_price, applied_offer_object)"""
+    base_sale_price = product.discount_price or product.price
     offer = best_offer_for_product(product)
-    if offer:
-        return offer.discount_price_for(product.price), offer
-
-    if product.discount_price:
-        return product.discount_price, None
-
-    return product.price, None
+    if not offer:
+        return base_sale_price, None
+    offer_price = offer.discount_price_for(product.price)
+    if offer_price < base_sale_price:
+        return offer_price, offer
+    return base_sale_price, None
 
 
 def offer_payload(offer):
