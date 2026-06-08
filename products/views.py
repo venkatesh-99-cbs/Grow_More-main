@@ -93,11 +93,31 @@ def shop(request):
 
 @ensure_csrf_cookie
 def detail(request, slug):
-    product = get_object_or_404(Product.objects.select_related("category"), slug=slug, is_active=True)
+    product = get_object_or_404(Product.objects.select_related("category", "brand"), slug=slug, is_active=True)
 
     if request.GET.get("lazy") == "true":
-        related = Product.objects.filter(is_active=True, category=product.category).exclude(pk=product.pk).select_related("category")[:3]
-        return render(request, "partials/product_grid.html", {"products": related})
+        # Better related products logic: same category OR same brand OR same collection (tags/trending)
+        related = Product.objects.filter(is_active=True).exclude(pk=product.pk)
+
+        # Priority 1: Same category
+        category_related = related.filter(category=product.category)
+
+        # Priority 2: Same brand
+        if product.brand:
+            brand_related = related.filter(brand=product.brand)
+            related_products = (category_related | brand_related).distinct()
+        else:
+            related_products = category_related
+
+        # Limit to 8 products
+        related_products = related_products.select_related("category")[:8]
+
+        # If not enough, fill with trending
+        if related_products.count() < 4:
+            trending = Product.objects.filter(is_active=True, is_trending=True).exclude(pk=product.pk).exclude(pk__in=[p.pk for p in related_products])
+            related_products = list(related_products) + list(trending[:8 - len(related_products)])
+
+        return render(request, "partials/product_grid.html", {"products": related_products[:8]})
 
     return render(request, "products/detail.html", {"product": product})
 

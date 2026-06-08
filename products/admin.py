@@ -75,7 +75,7 @@ class ProductAdmin(admin.ModelAdmin):
     fieldsets = (
         ("Basics", {"fields": ("name", "slug", "category", "brand", "description")}),
         ("Pricing", {"fields": ("price", "discount_price")}),
-        ("Stock Management", {"fields": ("stock", "sizes", "color_hex")}),
+        ("Stock Management", {"fields": ("stock", "sizes", "color_hex", "color_name")}),
         ("Visibility", {"fields": ("is_active", "is_featured", "is_trending")}),
         ("Images", {"fields": ("main_image", "image_url", "cloudinary_public_id", "gallery_image_1", "gallery_image_2", "gallery_image_3", "gallery_url_1", "gallery_url_2", "gallery_url_3", "image_preview")}),
         ("Timestamps", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
@@ -86,7 +86,7 @@ class ProductAdmin(admin.ModelAdmin):
         return format_html(
             '<span style="display:inline-flex;align-items:center;gap:6px;"><span style="display:inline-block;width:22px;height:22px;background:{};border-radius:999px;border:1px solid #ccc;"></span>{}</span>',
             obj.safe_color_hex,
-            obj.safe_color_hex,
+            obj.display_color_name,
         )
 
     @admin.display(description="Preview")

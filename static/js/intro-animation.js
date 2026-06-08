@@ -30,7 +30,7 @@ class IntroAnimation {
 
         setTimeout(() => {
             this.finishAnimation();
-        }, 4000);
+        }, 3000);
 
         const skipBtn = this.intro.querySelector('.intro-skip');
         if (skipBtn) {

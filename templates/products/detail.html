@@ -7,10 +7,12 @@
     <section class="detail-wrap">
       <div class="detail-media">
         <div class="detail-main-frame">
+          <button type="button" class="img-nav prev" aria-label="Previous image">â†</button>
+          <button type="button" class="img-nav next" aria-label="Next image">â†’</button>
           <img src="{{ product.gallery_images.0 }}" alt="{{ product.name }}" id="detail-main-img" />
           {% if product.discount_percent %}
           <div class="discount-badge" style="top: 24px; right: 24px; font-size: 1rem; padding: 8px 16px;">
-            -{{ product.discount_percent }}%
+            {{ product.discount_percent }}% OFF
           </div>
           {% endif %}
         </div>
@@ -66,7 +68,7 @@
               class="swatch-btn"
               data-value="{{ color.hex }}"
               style="background-color: {{ color.hex }};"
-              title="{{ color.hex }}"
+              title="{{ color.name|default:color.hex }}"
             ></button>
             {% endfor %}
           </div>
@@ -75,20 +77,20 @@
 
         <div class="variant-group">
           <label>Quantity</label>
-          <div class="qty-selector">
-            <button type="button" data-action="minus">-</button>
-            <input id="detail-qty" type="number" min="1" value="1" readonly />
-            <button type="button" data-action="plus">+</button>
+          <div class="qty-stepper">
+            <button type="button" class="qty-btn" data-action="minus">âˆ’</button>
+            <input id="detail-qty" type="number" min="1" value="1" readonly class="qty-input" />
+            <button type="button" class="qty-btn" data-action="plus">+</button>
           </div>
         </div>
 
         <div class="stock-status" style="font-size: 0.9rem;"></div>
 
-        <div class="action-buttons">
-          <button class="primary-btn" type="button" data-add-cart {% if not product.in_stock %}disabled{% endif %}>
+        <div class="action-buttons" style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+          <button class="add-btn" type="button" data-add-cart {% if not product.in_stock %}disabled{% endif %} style="flex: 1;">
             {% if product.in_stock %}Add to Cart{% else %}Out of Stock{% endif %}
           </button>
-          <button class="secondary-btn fav-btn" type="button" data-favorite-id="{{ product.id }}">
+          <button class="fav-action-btn fav-btn" type="button" data-favorite-id="{{ product.id }}" style="width: auto; padding: 0 1.5rem;">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
             </svg>
@@ -121,17 +123,6 @@
   <script type="module" src="{% static 'js/shop/product-detail.js' %}"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const qtyInput = document.getElementById('detail-qty');
-        const minus = document.querySelector('[data-action="minus"]');
-        const plus = document.querySelector('[data-action="plus"]');
-
-        minus.addEventListener('click', () => {
-            if (qtyInput.value > 1) qtyInput.value = parseInt(qtyInput.value) - 1;
-        });
-        plus.addEventListener('click', () => {
-            qtyInput.value = parseInt(qtyInput.value) + 1;
-        });
-
         // Product detail page interaction glue
         const scope = document.getElementById('product-detail-scope');
         if (scope && window.ProductCardManager) {

@@ -21,7 +21,9 @@ function initProductSwipe() {
     current = setDetailImage(Number(thumb.dataset.index || 0), images, thumbs, dots, main);
   }));
   document.querySelectorAll(".img-nav").forEach((btn) => btn.addEventListener("click", () => {
-    current = setDetailImage(current + Number(btn.dataset.dir || 1), images, thumbs, dots, main);
+    let dir = 1;
+    if (btn.classList.contains('prev')) dir = -1;
+    current = setDetailImage(current + dir, images, thumbs, dots, main);
   }));
   main.addEventListener("touchstart", (event) => {
     startX = event.changedTouches[0].clientX;
