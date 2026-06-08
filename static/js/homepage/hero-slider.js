@@ -13,52 +13,23 @@ class HeroSlider {
   }
 
   init() {
-    this.indicators = [...document.querySelectorAll(".indicator")];
     // Initial activation
     this.activateSlide(0);
 
     if (this.slides.length > 1) {
-      this.startAutoplay();
-      this.bindIndicators();
+      setInterval(() => this.next(), this.interval);
     }
   }
 
-  startAutoplay() {
-    this.autoplayInterval = setInterval(() => this.next(), this.interval);
-  }
-
-  stopAutoplay() {
-    clearInterval(this.autoplayInterval);
-  }
-
-  bindIndicators() {
-    this.indicators.forEach(indicator => {
-      indicator.addEventListener("click", () => {
-        const index = parseInt(indicator.dataset.index);
-        this.goTo(index);
-        this.stopAutoplay();
-        this.startAutoplay();
-      });
-    });
-  }
-
-  goTo(index) {
-    if (index === this.currentIndex) return;
-    this.slides[this.currentIndex].classList.remove("active");
-    this.indicators[this.currentIndex]?.classList.remove("active");
-    this.currentIndex = index;
-    this.activateSlide(this.currentIndex);
-  }
-
   next() {
-    const nextIndex = (this.currentIndex + 1) % this.slides.length;
-    this.goTo(nextIndex);
+    this.slides[this.currentIndex].classList.remove("active");
+    this.currentIndex = (this.currentIndex + 1) % this.slides.length;
+    this.activateSlide(this.currentIndex);
   }
 
   activateSlide(index) {
     const slide = this.slides[index];
     slide.classList.add("active");
-    this.indicators[index]?.classList.add("active");
 
     // Trigger animation-specific logic if needed
     const animation = slide.dataset.animation;

@@ -29,11 +29,9 @@ class Address(models.Model):
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def on_user_created(sender, instance, created, **kwargs):
+def create_user_wishlist(sender, instance, created, **kwargs):
     if created:
         from products.models import Wishlist
-        from core.services import send_welcome_email
         Wishlist.objects.get_or_create(user=instance)
-        send_welcome_email(instance)
 
 # Create your models here.

@@ -23,37 +23,8 @@ window.ShopManager = class ShopManager {
     }
 
     init() {
-        this.initMobileUI();
         this.bindEvents();
         this.triggerReveal();
-    }
-
-    initMobileUI() {
-        // Mobile Filter Drawer
-        const trigger = document.getElementById('mobile-filter-trigger');
-        const sidebar = document.getElementById('shop-sidebar');
-        const close = document.getElementById('mobile-filter-close');
-
-        if (trigger && sidebar) {
-            trigger.addEventListener('click', () => {
-                sidebar.classList.add('active');
-            });
-        }
-
-        if (close && sidebar) {
-            close.addEventListener('click', () => {
-                sidebar.classList.remove('active');
-            });
-        }
-
-        // Collapsible Sections
-        document.querySelectorAll('.filter-section.collapsible .filter-toggle').forEach(toggle => {
-            toggle.addEventListener('click', (e) => {
-                e.preventDefault();
-                const parent = toggle.closest('.filter-section');
-                parent.classList.toggle('active');
-            });
-        });
     }
 
     bindEvents() {

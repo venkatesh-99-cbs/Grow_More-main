@@ -25,7 +25,6 @@
   </head>
   <body
     data-authenticated="{{ request.user.is_authenticated|yesno:'true,false' }}"
-    data-server-time="{{ now|date:'c' }}"
   >
     {% include "partials/intro_animation.html" %}
     {% block header %}

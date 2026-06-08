@@ -4,6 +4,14 @@ import { getEmbeddedOffer } from "./offer-service.js";
 import { initOfferPopup } from "./popup-banner.js";
 import { initProductOffers } from "./product-offers.js";
 
+document.addEventListener("DOMContentLoaded", () => {
+  const offer = getEmbeddedOffer();
+  initOfferPopup(offer);
+  initFloatingBall(offer);
+  initProductOffers();
+  initOfferCountdowns();
+});
+
 class HomepageOfferSlider {
     constructor() {
         this.container = document.getElementById('offer-slides-container');
@@ -16,29 +24,10 @@ class HomepageOfferSlider {
 
     init() {
         if (this.slides.length > 1) {
-            this.createIndicators();
             this.bindNav();
             this.autoPlay();
         }
         this.initTimers();
-    }
-
-    createIndicators() {
-        const nav = document.querySelector('.offer-nav');
-        if (!nav) return;
-        const dotsContainer = document.createElement('div');
-        dotsContainer.className = 'offer-dots';
-        this.slides.forEach((_, idx) => {
-            const dot = document.createElement('span');
-            dot.className = 'offer-dot' + (idx === 0 ? ' active' : '');
-            dot.addEventListener('click', () => {
-                this.showSlide(idx);
-                clearInterval(this.playInterval);
-                this.autoPlay();
-            });
-            dotsContainer.appendChild(dot);
-        });
-        nav.insertBefore(dotsContainer, nav.querySelector('.nav-next'));
     }
 
     bindNav() {
@@ -50,18 +39,10 @@ class HomepageOfferSlider {
         this.slides[this.current].classList.remove('active');
         this.current = (n + this.slides.length) % this.slides.length;
         this.slides[this.current].classList.add('active');
-        this.updateIndicators();
     }
 
     autoPlay() {
-        this.playInterval = setInterval(() => this.showSlide(this.current + 1), 8000);
-    }
-
-    updateIndicators() {
-        const dots = document.querySelectorAll('.offer-dot');
-        dots.forEach((dot, idx) => {
-            dot.classList.toggle('active', idx === this.current);
-        });
+        setInterval(() => this.showSlide(this.current + 1), 8000);
     }
 
     initTimers() {
@@ -95,10 +76,5 @@ class HomepageOfferSlider {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const offer = getEmbeddedOffer();
-    initOfferPopup(offer);
-    initFloatingBall(offer);
-    initProductOffers();
-    initOfferCountdowns();
     new HomepageOfferSlider();
 });
