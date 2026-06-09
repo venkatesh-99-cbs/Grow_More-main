@@ -42,8 +42,9 @@ def best_offer_for_product(product):
     for offer in offers:
         if offer.applies_to_product(product):
             offer_price = offer.discount_price_for(product.price)
-            # If this offer is better than current best (including manual discount)
-            if offer_price < best_price:
+            # If this offer is better than or equal to current best (including manual discount)
+            # Admin created offers take precedence.
+            if offer_price <= best_price:
                 best_price = offer_price
                 best_offer = offer
 

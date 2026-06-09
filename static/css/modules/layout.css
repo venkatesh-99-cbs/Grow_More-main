@@ -25,12 +25,12 @@
 
 .logo { font-family: var(--font-brand); font-size: 1.8rem; }
 .brand-logo { display: inline-flex; align-items: center; gap: .55rem; min-width: max-content; }
-.brand-logo img { width: 60px; height: 60px; object-fit: contain; border-radius: 12px; background: #fff; border: 1px solid rgba(162, 128, 137, 0.18); transition: all 0.3s ease; }
+.brand-logo img { width: 140px; height: 50px; object-fit: contain; border-radius: 8px; background: transparent; border: none; transition: all 0.3s ease; }
 
 @media (max-width: 640px) {
   .brand-logo img {
-    width: 48px;
-    height: 48px;
+    width: 110px;
+    height: 40px;
   }
 }
 .brand-logo span { line-height: 1; }
@@ -121,33 +121,40 @@
 .stat-tab {
   border: none;
   cursor: pointer;
-  backdrop-filter: blur(3px);
-  transition: transform 0.24s ease, box-shadow 0.24s ease, background 0.24s ease;
-  background: linear-gradient(120deg, rgba(81, 226, 245, 0.35), rgba(157, 249, 239, 0.3));
-  animation: tabWaveLoop 2.2s ease-in-out infinite;
+  backdrop-filter: blur(8px);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(81, 226, 245, 0.85);
+  color: var(--ink-900);
+  padding: 0.6rem 1.2rem;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  box-shadow: 0 8px 24px rgba(81, 226, 245, 0.2);
 }
 
-.stat-tab:nth-child(2) {
-  animation-delay: 0.25s;
+.stat-tab .stat-info strong {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 800;
 }
 
-.stat-tab:nth-child(3) {
-  animation-delay: 0.5s;
-}
-
-.stat-row:hover .stat-tab {
-  animation-duration: 1.15s;
+.stat-tab .stat-info small {
+  display: block;
+  font-size: 0.72rem;
+  opacity: 0.8;
+  font-weight: 600;
 }
 
 .stat-tab:hover {
-  transform: translateY(-4px);
-  background: linear-gradient(120deg, rgba(81, 226, 245, 0.68), rgba(157, 249, 239, 0.62));
+  transform: translateY(-6px) scale(1.02);
+  background: var(--bright-blue);
+  box-shadow: 0 12px 32px rgba(81, 226, 245, 0.35);
 }
 
 .stat-tab.active {
-  transform: translateY(-5px);
-  background: linear-gradient(120deg, rgba(81, 226, 245, 0.72), rgba(255, 168, 182, 0.68));
-  box-shadow: 0 10px 22px rgba(58, 47, 51, 0.22);
+  background: var(--bright-blue);
+  box-shadow: 0 12px 32px rgba(81, 226, 245, 0.4);
 }
 
 @keyframes tabWaveLoop {
@@ -634,7 +641,7 @@
 
 /* Mobile Toggle */
 .menu-toggle {
-  display: none;
+  display: none !important;
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -647,7 +654,7 @@
 
 @media (max-width: 900px) {
   .menu-toggle {
-    display: grid;
+    display: grid !important;
     place-items: center;
   }
 

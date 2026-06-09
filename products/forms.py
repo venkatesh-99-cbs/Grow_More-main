@@ -17,7 +17,7 @@ class ProductForm(forms.ModelForm):
         model = Product
         fields = (
             "name", "slug", "category", "description", "price", "discount_price",
-            "stock", "brand", "color_hex", "is_active", "is_featured", "is_trending", "main_image",
+            "stock", "brand", "color_hex", "color_name", "is_active", "is_featured", "is_trending", "main_image",
             "gallery_image_1", "gallery_image_2", "gallery_image_3",
             "gallery_url_1", "gallery_url_2", "gallery_url_3",
         )
@@ -90,6 +90,18 @@ class ProductForm(forms.ModelForm):
         product = super().save(commit=False)
         product.sizes = self.cleaned_data["sizes_text"]
 
+        # Handle size stock management from post data if available
+        # This is for the custom dashboard
+        size_stock_data = {}
+        for key, value in self.data.items():
+            if key.startswith("size_stock_"):
+                size = key.replace("size_stock_", "")
+                if size in product.sizes:
+                    try:
+                        size_stock_data[size] = int(value)
+                    except ValueError:
+                        pass
+
         uploaded_main = self.cleaned_data.get("main_image")
         if uploaded_main:
             old_public_id = self.instance.cloudinary_public_id if self.instance and self.instance.pk else None
@@ -107,6 +119,14 @@ class ProductForm(forms.ModelForm):
         if commit:
             product.save()
             self.save_m2m()
+            # Update SizeStock objects
+            from products.models import SizeStock
+            for size, stock_qty in size_stock_data.items():
+                SizeStock.objects.update_or_create(
+                    product=product,
+                    size=size,
+                    defaults={"stock_quantity": stock_qty}
+                )
         return product
 
 

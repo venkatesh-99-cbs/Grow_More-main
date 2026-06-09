@@ -38,10 +38,14 @@ function initProductSwipe() {
 
 function initQuantity() {
   document.querySelectorAll(".qty-btn").forEach((button) => {
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const input = document.getElementById("detail-qty");
       const value = Number(input.value || 1);
-      input.value = String(button.dataset.action === "plus" ? value + 1 : Math.max(1, value - 1));
+      const newValue = button.dataset.action === "plus" ? value + 1 : Math.max(1, value - 1);
+      input.value = newValue;
+      // Also update any other quantity inputs if they exist (though on detail there should only be one)
     });
   });
 }
