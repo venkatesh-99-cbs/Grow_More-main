@@ -3,6 +3,19 @@
 {% block dashboard_content %}
   <h1>Homepage Manager</h1>
   <section class="dashboard-two">
+    <div class="card admin-form">
+      <h3>{% if current_group %}Edit{% else %}Add{% endif %} Hero Group</h3>
+      <p class="helptext">Groups share the same text across multiple banner images.</p>
+      <form method="post" action="{% if current_group %}{% url 'dashboard:group_edit' current_group.pk %}{% else %}{% url 'dashboard:homepage' %}{% endif %}">
+        {% csrf_token %}
+        {{ group_form.as_p }}
+        <button class="submit-btn" type="submit" name="save_group">Save Group</button>
+        {% if current_group %}
+          <a href="{% url 'dashboard:homepage' %}" class="text-action">Cancel</a>
+        {% endif %}
+      </form>
+    </div>
+
     <form class="card form admin-form" method="post" enctype="multipart/form-data" action="{% url 'dashboard:banner_create' %}">
       {% csrf_token %}
       <h3>Add Hero Banner</h3>
@@ -10,6 +23,38 @@
       <button class="submit-btn" type="submit">Save Banner</button>
     </form>
   </section>
+
+  <h2>Hero Groups</h2>
+  <div class="admin-table-wrap" style="margin-bottom: 2rem;">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Title</th>
+          <th>Banners</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for g in groups %}
+          <tr>
+            <td><strong>{{ g.name }}</strong></td>
+            <td>{{ g.title }}</td>
+            <td>{{ g.banners.count }}</td>
+            <td>
+              <div class="table-actions">
+                <a href="{% url 'dashboard:group_edit' g.pk %}" class="text-action">Edit</a>
+                <form action="{% url 'dashboard:group_delete' g.pk %}" method="post">
+                  {% csrf_token %}
+                  <button type="submit" class="danger-action">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 
   <h2>Hero Banners</h2>
   <div class="grid">

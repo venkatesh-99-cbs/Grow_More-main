@@ -14,13 +14,18 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1 class="h1">Welcome to Grow More</h1>
+            <h1 class="h1">Welcome to Grow More, {{ user.first_name|default:user.username }}!</h1>
         </div>
-        <p>Hi {{ user.username }},</p>
+        <p>Hi {{ user.first_name|default:user.username }},</p>
         <p>Welcome to the Grow More community! We're thrilled to have you on board. Get ready to experience the finest summer menswear designed for energy and style.</p>
-        <p>Explore our latest collections and find your perfect summer look.</p>
+
+        <div style="background: rgba(81, 226, 245, 0.1); border-radius: 12px; padding: 20px; margin: 25px 0; border-left: 4px solid #51e2f5;">
+            <h3 style="margin-top: 0;">Explore Our Collection</h3>
+            <p style="margin-bottom: 0;">Our Summer 2026 collection is live! Find athletic-inspired silhouettes designed for movement and coastal vibes.</p>
+        </div>
+
         <div style="text-align: center;">
-            <a href="{{ site_url }}/shop/" class="button">Start Shopping</a>
+            <a href="{{ site_url }}/shop/" class="button">Shop Summer 2026</a>
         </div>
         <p>Stay Cool, Move Bold.<br>The Grow More Team</p>
         <div class="footer">

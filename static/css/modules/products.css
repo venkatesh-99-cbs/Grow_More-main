@@ -111,12 +111,15 @@
   bottom: 10px;
   transform: translateX(-50%);
   z-index: 3;
-  background: rgba(43, 32, 37, 0.82);
-  color: #fff;
+  background: rgba(81, 226, 245, 0.9);
+  color: var(--ink-900);
   border-radius: 999px;
-  padding: 0.2rem 0.52rem;
-  font-size: 0.68rem;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.72rem;
+  font-weight: 800;
   white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  pointer-events: none;
 }
 
 .flip-hint.hide {
@@ -495,23 +498,32 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.92);
   cursor: pointer;
   z-index: 3;
-  display: grid;
-  place-items: center;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  opacity: 1 !important;
+}
+
+.img-nav:hover {
+  background: #fff;
+  transform: translateY(-50%) scale(1.1);
 }
 
 .img-nav.prev {
-  left: 10px;
+  left: 1rem;
 }
 
 .img-nav.next {
-  right: 10px;
+  right: 1rem;
 }
 
 .detail-thumbs {

@@ -283,7 +283,7 @@ body {
 .detail-copy .swatch-btn { width: 38px; height: 38px; }
 .qty-selector { display: inline-flex; align-items: center; width: fit-content; gap: .45rem; padding: .35rem; border-radius: 14px; background: rgba(255,255,255,.72); border: 1px solid var(--border); }
 .qty-selector button { width: 38px; height: 38px; border: none; border-radius: 10px; background: #fff; font-weight: 800; cursor: pointer; }
-.qty-selector input { width: 44px; border: 0; background: transparent; text-align: center; font-weight: 800; }
+.qty-selector input { width: 48px; min-width: 48px; border: 0; background: transparent; text-align: center; font-weight: 800; font-size: 1.1rem; }
 .action-buttons { display: grid; grid-template-columns: 1fr auto; gap: .9rem; }
 .primary-btn { border: none; border-radius: 16px; padding: 1rem 1.15rem; background: var(--ink-900); color: #fff; font-weight: 800; cursor: pointer; transition: transform var(--transition), box-shadow var(--transition); }
 .primary-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 26px rgba(58,47,51,.18); }
@@ -336,6 +336,41 @@ body {
     background: rgba(255,255,255,.9);
 }
 .admin-form input[type="checkbox"] { width: auto; }
+
+/* Dashboard Size Buttons Styling */
+.field-sizes_list ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+}
+
+.field-sizes_list li label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+    height: 40px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    background: #fff;
+    padding: 0 10px;
+}
+
+.field-sizes_list li input[type="checkbox"] {
+    display: none;
+}
+
+.field-sizes_list li label:has(input:checked) {
+    background: var(--bright-blue);
+    color: var(--ink-900);
+    border-color: var(--bright-blue);
+    box-shadow: 0 4px 12px rgba(81, 226, 245, 0.3);
+}
 .field-color_hex { position: relative; }
 .field-color_hex input { max-width: 160px; min-height: 46px; font-weight: 800; text-transform: uppercase; }
 .upload-dropzone {

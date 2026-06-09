@@ -120,8 +120,5 @@ async function handleCartClick(event) {
   const button = event.target.closest("[data-add-cart]");
   if (!button) return;
 
-  // Handled by ProductCardManager or custom event now,
-  // but keep a fallback for simple buttons if needed.
-  const scope = button.closest("[data-product-id]");
-  if (!scope) return;
+  // Handled by ProductCardManager now via "add-to-cart" event.
 }

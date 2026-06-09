@@ -1,0 +1,62 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+  <div class="admin-heading">
+    <div>
+      <h1>Brands</h1>
+      <p class="admin-subtitle">Manage premium fashion labels in your catalog.</p>
+    </div>
+  </div>
+
+  <div class="admin-layout">
+    <div class="card admin-form">
+      <h2>{% if brand %}Edit{% else %}Add{% endif %} Brand</h2>
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="add-btn" type="submit">Save Brand</button>
+        {% if brand %}
+          <a href="{% url 'dashboard:brands' %}" class="text-action">Cancel</a>
+        {% endif %}
+      </form>
+    </div>
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Slug</th>
+            <th>Products</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in brands %}
+            <tr>
+              <td data-label="Name"><strong>{{ b.name }}</strong></td>
+              <td data-label="Slug">{{ b.slug }}</td>
+              <td data-label="Products">{{ b.product_count }}</td>
+              <td data-label="Status">
+                {% if b.is_active %}
+                  <span class="status-pill" style="background:#e6f7ef; color:#23734e;">Active</span>
+                {% else %}
+                  <span class="status-pill" style="background:#fff1f0; color:#cf1322;">Hidden</span>
+                {% endif %}
+              </td>
+              <td data-label="Actions">
+                <div class="table-actions">
+                  <a href="{% url 'dashboard:brand_edit' b.pk %}" class="text-action">Edit</a>
+                  <form action="{% url 'dashboard:brand_delete' b.pk %}" method="post" onsubmit="return confirm('Remove this brand?')">
+                    {% csrf_token %}
+                    <button type="submit" class="danger-action">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}
