@@ -7,14 +7,14 @@ from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from core.forms import HeroBannerForm
-from core.models import HeroBanner
+from core.forms import HeroBannerForm, HeroGroupForm
+from core.models import HeroBanner, HeroGroup
 from offers.forms import PromotionalOfferForm
 from offers.models import PromotionalOffer
 from orders.models import Order, Payment
-from products.forms import CategoryForm, ProductForm
+from products.forms import BrandForm, CategoryForm, ProductForm
 from products.cloudinary_utils import delete_product_image
-from products.models import Category, Product
+from products.models import Brand, Category, Product
 
 
 @staff_member_required
@@ -100,13 +100,66 @@ def category_delete(request, pk):
 
 
 @staff_member_required
-def homepage(request):
+def brands(request, pk=None):
+    brand = get_object_or_404(Brand, pk=pk) if pk else None
+    form = BrandForm(request.POST or None, instance=brand)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Brand saved.")
+        return redirect("dashboard:brands")
+    brands_qs = Brand.objects.annotate(product_count=Count("products"))
+    return render(
+        request,
+        "dashboard/brands.html",
+        {"form": form, "brands": brands_qs, "brand": brand},
+    )
+
+
+@staff_member_required
+@require_POST
+def brand_delete(request, pk):
+    brand = get_object_or_404(Brand, pk=pk)
+    name = brand.name
+    try:
+        brand.delete()
+        messages.success(request, f"{name} removed.")
+    except ProtectedError:
+        brand.is_active = False
+        brand.save(update_fields=["is_active"])
+        messages.warning(request, f"{name} is used by products, so it was hidden instead.")
+    return redirect("dashboard:brands")
+
+
+@staff_member_required
+def homepage(request, pk=None):
+    group = get_object_or_404(HeroGroup, pk=pk) if pk else None
+    group_form = HeroGroupForm(request.POST or None, instance=group)
+    if request.method == "POST" and "save_group" in request.POST:
+        if group_form.is_valid():
+            group_form.save()
+            messages.success(request, "Hero group saved.")
+            return redirect("dashboard:homepage")
+
     banner_form = HeroBannerForm()
     return render(
         request,
         "dashboard/homepage.html",
-        {"banner_form": banner_form, "banners": HeroBanner.objects.all()},
+        {
+            "banner_form": banner_form,
+            "group_form": group_form,
+            "banners": HeroBanner.objects.select_related("group").all(),
+            "groups": HeroGroup.objects.all(),
+            "current_group": group
+        },
     )
+
+
+@staff_member_required
+@require_POST
+def group_delete(request, pk):
+    get_object_or_404(HeroGroup, pk=pk).delete()
+    messages.success(request, "Hero group removed.")
+    return redirect("dashboard:homepage")
 
 
 @staff_member_required

@@ -52,11 +52,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  const sizesInput = document.getElementById("id_sizes_text");
   const sizeStockFields = document.getElementById("size-stock-fields");
-  if (sizesInput && sizeStockFields) {
-    sizesInput.addEventListener("input", () => {
-      const sizes = sizesInput.value.split(",").map(s => s.trim()).filter(s => s !== "");
+  const sizeCheckboxes = document.querySelectorAll('input[name="sizes_list"]');
+  if (sizeCheckboxes.length > 0 && sizeStockFields) {
+    const updateSizeStockFields = () => {
+      const sizes = [...sizeCheckboxes].filter(cb => cb.checked).map(cb => cb.value);
       const existingRows = [...sizeStockFields.querySelectorAll(".size-stock-row")];
       const existingSizes = existingRows.map(row => row.querySelector("span").textContent);
 
@@ -82,6 +82,10 @@ document.addEventListener("DOMContentLoaded", () => {
           sizeStockFields.appendChild(row);
         }
       });
+    };
+
+    sizeCheckboxes.forEach(cb => {
+      cb.addEventListener('change', updateSizeStockFields);
     });
   }
 

@@ -22,7 +22,7 @@
             {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
             {{ field.errors }}
           </p>
-          {% if field.name == "sizes_text" %}
+          {% if field.name == "sizes_list" %}
             <div id="size-stock-manager" style="background: rgba(81, 226, 245, 0.05); padding: 1rem; border-radius: 12px; margin: 1rem 0; border: 1px dashed var(--bright-blue);">
               <h3 style="font-size: 0.9rem; margin-bottom: 0.5rem;">Size-Specific Stock</h3>
               <div id="size-stock-fields" style="display: grid; gap: 0.5rem;">
