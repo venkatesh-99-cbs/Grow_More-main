@@ -3,7 +3,7 @@
   data-product-id="{{ product.id }}"
   data-product-url="{{ product.get_absolute_url }}"
 >
-  <div class="flip-hint">Touch to Flip</div>
+  <div class="flip-hint" style="display: block; opacity: 1; visibility: visible; top: 10px; bottom: auto;">Touch it</div>
   <div class="product-media">
     <img
       src="{{ product.main_image_url }}"
@@ -90,6 +90,7 @@
           data-value="{{ color.hex }}"
           style="background-color: {{ color.hex }};"
           title="{{ color.name|default:color.hex }}"
+            data-tippy-content="{{ color.name|default:color.hex }}"
         ></button>
         {% endfor %}
       </div>

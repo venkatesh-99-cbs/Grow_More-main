@@ -16,11 +16,11 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1 class="h1">Thank You for Your Order!</h1>
-            <p>Order #{{ order.order_number }}</p>
+            <h1 class="h1" style="color: #23734e;">Order Confirmed!</h1>
+            <p style="font-weight: 700; font-size: 1.1rem;">Order #{{ order.order_number }}</p>
         </div>
-        <p>Hi {{ order.user.username }},</p>
-        <p>Your order has been confirmed and is being processed. We'll let you know once it's on its way.</p>
+        <p>Hi {{ order.user.first_name|default:order.user.username }},</p>
+        <p>Excellent choice! Your order has been successfully placed and is now being prepared with care by our team. We've attached your payment receipt to this email for your records.</p>
 
         <div class="order-summary">
             <h3>Order Summary</h3>

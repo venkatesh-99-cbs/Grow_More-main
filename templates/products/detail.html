@@ -3,8 +3,8 @@
 {% block title %}{{ product.name }} | Grow More{% endblock %}
 {% block content %}
   <main class="container page-hero">
-    <div id="product-detail-scope" class="product-card" data-product-id="{{ product.id }}" data-product-url="{{ product.get_absolute_url }}" style="background:transparent; border:none; box-shadow:none; padding:0; display:block;">
-    <section class="detail-wrap">
+    <div id="product-detail-scope" class="product-card detail-card-container" data-product-id="{{ product.id }}" data-product-url="{{ product.get_absolute_url }}" style="background:var(--white); border:1px solid var(--border); border-radius:24px; box-shadow:0 12px 40px rgba(0,0,0,0.06); padding:2rem; display:block;">
+    <section class="detail-wrap" style="margin-top:0;">
       <div class="detail-media">
         <div class="detail-main-frame">
           <button type="button" class="img-nav prev" aria-label="Previous image"> < </button>
@@ -35,6 +35,7 @@
             <span class="price-now">Rs. {{ product.current_price }}</span>
             {% if product.discount_percent %}
               <span class="price-old">Rs. {{ product.original_price }}</span>
+              <span class="discount-badge-inline" style="background: var(--bright-blue); color: var(--ink-900); padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 0.9rem; margin-left: 8px;">{{ product.discount_percent }}% OFF</span>
             {% endif %}
           </div>
         </div>
@@ -69,6 +70,7 @@
               data-value="{{ color.hex }}"
               style="background-color: {{ color.hex }};"
               title="{{ color.name|default:color.hex }}"
+              data-tippy-content="{{ color.name|default:color.hex }}"
             ></button>
             {% endfor %}
           </div>
@@ -77,9 +79,9 @@
 
         <div class="variant-group">
           <label>Quantity</label>
-          <div class="qty-stepper">
+          <div class="qty-selector">
             <button type="button" class="qty-btn" data-action="minus">-</button>
-            <input id="detail-qty" type="number" min="1" value="1" readonly class="qty-input" />
+            <input id="detail-qty" type="number" min="1" value="1" readonly />
             <button type="button" class="qty-btn" data-action="plus">+</button>
           </div>
         </div>

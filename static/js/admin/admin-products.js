@@ -52,6 +52,43 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  const sizeStockFields = document.getElementById("size-stock-fields");
+  const sizeCheckboxes = document.querySelectorAll('input[name="sizes_list"]');
+  if (sizeCheckboxes.length > 0 && sizeStockFields) {
+    const updateSizeStockFields = () => {
+      const sizes = [...sizeCheckboxes].filter(cb => cb.checked).map(cb => cb.value);
+      const existingRows = [...sizeStockFields.querySelectorAll(".size-stock-row")];
+      const existingSizes = existingRows.map(row => row.querySelector("span").textContent);
+
+      // Remove rows for sizes no longer present
+      existingRows.forEach(row => {
+        if (!sizes.includes(row.querySelector("span").textContent)) {
+          row.remove();
+        }
+      });
+
+      // Add rows for new sizes
+      sizes.forEach(size => {
+        if (!existingSizes.includes(size)) {
+          const row = document.createElement("div");
+          row.className = "size-stock-row";
+          row.style.display = "flex";
+          row.style.alignItems = "center";
+          row.style.gap = "1rem";
+          row.innerHTML = `
+            <span style="font-weight: 700; min-width: 40px;">${size}</span>
+            <input type="number" name="size_stock_${size}" value="0" min="0" style="max-width: 100px;">
+          `;
+          sizeStockFields.appendChild(row);
+        }
+      });
+    };
+
+    sizeCheckboxes.forEach(cb => {
+      cb.addEventListener('change', updateSizeStockFields);
+    });
+  }
+
   if (dropzone && mainInput) {
     ["dragenter", "dragover"].forEach((eventName) => {
       dropzone.addEventListener(eventName, (event) => {

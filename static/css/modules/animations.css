@@ -65,13 +65,44 @@
 
 h2.animate-slide-up {
   opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateY(40px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 h2.animate-slide-up.active {
   opacity: 1;
   transform: translateY(0);
+}
+
+.offer-slide-item {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.6s ease-in-out;
+}
+
+.offer-slide-item.active {
+  display: block;
+  opacity: 1;
+}
+
+.offer-dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.offer-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.offer-dot.active {
+  background: var(--bright-blue);
+  transform: scale(1.2);
 }
 
 .animate-pulse {

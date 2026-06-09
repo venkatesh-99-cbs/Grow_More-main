@@ -55,13 +55,12 @@ class ProductCardManager {
       });
     }
 
-    // Favorite button
+    // Favorite button - Handled globally by products.js to avoid duplication
+    // We only prevent navigation if clicking the favorite button
     const favBtn = this.card.querySelector('[data-favorite-id]');
     if (favBtn) {
       favBtn.addEventListener('click', (e) => {
-        e.preventDefault();
         e.stopPropagation();
-        this.handleFavorite(favBtn);
       });
     }
 
@@ -116,56 +115,6 @@ class ProductCardManager {
       }
     });
     document.dispatchEvent(event);
-  }
-
-  handleFavorite(btn) {
-    if (document.body.dataset.authenticated !== 'true') {
-      if (window.notifications) {
-        window.notifications.warning('Please login to use wishlist');
-      }
-      return;
-    }
-
-    const id = btn.dataset.favoriteId;
-    const isActive = btn.classList.contains('active');
-
-    // Optimistic UI update
-    const allMatchingBtns = document.querySelectorAll(`[data-favorite-id="${id}"]`);
-    allMatchingBtns.forEach(b => b.classList.toggle('active', !isActive));
-
-    fetch('/products/wishlist/toggle/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': this.getCookie('csrftoken')
-      },
-      body: JSON.stringify({ product_id: id })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.error) {
-         // Revert on error
-         allMatchingBtns.forEach(b => b.classList.toggle('active', isActive));
-         if (window.notifications) window.notifications.error(data.error);
-         return;
-      }
-
-      const added = data.added;
-      allMatchingBtns.forEach(b => b.classList.toggle('active', added));
-
-      // Update fav count in nav
-      const favCount = document.getElementById('fav-count');
-      if (favCount) favCount.textContent = data.count;
-
-      if (window.notifications) {
-          window.notifications.success(added ? 'Added to favorites' : 'Removed from favorites');
-      }
-    })
-    .catch(err => {
-      console.error('Wishlist error:', err);
-      // Revert on error
-      allMatchingBtns.forEach(b => b.classList.toggle('active', isActive));
-    });
   }
 
   getCookie(name) {

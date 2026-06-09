@@ -41,34 +41,54 @@ export function initFavoriteUI() {
     const button = event.target.closest("[data-favorite-id]");
     if (!button) return;
 
+    event.preventDefault();
+    event.stopPropagation();
+
     const id = Number(button.dataset.favoriteId);
 
-    try {
-      const response = await apiPost("/api/wishlist/toggle/", { product_id: id });
-      if (response && typeof response.added !== 'undefined') {
-        // Logged in user
-        const current = await getFavorites();
-        const next = response.added ? [...current, id] : current.filter(fid => fid !== id);
-        cachedFavorites = next;
-        updateFavoriteCount();
-        showToast(response.added ? "Added to favorites" : "Removed from favorites");
-      } else {
-        // Fallback for non-logged in or error (though API returns 401)
-        const current = await getFavorites();
-        const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id];
-        setFavoritesLocally(next);
-        showToast(next.includes(id) ? "Added to favorites" : "Removed from favorites");
-      }
-    } catch (err) {
-      // Typically 401 Unauthorized
-      const current = await getFavorites();
-      const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id];
-      setFavoritesLocally(next);
-      showToast(next.includes(id) ? "Added to favorites" : "Removed from favorites");
+    if (document.body.dataset.authenticated !== 'true') {
+        showToast("Please login to use wishlist");
+        return;
     }
 
-    renderFavoritesPage();
-    event.preventDefault();
+    try {
+      // Optimistic UI update
+      const allMatchingBtns = document.querySelectorAll(`[data-favorite-id="${id}"]`);
+      const wasActive = button.classList.contains('active');
+      allMatchingBtns.forEach(b => b.classList.toggle('active', !wasActive));
+
+      const response = await apiPost("/api/wishlist/toggle/", { product_id: id });
+
+      if (response && typeof response.added !== 'undefined') {
+        // Update local cache
+        const current = await getFavorites();
+        const next = response.added ? [...new Set([...current, id])] : current.filter(fid => fid !== id);
+        cachedFavorites = next;
+        updateFavoriteCount();
+
+        // Ensure all buttons match server state
+        allMatchingBtns.forEach(b => b.classList.toggle('active', response.added));
+
+        showToast(response.added ? "Added to favorites" : "Removed from favorites");
+
+        // Re-render favorites page if we are on it
+        if (document.getElementById("favorites-grid")) {
+            renderFavoritesPage();
+        }
+      }
+    } catch (err) {
+      console.error("Wishlist toggle failed:", err);
+      // Revert optimistic update
+      const current = await getFavorites();
+      const allMatchingBtns = document.querySelectorAll(`[data-favorite-id="${id}"]`);
+      allMatchingBtns.forEach(b => b.classList.toggle('active', current.includes(id)));
+
+      if (err.status === 401) {
+          showToast("Please login to use wishlist");
+      } else {
+          showToast("Something went wrong. Please try again.");
+      }
+    }
   });
 }
 
@@ -137,24 +157,42 @@ async function initShopControls() {
 }
 
 function initCardNavigation() {
+  // Check if flip hint should be shown
+  const hasFlipped = localStorage.getItem('gm_has_flipped');
+  if (hasFlipped) {
+    document.querySelectorAll('.flip-hint').forEach(hint => hint.remove());
+  }
+
   document.addEventListener("click", (event) => {
-    const pill = event.target.closest(".radio-pill");
+    const pill = event.target.closest(".radio-pill") || event.target.closest(".size-pill") || event.target.closest(".swatch-btn");
     if (pill) {
-      const row = pill.closest(".radio-row");
-      row?.querySelectorAll(".radio-pill").forEach((button) => button.classList.remove("active"));
+      const row = pill.closest(".radio-row") || pill.closest(".swatches-row");
+      row?.querySelectorAll(".radio-pill, .size-pill, .swatch-btn").forEach((button) => button.classList.remove("active"));
       pill.classList.add("active");
       return;
     }
+
     const media = event.target.closest(".product-media");
-    if (media && window.matchMedia("(hover: none)").matches) {
+    const isMobile = window.matchMedia("(hover: none)").matches;
+
+    if (media && isMobile) {
       media.classList.toggle("flipped");
-      event.preventDefault();
+      // Hide hint on first flip
+      if (!localStorage.getItem('gm_has_flipped')) {
+        localStorage.setItem('gm_has_flipped', 'true');
+        document.querySelectorAll('.flip-hint').forEach(hint => hint.remove());
+      }
       return;
     }
+
     const card = event.target.closest(".product-card");
-    if (!card || event.target.closest("button, input, select, textarea, a, .radio-row")) return;
-    if (card.dataset.productUrl && card.dataset.productUrl !== "#") {
-      window.location.href = card.dataset.productUrl;
+    // If user clicks name (which is usually an H3 or link) or image on desktop
+    const isLinkOrButton = event.target.closest("button, input, select, textarea, a, .radio-row, .swatches-row");
+
+    if (card && !isLinkOrButton) {
+        if (card.dataset.productUrl && card.dataset.productUrl !== "#") {
+          window.location.href = card.dataset.productUrl;
+        }
     }
   });
 }
