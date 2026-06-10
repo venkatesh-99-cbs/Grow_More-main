@@ -66,13 +66,16 @@ class HomepageOfferSlider {
 
     initTimers() {
         const update = () => {
+            const serverStart = Date.parse(document.body.dataset.serverTime || new Date().toISOString());
+            const clientStart = window._clientStartTime || (window._clientStartTime = Date.now());
+            const now = serverStart + (Date.now() - clientStart);
+
             document.querySelectorAll('.offer-timer').forEach(timer => {
-                const ends = new Date(timer.dataset.ends);
-                const now = new Date();
+                const ends = Date.parse(timer.dataset.ends);
                 const diff = ends - now;
 
                 if (diff <= 0) {
-                    timer.innerHTML = 'OFFER EXPIRED';
+                    timer.innerHTML = '<span style="font-weight:900; letter-spacing:0.1em; color:var(--bright-blue);">OFFER ENDED</span>';
                     return;
                 }
 
