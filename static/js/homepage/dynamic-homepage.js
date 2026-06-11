@@ -77,12 +77,12 @@ function renderProductCard(product) {
 
   return `
     <article class="product-card reveal" data-product-id="${product.id}" data-product-url="/products/${product.slug}/">
-      <div class="product-media">
+      <div class="product-media" aria-label="${product.name}">
         <div class="flip-inner">
           <img class="front" src="${mainImage}" alt="${product.name} front" loading="lazy" />
           <img class="back" src="${galleryImage}" alt="${product.name} back" loading="lazy" />
         </div>
-        <button type="button" class="fav-btn" data-favorite-id="${product.id}" title="Add to favorites">♥</button>
+        <button type="button" class="fav-btn" data-id="${product.id}" title="Add to favorites"><i class="fa-regular fa-heart"></i></button>
         <div class="flip-hint">Tap to flip</div>
       </div>
       <div class="product-body">
