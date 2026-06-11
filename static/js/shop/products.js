@@ -179,9 +179,10 @@ function initCardNavigation() {
     }
 
     const media = event.target.closest(".product-media");
-    const isMobile = window.matchMedia("(hover: none)").matches;
+    const isMobile = window.matchMedia("(hover: none)").matches || window.innerWidth <= 768;
 
     if (media && isMobile) {
+      // Toggle flip only if clicking the media area
       media.classList.toggle("flipped");
       // Hide hint on first flip
       if (localStorage.getItem('gm_seen_flip_hint') !== "1") {
@@ -193,9 +194,12 @@ function initCardNavigation() {
 
     const card = event.target.closest(".product-card");
     // If user clicks name (which is usually an H3 or link) or image on desktop
-    const isLinkOrButton = event.target.closest("button, input, select, textarea, a, .radio-row, .swatches-row");
+    const isLinkOrButton = event.target.closest("button, input, select, textarea, a, .radio-row, .swatches-row, .variant-selectors, .variant-group");
 
     if (card && !isLinkOrButton) {
+        // Specifically for mobile: only navigate if NOT clicking media (which flips)
+        if (isMobile && event.target.closest(".product-media")) return;
+
         if (card.dataset.productUrl && card.dataset.productUrl !== "#") {
           window.location.href = card.dataset.productUrl;
         }

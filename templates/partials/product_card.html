@@ -65,11 +65,13 @@
       </div>
       {% if product.discount_percent %}
       <div class="save-line">You save Rs. {{ product.savings }} today</div>
-      <div class="limited-badge" data-ends-seconds="0">
-        Loading...
-      </div>
       {% endif %}
     </div>
+    {% if product.discount_percent %}
+    <div class="limited-badge" data-ends-seconds="0">
+      Loading...
+    </div>
+    {% endif %}
 
     <div class="variant-selectors">
       <div class="swatches-row" data-role="size">

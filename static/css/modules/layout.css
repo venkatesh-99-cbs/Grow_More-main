@@ -641,7 +641,7 @@
 
 /* Mobile Toggle */
 .menu-toggle {
-  display: none !important;
+  display: none;
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -650,11 +650,17 @@
   font-size: 1.2rem;
   cursor: pointer;
   color: var(--ink-900);
+  transition: all 0.3s ease;
+}
+
+.menu-toggle:hover {
+  background: rgba(81, 226, 245, 0.1);
+  border-color: var(--bright-blue);
 }
 
 @media (max-width: 900px) {
   .menu-toggle {
-    display: grid !important;
+    display: grid;
     place-items: center;
   }
 

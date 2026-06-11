@@ -13,22 +13,25 @@ class ProductCardManager {
   }
 
   init() {
+    if (this.card.dataset.managerInitialized === 'true') return;
+    this.card.dataset.managerInitialized = 'true';
+
     this.attachEventListeners();
     // Pre-select first available size and color
     this.autoSelectDefaults();
   }
 
   autoSelectDefaults() {
-    const firstSize = this.card.querySelector('[data-role="size"] button:not([disabled])');
+    const firstSize = this.card.querySelector('[data-role="size"] .size-pill:not([disabled]), [data-role="size"] button:not([disabled])');
     if (firstSize) this.selectSize(firstSize);
 
-    const firstColor = this.card.querySelector('[data-role="color"] button');
+    const firstColor = this.card.querySelector('[data-role="color"] .swatch-btn, [data-role="color"] button');
     if (firstColor) this.selectColor(firstColor);
   }
 
   attachEventListeners() {
     // Size selection
-    this.card.querySelectorAll('[data-role="size"] button').forEach(btn => {
+    this.card.querySelectorAll('[data-role="size"] button, .size-pill').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -37,7 +40,7 @@ class ProductCardManager {
     });
 
     // Color selection
-    this.card.querySelectorAll('[data-role="color"] button').forEach(btn => {
+    this.card.querySelectorAll('[data-role="color"] button, .swatch-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -55,27 +58,21 @@ class ProductCardManager {
       });
     }
 
-    // Favorite button - Handled globally by products.js to avoid duplication
-    // We only prevent navigation if clicking the favorite button
+    // Favorite button - Handled globally by products.js
     const favBtn = this.card.querySelector('.fav-btn[data-id]');
     if (favBtn) {
       favBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
+        // We let it bubble so products.js can handle it,
+        // but we ensure it doesn't trigger card navigation if any
       });
     }
 
-    // Make entire card clickable to go to detail page
-    this.card.addEventListener('click', (e) => {
-        // Don't navigate if clicking an action button
-        if (e.target.closest('button') || e.target.closest('.radio-pill')) return;
-        const url = this.card.dataset.productUrl;
-        if (url) window.location.href = url;
-    });
+    // Note: Card navigation is handled globally in products.js to avoid conflicts with flip logic
   }
 
   selectSize(btn) {
     if (btn.disabled) return;
-    this.card.querySelectorAll('[data-role="size"] button').forEach(b => b.classList.remove('active'));
+    this.card.querySelectorAll('[data-role="size"] button, [data-role="size"] .size-pill').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     this.selectedSize = btn.dataset.value;
 
@@ -89,7 +86,7 @@ class ProductCardManager {
   }
 
   selectColor(btn) {
-    this.card.querySelectorAll('[data-role="color"] button').forEach(b => b.classList.remove('active'));
+    this.card.querySelectorAll('[data-role="color"] button, [data-role="color"] .swatch-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     this.selectedColor = btn.dataset.value;
   }

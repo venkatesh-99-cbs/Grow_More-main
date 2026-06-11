@@ -20,7 +20,7 @@
   display: flex;
   flex-direction: column;
   /* Prevent layout shift */
-  min-height: 540px;
+  min-height: 560px;
 }
 
 .product-card:hover {
@@ -198,7 +198,7 @@
 }
 
 .price-block {
-  margin: 0.55rem 0 0.85rem;
+  margin: 0.55rem 0 0.4rem;
   background: linear-gradient(
     120deg,
     rgba(81, 226, 245, 0.17),
@@ -280,7 +280,7 @@
 }
 
 .limited-badge {
-  margin-top: 0.35rem;
+  margin-bottom: 0.65rem;
   width: fit-content;
   border-radius: 999px;
   padding: 0.17rem 0.52rem;
