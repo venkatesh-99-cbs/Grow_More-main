@@ -18,6 +18,16 @@
         <div class="hero-slide {% if forloop.first %}active{% endif %}" data-banner-id="{{ banner.id }}" data-theme="{{ banner.theme }}" data-animation="{{ banner.animation_type }}">
           <img src="{{ banner.display_image }}" alt="{{ banner.display_title }}" />
           <div class="hero-content">
+            {% if active_popup_offer %}
+            <div class="deal-banner">
+              <span class="deal-pill">🔥 LIMITED OFFER</span>
+              <p>Get <strong>{{ active_popup_offer.discount_percent }}% OFF</strong>
+              {% if active_popup_offer.description %}
+              + {{ active_popup_offer.description }}
+              {% endif %}
+              </p>
+            </div>
+            {% endif %}
             <h1 class="animate-slide-up">{{ banner.display_title }}</h1>
             <p id="hero-subtitle" class="animate-slide-up" style="animation-delay: 0.1s;">{{ banner.display_subtitle }}</p>
             <a class="cta-btn animate-slide-up" style="animation-delay: 0.2s;" href="{{ banner.display_button_url }}">{{ banner.display_button_label }}</a>
@@ -52,6 +62,16 @@
         <div class="hero-slide active" data-theme="summer" data-animation="scale">
           <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=1600&q=80" alt="Grow More" />
           <div class="hero-content">
+            {% if active_popup_offer %}
+            <div class="deal-banner">
+              <span class="deal-pill">🔥 LIMITED OFFER</span>
+              <p>Get <strong>{{ active_popup_offer.discount_percent }}% OFF</strong>
+              {% if active_popup_offer.description %}
+              + {{ active_popup_offer.description }}
+              {% endif %}
+              </p>
+            </div>
+            {% endif %}
             <h1 class="animate-slide-up">Own The Heat. Stay Cool.</h1>
             <p class="animate-slide-up" style="animation-delay: 0.1s;">Premium summer menswear for the energetic soul.</p>
             <a class="cta-btn animate-slide-up" style="animation-delay: 0.2s;" href="{% url 'products:shop' %}">Shop the Collection</a>
@@ -75,7 +95,7 @@
         {% include "partials/product_card.html" with product=product %}
       {% empty %}
          <!-- Even deeper fallback: Show any active products if no featured -->
-         {% for product in deal_products %}
+         {% for product in fallback_products %}
             {% include "partials/product_card.html" with product=product %}
          {% endfor %}
       {% endfor %}

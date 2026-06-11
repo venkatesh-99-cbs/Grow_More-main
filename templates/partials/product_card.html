@@ -59,10 +59,19 @@
 
     <h3 class="product-title">{{ product.name }}</h3>
 
-    <div class="product-price-row">
-      <span class="price-now">Rs. {{ product.current_price }}</span>
+    <div class="price-block {% if product.discount_percent %}has-offer{% endif %}">
+      <div class="price-line">
+        <span class="price-now">Rs. {{ product.current_price }}</span>
+        {% if product.discount_percent %}
+        <span class="price-old">Rs. {{ product.original_price }}</span>
+        <span class="price-off">{{ product.discount_percent }}% OFF</span>
+        {% endif %}
+      </div>
       {% if product.discount_percent %}
-      <span class="price-old">Rs. {{ product.original_price }}</span>
+      <div class="save-line">You save Rs. {{ product.savings }} today</div>
+      <div class="limited-badge" data-ends-seconds="0">
+        Loading...
+      </div>
       {% endif %}
     </div>
 

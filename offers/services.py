@@ -79,6 +79,7 @@ def offer_payload(offer):
         "highlight": offer.highlight_text,
         "discountPercent": offer.discount_percent,
         "endsAt": offer.countdown_target.isoformat(),
+        "offer_end_ms": int(offer.countdown_target.timestamp() * 1000),
         "ctaText": offer.cta_text,
         "ctaLink": offer.cta_link,
         "floatingBallEnabled": offer.floating_ball_enabled,

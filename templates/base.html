@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="{% static 'css/modules/products.css' %}" />
     <link rel="stylesheet" href="{% static 'css/modules/shop.css' %}" />
     <link rel="stylesheet" href="{% static 'css/modules/themes.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/modules/offers.css' %}" />
     <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
     {% block extra_css %}{% endblock %} {% block extra_head %}{% endblock %}
   </head>
@@ -100,62 +101,46 @@
     {% endblock %}
 
     {% if active_popup_offer %}
-    {{ active_popup_offer_payload|json_script:"active-offer-data" }}
-    <aside
-      id="deal-popup-container"
-      class="deal-popup-container"
-      data-offer-expirable
-      data-offer-id="{{ active_popup_offer.id }}"
-      aria-label="Current promotional offer"
-    >
+    <script>
+      const OFFER_END_MS = {{ offer_end_ms }};
+      if (OFFER_END_MS > Date.now()) {
+        localStorage.setItem("gm_deal_end_time", String(OFFER_END_MS));
+      }
+    </script>
+    <div id="deal-popup-container" class="deal-popup-container">
       <div class="deal-popup-banner">
-        <button class="popup-close" type="button" aria-label="Close offer">
-          &times;
-        </button>
+        <button class="popup-close" aria-label="Close deal banner">&times;</button>
         <div class="popup-content">
           <div class="popup-text">
-            <p class="popup-label">
-              {{ active_popup_offer.offer_label|default:"Limited Time Offer" }}
-            </p>
+            <p class="popup-label">🔥 LIMITED TIME OFFER 🔥</p>
             <h2 class="popup-title">{{ active_popup_offer.title }}</h2>
             <p class="popup-description">
-              {{ active_popup_offer.description|default:active_popup_offer.highlight_text|default:"Save on selected Grow More styles before the deal ends." }}
+              Get <strong>{{ active_popup_offer.discount_percent }}% OFF</strong>
+              {% if active_popup_offer.description %}
+              {{ active_popup_offer.description }}
+              {% else %}
+              on selected items
+              {% endif %}
             </p>
           </div>
-          <div class="popup-timer" aria-label="Offer countdown">
-            <span class="timer-label">Ends in</span>
-            <strong
-              class="popup-countdown"
-              data-offer-countdown
-              data-offer-end="{{ active_popup_offer.countdown_target|date:'c' }}"
-              >00:00:00</strong
-            >
+          <div class="popup-timer">
+            <div class="timer-label">Deal Ends In:</div>
+            <div class="popup-countdown">00:00:00</div>
           </div>
-          <a href="{{ active_popup_offer.cta_link }}" class="popup-cta"
-            >{{ active_popup_offer.cta_text|default:"Shop Now" }}</a
-          >
+          <a href="{{ active_popup_offer.cta_link }}" class="popup-cta">{{ active_popup_offer.cta_text|default:"Shop Now" }}</a>
         </div>
       </div>
-    </aside>
-    <button
-      id="deal-floating-ball"
-      class="deal-floating-ball"
-      type="button"
-      aria-label="Open current offer"
-    >
-      <span class="ball-label">{{ active_popup_offer.discount_percent }}%</span>
-      <span
-        class="ball-timer"
-        data-offer-countdown
-        data-offer-end="{{ active_popup_offer.countdown_target|date:'c' }}"
-        >00:00</span
-      >
-      {% if active_popup_offer.permanent_dismiss_allowed %}
-      <span class="ball-dismiss" data-offer-dismiss aria-label="Dismiss offer"
-        >&times;</span
-      >
-      {% endif %}
-    </button>
+    </div>
+
+    <div id="floating-deal-ball" class="floating-deal-ball" style="display: none;">
+      <button class="ball-close" aria-label="Dismiss floating ball">&times;</button>
+      <button class="ball-expand" aria-label="Expand timer">
+        <div class="ball-timer-display">
+          <span class="ball-countdown">00:00:00</span>
+          <span class="ball-label">Deal On!</span>
+        </div>
+      </button>
+    </div>
     {% endif %}
 
     {% if messages %}
@@ -200,6 +185,8 @@
     <script src="{% static 'js/skeleton-loader.js' %}"></script>
     <script src="{% static 'js/intro-animation.js' %}"></script>
     <script src="{% static 'js/product-interactions.js' %}"></script>
+    <script src="{% static 'js/offers/offer-engine.js' %}"></script>
+    <script src="{% static 'js/offers/product-offers.js' %}"></script>
     <script src="{% static 'js/offers/homepage-offers.js' %}"></script>
 
     <script type="module" src="{% static 'js/core/main.js' %}"></script>
