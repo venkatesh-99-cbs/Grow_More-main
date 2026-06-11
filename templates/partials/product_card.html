@@ -3,24 +3,21 @@
   data-product-id="{{ product.id }}"
   data-product-url="{{ product.get_absolute_url }}"
 >
-  <div class="flip-hint" style="display: block; opacity: 1; visibility: visible; top: 10px; bottom: auto;">Touch it</div>
-  <div class="product-media">
-    <img
-      src="{{ product.main_image_url }}"
-      data-src="{{ product.main_image_url }}"
-      alt="{{ product.name }}"
-      loading="lazy"
-      class="primary-image blur-up-image"
-    />
-    {% if product.gallery_images.1 %}
-    <img
-      src="{{ product.gallery_images.1 }}"
-      alt="{{ product.name }}"
-      loading="lazy"
-      class="secondary-image"
-      style="position: absolute; inset: 0; opacity: 0; transition: opacity 0.4s ease;"
-    >
-    {% endif %}
+  <div class="product-media" aria-label="{{ product.name }}">
+    <div class="flip-inner">
+      <img
+        src="{{ product.main_image_url }}"
+        alt="{{ product.name }} front"
+        loading="lazy"
+        class="front blur-up-image"
+      />
+      <img
+        src="{% if product.gallery_images.1 %}{{ product.gallery_images.1 }}{% else %}{{ product.main_image_url }}{% endif %}"
+        alt="{{ product.name }} back"
+        loading="lazy"
+        class="back"
+      />
+    </div>
 
     {% if product.discount_percent %}
     <div class="discount-badge">
@@ -40,13 +37,12 @@
     <button
       type="button"
       class="fav-btn"
-      data-favorite-id="{{ product.id }}"
+      data-id="{{ product.id }}"
       aria-label="Add to favorites"
     >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-      </svg>
+      <i class="fa-regular fa-heart"></i>
     </button>
+    <div class="flip-hint">Tap to flip</div>
   </div>
 
   <div class="product-body">

@@ -28,8 +28,10 @@ export async function updateFavoriteCount() {
   const favs = await getFavorites();
   const count = document.getElementById("fav-count");
   if (count) count.textContent = String(favs.length);
-  document.querySelectorAll("[data-favorite-id]").forEach((btn) => {
-    btn.classList.toggle("active", favs.includes(Number(btn.dataset.favoriteId)));
+  document.querySelectorAll("[data-id]").forEach((btn) => {
+    if (btn.classList.contains('fav-btn')) {
+      btn.classList.toggle("active", favs.includes(Number(btn.dataset.id)));
+    }
   });
 }
 
@@ -38,13 +40,13 @@ export function initFavoriteUI() {
   if (document.body.dataset.favoriteBound === "1") return;
   document.body.dataset.favoriteBound = "1";
   document.addEventListener("click", async (event) => {
-    const button = event.target.closest("[data-favorite-id]");
+    const button = event.target.closest(".fav-btn[data-id]");
     if (!button) return;
 
     event.preventDefault();
     event.stopPropagation();
 
-    const id = Number(button.dataset.favoriteId);
+    const id = Number(button.dataset.id);
 
     if (document.body.dataset.authenticated !== 'true') {
         showToast("Please login to use wishlist");
@@ -53,7 +55,7 @@ export function initFavoriteUI() {
 
     try {
       // Optimistic UI update
-      const allMatchingBtns = document.querySelectorAll(`[data-favorite-id="${id}"]`);
+      const allMatchingBtns = document.querySelectorAll(`.fav-btn[data-id="${id}"]`);
       const wasActive = button.classList.contains('active');
       allMatchingBtns.forEach(b => b.classList.toggle('active', !wasActive));
 
@@ -80,7 +82,7 @@ export function initFavoriteUI() {
       console.error("Wishlist toggle failed:", err);
       // Revert optimistic update
       const current = await getFavorites();
-      const allMatchingBtns = document.querySelectorAll(`[data-favorite-id="${id}"]`);
+      const allMatchingBtns = document.querySelectorAll(`.fav-btn[data-id="${id}"]`);
       allMatchingBtns.forEach(b => b.classList.toggle('active', current.includes(id)));
 
       if (err.status === 401) {
@@ -122,8 +124,12 @@ async function productCard(product) {
   return `
     <article class="product-card reveal" data-product-id="${product.id}" data-product-url="${url}">
       <div class="product-media" aria-label="${product.name}">
-        <div class="flip-inner"><img class="front" src="${front}" alt="${product.name} front" loading="lazy"><img class="back" src="${back}" alt="${product.name} back" loading="lazy"></div>
-        <button type="button" class="fav-btn ${favoriteActive}" data-favorite-id="${product.id}" title="Add to favorites">&#10084;</button><div class="flip-hint">Tap to flip</div>
+        <div class="flip-inner">
+          <img class="front" src="${front}" alt="${product.name} front" loading="lazy">
+          <img class="back" src="${back}" alt="${product.name} back" loading="lazy">
+        </div>
+        <button type="button" class="fav-btn ${favoriteActive}" data-id="${product.id}" title="Add to favorites"><i class="fa-regular fa-heart"></i></button>
+        <div class="flip-hint">Tap to flip</div>
       </div>
       <div class="product-body">
         <p class="chip">${categoryName}</p><h3>${product.name}</h3><p class="tiny">${description}</p>
@@ -158,9 +164,9 @@ async function initShopControls() {
 
 function initCardNavigation() {
   // Check if flip hint should be shown
-  const hasFlipped = localStorage.getItem('gm_has_flipped');
-  if (hasFlipped) {
-    document.querySelectorAll('.flip-hint').forEach(hint => hint.remove());
+  const hasSeenFlipHint = localStorage.getItem('gm_seen_flip_hint') === "1";
+  if (hasSeenFlipHint) {
+    document.querySelectorAll('.flip-hint').forEach(hint => hint.classList.add('hide'));
   }
 
   document.addEventListener("click", (event) => {
@@ -178,9 +184,9 @@ function initCardNavigation() {
     if (media && isMobile) {
       media.classList.toggle("flipped");
       // Hide hint on first flip
-      if (!localStorage.getItem('gm_has_flipped')) {
-        localStorage.setItem('gm_has_flipped', 'true');
-        document.querySelectorAll('.flip-hint').forEach(hint => hint.remove());
+      if (localStorage.getItem('gm_seen_flip_hint') !== "1") {
+        localStorage.setItem('gm_seen_flip_hint', '1');
+        document.querySelectorAll('.flip-hint').forEach(hint => hint.classList.add('hide'));
       }
       return;
     }

@@ -57,7 +57,7 @@ class ProductCardManager {
 
     // Favorite button - Handled globally by products.js to avoid duplication
     // We only prevent navigation if clicking the favorite button
-    const favBtn = this.card.querySelector('[data-favorite-id]');
+    const favBtn = this.card.querySelector('.fav-btn[data-id]');
     if (favBtn) {
       favBtn.addEventListener('click', (e) => {
         e.stopPropagation();
