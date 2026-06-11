@@ -69,7 +69,7 @@
         {% include "partials/product_card.html" with product=product %}
       {% empty %}
          <!-- Even deeper fallback: Show any active products if no featured -->
-         {% for product in deal_products %}
+         {% for product in fallback_products %}
             {% include "partials/product_card.html" with product=product %}
          {% endfor %}
       {% endfor %}

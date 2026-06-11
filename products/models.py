@@ -245,6 +245,12 @@ class Product(models.Model):
         return int(((self.original_price - self.current_price) / self.original_price) * 100)
 
     @property
+    def savings(self):
+        if not self.original_price or self.current_price >= self.original_price:
+            return Decimal("0.00")
+        return self.original_price - self.current_price
+
+    @property
     def active_offer(self):
         from offers.services import best_offer_for_product
 

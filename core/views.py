@@ -19,12 +19,22 @@ def home(request):
 
     banners = HeroBanner.objects.filter(is_active=True).select_related('group')
     featured_products = Product.objects.filter(is_active=True, is_featured=True).select_related("category")[:4]
+
+    fallback_products = []
+    if not featured_products:
+        # Fallback to products with offers, then any active products
+        all_active = Product.objects.filter(is_active=True).select_related("category")
+        fallback_products = [p for p in all_active if p.active_offer][:4]
+        if not fallback_products:
+            fallback_products = all_active[:4]
+
     sections = HomepageSection.objects.filter(is_active=True)
     current_offers = active_offers()
 
     return render(request, "core/home.html", {
         "banners": banners,
         "featured_products": featured_products,
+        "fallback_products": fallback_products,
         "sections": sections,
         "active_offers": current_offers
     })
