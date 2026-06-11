@@ -50,13 +50,13 @@ def add_to_cart(request):
     product = get_object_or_404(Product, pk=data.get("product_id"), is_active=True)
     quantity = max(1, int(data.get("quantity", 1)))
     size = str(data.get("size", data.get("size", ""))).strip()
-    color_val = str(data.get("color", data.get("color", "")) or product.safe_color_hex).strip()
+    color_val = str(data.get("color", "") or product.safe_color_hex).strip()
 
     # If color_val is a hex code matching the product, use color_name if available
+    # Or if it matches a ColorVariant name
+    color = color_val
     if color_val.lower() == product.safe_color_hex.lower() and product.color_name:
         color = product.color_name
-    else:
-        color = color_val
 
     # Validate size selection if product has sizes
     if product.sizes and not size:

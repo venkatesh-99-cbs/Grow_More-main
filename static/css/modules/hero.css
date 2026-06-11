@@ -1,0 +1,281 @@
+/* ═══════════════════════════════════════════════════
+   HERO SECTION WRAPPER
+════════════════════════════════════════════════════ */
+.hero {
+  padding: 2.6rem 0 1.6rem;
+}
+
+.hero-wrap {
+  border-radius: 28px;
+  overflow: hidden;
+  min-height: 72vh;
+  position: relative;
+  box-shadow: var(--shadow);
+}
+
+/* ═══════════════════════════════════════════════════
+   SLIDES — each slide is absolutely positioned
+   Only .active slide is visible (opacity 1)
+════════════════════════════════════════════════════ */
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: scale(1.05);
+  transition: opacity 1.05s ease, transform 1.6s ease;
+}
+
+.hero-slide.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.hero-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Dark overlay on every slide — makes text readable */
+.hero-slide::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(115deg, rgba(58, 47, 51, 0.72), rgba(58, 47, 51, 0.1)),
+    linear-gradient(to top, rgba(58, 47, 51, 0.34), transparent 60%);
+}
+
+/* ═══════════════════════════════════════════════════
+   HERO CONTENT — floats above all slides
+════════════════════════════════════════════════════ */
+.hero-content {
+  position: relative;
+  z-index: 2;
+  color: var(--white);
+  max-width: 640px;
+  padding: 11vh 8%;
+}
+
+/* ═══════════════════════════════════════════════════
+   DEAL BANNER — pulsing promo box
+════════════════════════════════════════════════════ */
+.deal-banner {
+  display: grid;
+  gap: 0.38rem;
+  width: fit-content;
+  max-width: min(560px, 95%);
+  margin-bottom: 0.95rem;
+  padding: 0.62rem 0.82rem;
+  border-radius: 14px;
+  background: linear-gradient(
+    120deg,
+    rgba(81, 226, 245, 0.25),
+    rgba(255, 168, 182, 0.25)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.17);
+  backdrop-filter: blur(5px);
+  animation: dealPulse 2.2s ease-in-out infinite;
+}
+
+.deal-banner p {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.deal-pill {
+  width: fit-content;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+  color: #2b2025;
+  border-radius: 999px;
+  padding: 0.15rem 0.52rem;
+  background: linear-gradient(120deg, var(--dusty-white), var(--bright-blue));
+}
+
+/* ═══════════════════════════════════════════════════
+   HERO HEADING — gradient text (Cinematic Style)
+════════════════════════════════════════════════════ */
+.hero h1 {
+  font-family: var(--font-hero), var(--font-brand) !important;
+  font-size: clamp(2.4rem, 6vw, 4.8rem) !important;
+  line-height: 1 !important;
+  margin-bottom: 1rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: -0.01em !important;
+  font-weight: 900 !important;
+  background: linear-gradient(
+    135deg,
+    #ffffff 10%,
+    var(--bright-blue) 40%,
+    var(--blue-green) 70%,
+    #ffffff 90%
+  ) !important;
+  background-size: 200% auto !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  text-shadow: 0 12px 30px rgba(81, 226, 245, 0.45) !important;
+  animation: heroTitleFlow 5s ease infinite !important;
+}
+
+@keyframes heroTitleFlow {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+}
+
+/* ═══════════════════════════════════════════════════
+   HERO SUBTITLE
+════════════════════════════════════════════════════ */
+.hero p {
+  font-family: var(--font-tag), "Poppins", sans-serif !important;
+  margin-bottom: 1.5rem;
+  font-weight: 400;
+  font-size: 1.15rem;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.95);
+  max-width: 90%;
+}
+
+/* ═══════════════════════════════════════════════════
+   CTA BUTTON inside hero
+════════════════════════════════════════════════════ */
+.hero-content > .cta-btn {
+  display: inline-flex;
+  margin: 0 auto 1.35rem;
+}
+
+/* ═══════════════════════════════════════════════════
+   STAT TABS ROW
+════════════════════════════════════════════════════ */
+.stat-row {
+  display: flex;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  margin-top: 0.35rem;
+}
+
+/* Base stat style */
+.stat {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 0.55rem 0.8rem;
+  border-radius: 12px;
+  font-weight: 600;
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+/* Animated tab variant — Filled "Floating" Tabs */
+.stat-tab {
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  cursor: pointer;
+  backdrop-filter: blur(8px) !important;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(81, 226, 245, 0.8),
+    rgba(47, 141, 161, 0.7)
+  ) !important;
+  color: #ffffff !important;
+  padding: 0.65rem 1.2rem !important;
+  border-radius: 999px !important;
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15) !important;
+  animation: tabFloating 4s ease-in-out infinite !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 0.6rem !important;
+  white-space: nowrap;
+}
+
+.stat-tab:nth-child(2) { animation-delay: 0.5s !important; }
+.stat-tab:nth-child(3) { animation-delay: 1s !important; }
+
+@keyframes tabFloating {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.stat-tab:hover {
+  transform: translateY(-8px) scale(1.05) !important;
+  background: linear-gradient(
+    135deg,
+    var(--bright-blue),
+    var(--blue-green)
+  ) !important;
+  color: #1a1a1a !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 12px 28px rgba(81, 226, 245, 0.35) !important;
+}
+
+.stat-tab.active {
+  background: #ffffff !important;
+  color: #2f8da1 !important;
+  border-color: var(--bright-blue) !important;
+  box-shadow: 0 10px 25px rgba(81, 226, 245, 0.4) !important;
+  transform: translateY(-4px) !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   KEYFRAME ANIMATIONS
+════════════════════════════════════════════════════ */
+@keyframes tabWaveLoop {
+  0%   { transform: translateY(0); }
+  25%  { transform: translateY(-4px); }
+  50%  { transform: translateY(1px); }
+  75%  { transform: translateY(-2px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes dealPulse {
+  0%   { transform: translateY(0);    box-shadow: 0 10px 22px rgba(0,0,0,0.17); }
+  50%  { transform: translateY(-2px); box-shadow: 0 14px 25px rgba(81,226,245,0.26); }
+  100% { transform: translateY(0);    box-shadow: 0 10px 22px rgba(0,0,0,0.17); }
+}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE — TABLET & MOBILE
+════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .hero-wrap {
+    min-height: 62vh !important;
+  }
+
+  .hero-content {
+    max-width: 100% !important;
+    padding: 8vh 7% !important;
+  }
+
+  .deal-banner {
+    max-width: 100% !important;
+    margin-bottom: 0.8rem !important;
+    padding: 0.58rem 0.68rem !important;
+  }
+
+  .deal-banner p {
+    font-size: 0.84rem !important;
+  }
+
+  .stat-row {
+    gap: 0.75rem !important;
+    margin-top: 1rem !important;
+  }
+
+  .stat-tab {
+    flex: 1 1 calc(50% - 0.65rem) !important;
+    min-height: 42px !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+
+  .stat-tab:last-child {
+    flex-basis: 100% !important;
+  }
+}

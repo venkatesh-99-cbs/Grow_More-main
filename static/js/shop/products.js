@@ -157,24 +157,42 @@ async function initShopControls() {
 }
 
 function initCardNavigation() {
+  // Check if flip hint should be shown
+  const hasFlipped = localStorage.getItem('gm_has_flipped');
+  if (hasFlipped) {
+    document.querySelectorAll('.flip-hint').forEach(hint => hint.remove());
+  }
+
   document.addEventListener("click", (event) => {
-    const pill = event.target.closest(".radio-pill");
+    const pill = event.target.closest(".radio-pill") || event.target.closest(".size-pill") || event.target.closest(".swatch-btn");
     if (pill) {
-      const row = pill.closest(".radio-row");
-      row?.querySelectorAll(".radio-pill").forEach((button) => button.classList.remove("active"));
+      const row = pill.closest(".radio-row") || pill.closest(".swatches-row");
+      row?.querySelectorAll(".radio-pill, .size-pill, .swatch-btn").forEach((button) => button.classList.remove("active"));
       pill.classList.add("active");
       return;
     }
+
     const media = event.target.closest(".product-media");
-    if (media && window.matchMedia("(hover: none)").matches) {
+    const isMobile = window.matchMedia("(hover: none)").matches;
+
+    if (media && isMobile) {
       media.classList.toggle("flipped");
-      event.preventDefault();
+      // Hide hint on first flip
+      if (!localStorage.getItem('gm_has_flipped')) {
+        localStorage.setItem('gm_has_flipped', 'true');
+        document.querySelectorAll('.flip-hint').forEach(hint => hint.remove());
+      }
       return;
     }
+
     const card = event.target.closest(".product-card");
-    if (!card || event.target.closest("button, input, select, textarea, a, .radio-row")) return;
-    if (card.dataset.productUrl && card.dataset.productUrl !== "#") {
-      window.location.href = card.dataset.productUrl;
+    // If user clicks name (which is usually an H3 or link) or image on desktop
+    const isLinkOrButton = event.target.closest("button, input, select, textarea, a, .radio-row, .swatches-row");
+
+    if (card && !isLinkOrButton) {
+        if (card.dataset.productUrl && card.dataset.productUrl !== "#") {
+          window.location.href = card.dataset.productUrl;
+        }
     }
   });
 }

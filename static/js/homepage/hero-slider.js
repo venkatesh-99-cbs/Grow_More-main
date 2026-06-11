@@ -1,81 +1,41 @@
-/**
- * Advanced Cinematic Hero Slider
- * Handles dynamic animations based on banner settings
- */
-class HeroSlider {
-  constructor() {
-    this.slides = [...document.querySelectorAll(".hero-slide")];
-    if (!this.slides.length) return;
+function initHeroSlider() {
+  const slides = [...document.querySelectorAll(".hero-slide")];
+  if (!slides.length) return;
 
-    this.currentIndex = 0;
-    this.interval = 6000;
-    this.init();
-  }
+  let i = 0;
 
-  init() {
-    this.indicators = [...document.querySelectorAll(".indicator")];
-    // Initial activation
-    this.activateSlide(0);
+  setInterval(() => {
+    slides[i].classList.remove("active");
+    i = (i + 1) % slides.length;
+    slides[i].classList.add("active");
+  }, 4200); // change interval here (milliseconds)
+}
 
-    if (this.slides.length > 1) {
-      this.startAutoplay();
-      this.bindIndicators();
-    }
-  }
+function initHeroStatTabs() {
+  const wrap = document.getElementById("hero-stat-tabs");
+  if (!wrap) return;
 
-  startAutoplay() {
-    this.autoplayInterval = setInterval(() => this.next(), this.interval);
-  }
+  const subtitle = document.getElementById("hero-subtitle");
 
-  stopAutoplay() {
-    clearInterval(this.autoplayInterval);
-  }
+  // One entry per stat tab — must match tab order in HTML
+  const subtitleMap = [
+    "Performance-ready summer essentials for energetic daily wear.",
+    "Crafted with breathable natural fibers for cool all-day comfort.",
+    "Fast and reliable delivery to keep your season moving.",
+  ];
 
-  bindIndicators() {
-    this.indicators.forEach(indicator => {
-      indicator.addEventListener("click", () => {
-        const index = parseInt(indicator.dataset.index);
-        this.goTo(index);
-        this.stopAutoplay();
-        this.startAutoplay();
-      });
+  const tabs = [...wrap.querySelectorAll(".stat-tab")];
+
+  tabs.forEach((tab, index) => {
+    tab.addEventListener("click", () => {
+      tabs.forEach((t) => t.classList.remove("active"));
+      tab.classList.add("active");
+      if (subtitle) subtitle.textContent = subtitleMap[index] || subtitleMap[0];
     });
-  }
-
-  goTo(index) {
-    if (index === this.currentIndex) return;
-    this.slides[this.currentIndex].classList.remove("active");
-    this.indicators[this.currentIndex]?.classList.remove("active");
-    this.currentIndex = index;
-    this.activateSlide(this.currentIndex);
-  }
-
-  next() {
-    const nextIndex = (this.currentIndex + 1) % this.slides.length;
-    this.goTo(nextIndex);
-  }
-
-  activateSlide(index) {
-    const slide = this.slides[index];
-    slide.classList.add("active");
-    this.indicators[index]?.classList.add("active");
-
-    // Trigger animation-specific logic if needed
-    const animation = slide.dataset.animation;
-    const theme = slide.dataset.theme;
-
-    // We can add specific JS-driven effects here if CSS isn't enough
-    // For example, subtle parallax or zoom
-    if (animation === 'parallax') {
-        this.applyParallax(slide);
-    }
-  }
-
-  applyParallax(slide) {
-      // Logic for parallax if chosen
-  }
+  });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  new HeroSlider();
+  initHeroSlider();      // starts the auto-slide
+  initHeroStatTabs();    // wires the stat tab clicks
 });

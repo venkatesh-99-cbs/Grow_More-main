@@ -8,76 +8,50 @@
   <!-- HERO SECTION -->
   <section class="hero container">
     <div class="hero-wrap" id="hero-wrap">
+
       {% if banners %}
-      <div class="slider-indicators">
         {% for banner in banners %}
-        <span class="indicator {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}"></span>
-        {% endfor %}
-      </div>
-        {% for banner in banners %}
-        <div class="hero-slide {% if forloop.first %}active{% endif %}" data-banner-id="{{ banner.id }}" data-theme="{{ banner.theme }}" data-animation="{{ banner.animation_type }}">
+        <div class="hero-slide {% if forloop.first %}active{% endif %}">
           <img src="{{ banner.display_image }}" alt="{{ banner.display_title }}" />
-          <div class="hero-content">
-            {% if active_popup_offer %}
-            <div class="deal-banner">
-              <span class="deal-pill">🔥 LIMITED OFFER</span>
-              <p>Get <strong>{{ active_popup_offer.discount_percent }}% OFF</strong>
-              {% if active_popup_offer.description %}
-              + {{ active_popup_offer.description }}
-              {% endif %}
-              </p>
-            </div>
-            {% endif %}
-            <h1 class="animate-slide-up">{{ banner.display_title }}</h1>
-            <p id="hero-subtitle" class="animate-slide-up" style="animation-delay: 0.1s;">{{ banner.display_subtitle }}</p>
-            <a class="cta-btn animate-slide-up" style="animation-delay: 0.2s;" href="{{ banner.display_button_url }}">{{ banner.display_button_label }}</a>
-            <div class="stat-row animate-slide-up" style="animation-delay: 0.3s;">
-                <div class="stat-tab premium-card active">
-                    <span class="stat-icon">🔥</span>
-                    <div class="stat-info">
-                        <strong>100% Ready</strong>
-                        <small>Summer 2026</small>
-                    </div>
-                </div>
-                <div class="stat-tab premium-card">
-                    <span class="stat-icon">✨</span>
-                    <div class="stat-info">
-                        <strong>Premium</strong>
-                        <small>Handpicked Quality</small>
-                    </div>
-                </div>
-                <div class="stat-tab premium-card">
-                    <span class="stat-icon">🚚</span>
-                    <div class="stat-info">
-                        <strong>Fast Ship</strong>
-                        <small>Worldwide Delivery</small>
-                    </div>
-                </div>
-            </div>
-          </div>
         </div>
         {% endfor %}
       {% else %}
-        <!-- Fallback Hero using Featured Products or Default -->
-        <div class="hero-slide active" data-theme="summer" data-animation="scale">
+        <div class="hero-slide active">
           <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=1600&q=80" alt="Grow More" />
-          <div class="hero-content">
-            {% if active_popup_offer %}
-            <div class="deal-banner">
-              <span class="deal-pill">🔥 LIMITED OFFER</span>
-              <p>Get <strong>{{ active_popup_offer.discount_percent }}% OFF</strong>
-              {% if active_popup_offer.description %}
-              + {{ active_popup_offer.description }}
-              {% endif %}
-              </p>
-            </div>
-            {% endif %}
-            <h1 class="animate-slide-up">Own The Heat. Stay Cool.</h1>
-            <p class="animate-slide-up" style="animation-delay: 0.1s;">Premium summer menswear for the energetic soul.</p>
-            <a class="cta-btn animate-slide-up" style="animation-delay: 0.2s;" href="{% url 'products:shop' %}">Shop the Collection</a>
-          </div>
         </div>
       {% endif %}
+
+      <div class="hero-content">
+        {% if banners.0.active_offer %}
+        <div class="deal-banner">
+          <span class="deal-pill">🔥 LIMITED OFFER</span>
+          <p>Get <strong>Up to 40% OFF</strong> + extra <strong>10% OFF</strong> on 2+ items</p>
+        </div>
+        {% endif %}
+
+        <h1>{{ banners.0.display_title|default:"Own The Heat. Stay Cool. Move Bold." }}</h1>
+
+        <p id="hero-subtitle">
+          {{ banners.0.display_subtitle|default:"High-energy summer menswear built with breathable fabrics, clean cuts, and ocean-cool color tones." }}
+        </p>
+
+        <a class="cta-btn" href="{{ banners.0.display_button_url|default:'/shop/' }}">Explore the Season</a>
+
+        <div class="stat-row" id="hero-stat-tabs">
+          <button type="button" class="stat stat-tab active">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M2 12h20"/></svg>
+            100% Summer Ready
+          </button>
+          <button type="button" class="stat stat-tab">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            100% Pure Cotton
+          </button>
+          <button type="button" class="stat stat-tab">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+            Fast Delivery
+          </button>
+        </div>
+      </div>
     </div>
   </section>
 
