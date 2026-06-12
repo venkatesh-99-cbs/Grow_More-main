@@ -38,9 +38,14 @@
               <span class="discount-badge-inline" style="background: var(--bright-blue); color: var(--ink-900); padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 0.9rem; margin-left: 8px;">{{ product.discount_percent }}% OFF</span>
             {% endif %}
           </div>
+          {% if product.discount_percent %}
+          <div class="limited-badge detail-offer-timer" data-ends-seconds="0" style="margin-top: 12px; font-size: 0.9rem; padding: 6px 16px;">
+            Loading...
+          </div>
+          {% endif %}
         </div>
 
-        <p class="detail-desc">{{ product.description }}</p>
+        <p class="detail-desc" style="margin-top: 1.5rem;">{{ product.description }}</p>
 
         <div class="variant-group">
           <label>Select Size</label>

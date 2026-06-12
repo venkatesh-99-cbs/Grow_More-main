@@ -7,17 +7,31 @@
 
 .mobile-filter-trigger {
   display: none;
-  width: 100%;
-  padding: 14px;
-  background: #fff;
+  width: fit-content;
+  padding: 10px 24px;
+  background: var(--white);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 99px;
   font-weight: 700;
-  text-align: left;
-  margin-bottom: 20px;
+  text-align: center;
+  margin: 0 auto 24px;
   cursor: pointer;
   align-items: center;
+  justify-content: center;
   gap: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+
+.mobile-filter-trigger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  border-color: var(--bright-blue);
+}
+
+.trigger-icon {
+  color: var(--bright-blue);
+  font-size: 0.9rem;
 }
 
 .mobile-filter-close {
@@ -257,8 +271,6 @@
 
   .mobile-filter-trigger {
     display: flex;
-    justify-content: space-between;
-    padding: 16px 20px;
   }
 
   .shop-sidebar {
