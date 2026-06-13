@@ -31,16 +31,21 @@
             {% endif %}
           </div>
           <h1>{{ product.name }}</h1>
-          <div class="detail-price">
-            <span class="price-now">Rs. {{ product.current_price }}</span>
-            {% if product.discount_percent %}
+          <div class="price-block big {% if product.discount_percent %}has-offer offer-ready{% endif %}">
+            <div class="price-line">
+              <span class="price-now">Rs. {{ product.current_price }}</span>
+              {% if product.discount_percent %}
               <span class="price-old">Rs. {{ product.original_price }}</span>
-              <span class="discount-badge-inline" style="background: var(--bright-blue); color: var(--ink-900); padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 0.9rem; margin-left: 8px;">{{ product.discount_percent }}% OFF</span>
+              <span class="price-off">{{ product.discount_percent }}% OFF</span>
+              {% endif %}
+            </div>
+            {% if product.discount_percent %}
+            <div class="save-line">You save Rs. {{ product.savings }} today</div>
             {% endif %}
           </div>
           {% if product.discount_percent %}
-          <div class="limited-badge detail-offer-timer" data-ends-seconds="0" style="margin-top: 12px; font-size: 0.9rem; padding: 6px 16px;">
-            Loading...
+          <div class="limited-badge detail-offer-timer" data-offer-end="{{ product.offer_countdown_target }}" style="margin-top: 12px; font-size: 0.9rem; padding: 6px 16px;">
+            Ends in --:--:--
           </div>
           {% endif %}
         </div>

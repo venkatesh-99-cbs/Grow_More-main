@@ -14,5 +14,10 @@
   </main>
 {% endblock %}
 {% block scripts %}
-  <script type="module" src="{% static 'js/shop/products.js' %}"></script>
+  <script type="module">
+    import { renderFavoritesPage } from "{% static 'js/shop/products.js' %}";
+    document.addEventListener("DOMContentLoaded", () => {
+      renderFavoritesPage();
+    });
+  </script>
 {% endblock %}

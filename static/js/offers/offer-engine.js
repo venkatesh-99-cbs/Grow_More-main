@@ -17,6 +17,7 @@ function getGlobalCountdownSeconds() {
 
 // ─── CALLBACK REGISTRY ───────────────────────────────────
 let globalCountdownInterval = null;
+let badgeUpdateInterval = null;
 let countdownCallbacks = [];
 
 function registerCountdownCallback(callback) {
@@ -147,34 +148,42 @@ function initPopupBanner() {
   }
 }
 
-/**
- * Step 3 — Limited Badges on Product Cards
- * Uses MutationObserver to handle dynamically loaded or lazy-loaded cards
- */
-function initLimitedBadges() {
-  let badges = [...document.querySelectorAll(".limited-badge")];
+function getBadgeSecondsLeft(badge) {
+  const endIso = badge.dataset.offerEnd;
+  if (endIso) {
+    const endTime = new Date(endIso).getTime();
+    if (!isNaN(endTime)) {
+      return Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+    }
+  }
+  const endsSeconds = Number(badge.dataset.endsSeconds || 0);
+  return endsSeconds > 0 ? endsSeconds : 0;
+}
 
-  const updateBadges = (secondsLeft) => {
-    // Re-query badges in case DOM changed
-    badges = [...document.querySelectorAll(".limited-badge")];
-    badges.forEach((badge) => {
-      badge.textContent = secondsLeft
-        ? `Ends in ${formatCountdown(secondsLeft)}`
-        : "Deal ended";
-      badge.classList.toggle("expired", secondsLeft === 0);
+function initLimitedBadges() {
+  const updateBadges = () => {
+    document.querySelectorAll(".limited-badge").forEach((badge) => {
+      const secondsLeft = getBadgeSecondsLeft(badge);
+      if (secondsLeft > 0) {
+        badge.textContent = `Ends in ${formatCountdown(secondsLeft)}`;
+        badge.style.display = "";
+        badge.classList.remove("expired");
+      } else {
+        // No active offer or offer expired - hide the badge entirely
+        badge.style.display = "none";
+        badge.classList.add("expired");
+      }
     });
   };
 
-  registerCountdownCallback(updateBadges);
-  startGlobalCountdownTick();
+  updateBadges();
+
+  if (!badgeUpdateInterval) {
+    badgeUpdateInterval = setInterval(updateBadges, 1000);
+  }
 
   // Watch for new badges (lazy-loading)
-  const observer = new MutationObserver(() => {
-    const newBadges = [...document.querySelectorAll(".limited-badge")];
-    if (newBadges.length !== badges.length) {
-      updateBadges(getGlobalCountdownSeconds());
-    }
-  });
+  const observer = new MutationObserver(() => updateBadges());
 
   observer.observe(document.body, {
     childList: true,

@@ -68,8 +68,8 @@
       {% endif %}
     </div>
     {% if product.discount_percent %}
-    <div class="limited-badge" data-ends-seconds="0">
-      Loading...
+    <div class="limited-badge" data-offer-end="{{ product.offer_countdown_target }}">
+      Ends in --:--:--
     </div>
     {% endif %}
 

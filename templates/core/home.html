@@ -76,6 +76,7 @@
     </div>
   </section>
 
+  {% if active_offers %}
   <!-- OFFERS SLIDER SECTION -->
   <section id="homepage-offers-slider" class="section reveal" style="background: var(--ink-900); color: white; overflow: hidden; padding: 60px 0;">
     <div class="container">
@@ -118,7 +119,9 @@
       </div>
     </div>
   </section>
+  {% endif %}
 
+  {% if active_offers %}
   <!-- DEALS SECTION (LAZY LOADED) -->
   <section class="section" style="background: rgba(81, 226, 245, 0.05);">
     <div class="container reveal">
@@ -140,6 +143,7 @@
         </div>
     </div>
   </section>
+  {% endif %}
 
   <!-- BRAND FEATURES SECTION -->
   <section class="section container brand-features reveal" aria-label="Grow More brand features">

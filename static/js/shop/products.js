@@ -1,7 +1,6 @@
 import { storage } from "../services/storage-service.js";
 import { apiGet, apiPost } from "../services/api-service.js";
 import { initReveal, money, showToast } from "../core/utilities.js";
-import { initProductOffers } from "../offers/product-offers.js";
 
 let cachedFavorites = null;
 
@@ -140,7 +139,7 @@ async function productCard(product) {
     </article>`;
 }
 
-async function initShopControls() {
+export async function initShopControls() {
   const grid = document.getElementById("product-grid");
   if (!grid) return;
   const category = document.getElementById("category-filter");
@@ -154,7 +153,7 @@ async function initShopControls() {
     grid.innerHTML = cardHtmls.join("") || "<p class='muted'>No matching products.</p>";
 
     initReveal();
-    initProductOffers();
+    window.initProductOffers?.();
     updateFavoriteCount();
   };
   category?.addEventListener("change", apply);
@@ -162,7 +161,10 @@ async function initShopControls() {
   search?.addEventListener("input", apply);
 }
 
-function initCardNavigation() {
+export function initCardNavigation() {
+  if (document.body.dataset.cardNavBound === "1") return;
+  document.body.dataset.cardNavBound = "1";
+
   // Check if flip hint should be shown
   const hasSeenFlipHint = localStorage.getItem('gm_seen_flip_hint') === "1";
   if (hasSeenFlipHint) {
@@ -200,14 +202,14 @@ function initCardNavigation() {
         // Specifically for mobile: only navigate if NOT clicking media (which flips)
         if (isMobile && event.target.closest(".product-media")) return;
 
-        if (card.dataset.productUrl && card.dataset.productUrl !== "#") {
+        if (card.dataset.productUrl && card.dataset.productUrl !== "#" && card.dataset.productUrl !== window.location.pathname) {
           window.location.href = card.dataset.productUrl;
         }
     }
   });
 }
 
-async function renderFavoritesPage() {
+export async function renderFavoritesPage() {
   const target = document.getElementById("favorites-grid");
   const source = document.querySelector(".hidden-product-source");
   if (!target || !source) return;
@@ -217,9 +219,4 @@ async function renderFavoritesPage() {
   updateFavoriteCount();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  initFavoriteUI();
-  initShopControls();
-  initCardNavigation();
-  renderFavoritesPage();
-});
+

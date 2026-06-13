@@ -4,3 +4,5 @@ function initProductOffers() {
     block.classList.add("offer-ready");
   });
 }
+
+window.initProductOffers = initProductOffers;
