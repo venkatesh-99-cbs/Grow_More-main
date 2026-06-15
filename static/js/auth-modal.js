@@ -112,7 +112,7 @@ class AuthModalManager {
               type="password"
               class="auth-input"
               placeholder="Create password"
-              name="password"
+              name="password1"
               required
             />
           </div>
@@ -121,7 +121,7 @@ class AuthModalManager {
               type="password"
               class="auth-input"
               placeholder="Confirm password"
-              name="password_confirm"
+              name="password2"
               required
             />
           </div>
@@ -249,7 +249,7 @@ class AuthModalManager {
     const errorEl = form.querySelector('.auth-error');
     const submitBtn = form.querySelector('button[type="submit"]');
 
-    if (formData.get('password') !== formData.get('password_confirm')) {
+    if (formData.get('password1') !== formData.get('password2')) {
       this.showError(errorEl, 'Passwords do not match');
       return;
     }

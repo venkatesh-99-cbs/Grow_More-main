@@ -1,6 +1,6 @@
 from django import forms
 
-from products.cloudinary_utils import CloudinaryUploadError, delete_product_image, upload_product_image
+from products.cloudinary_utils import CloudinaryUploadError, cloudinary_is_configured, delete_product_image, upload_product_image
 from products.models import Brand, Category, Product, SizeStock, validate_hex_color
 
 
@@ -89,14 +89,57 @@ class ProductForm(forms.ModelForm):
                 self.add_error("discount_price", "Discount price must be greater than zero.")
             elif price is not None and discount_price >= price:
                 self.add_error("discount_price", "Discount price must be lower than the regular price.")
+
+        # Warn admin if they uploaded images but Cloudinary is not configured
+        image_fields = ["main_image", "gallery_image_1", "gallery_image_2", "gallery_image_3"]
+        has_upload = any(cleaned_data.get(f) for f in image_fields)
+        if has_upload and not cloudinary_is_configured():
+            self.add_error(
+                None,
+                "Images were uploaded but Cloudinary is not configured. "
+                "Set CLOUDINARY_URL (or CLOUDINARY_CLOUD_NAME / API_KEY / API_SECRET) "
+                "in your environment variables. Images will be saved locally as a fallback."
+            )
+
         return cleaned_data
+
+    def _upload_image_field(self, product, field_name, url_field, public_id_field):
+        """
+        Upload a single image field to Cloudinary, update the product's
+        url + public_id fields, clear the FileField, and delete the old
+        Cloudinary asset if it was replaced.
+        """
+        file_obj = self.cleaned_data.get(field_name)
+        if not file_obj:
+            return  # No new upload — leave existing url/public_id untouched
+
+        old_public_id = getattr(product, public_id_field, None) or (
+            getattr(self.instance, public_id_field, None) if self.instance and self.instance.pk else None
+        )
+
+        try:
+            result = upload_product_image(file_obj)
+        except CloudinaryUploadError as exc:
+            raise forms.ValidationError(f"Image upload failed for {field_name}: {exc}") from exc
+
+        if result:
+            # Store Cloudinary URL + public_id in DB (Neon receives these on product.save())
+            setattr(product, url_field, result.secure_url)
+            setattr(product, public_id_field, result.public_id)
+            # Clear the local FileField so we don't store binary data locally
+            setattr(product, field_name, "")
+            # Delete the old Cloudinary asset now that it's been replaced
+            if old_public_id and old_public_id != result.public_id:
+                delete_product_image(old_public_id)
+        else:
+            # Cloudinary not configured (local dev) — keep FileField as-is
+            pass
 
     def save(self, commit=True):
         product = super().save(commit=False)
         product.sizes = self.cleaned_data["sizes_list"]
 
         # Handle size stock management from post data if available
-        # This is for the custom dashboard
         size_stock_data = {}
         for key, value in self.data.items():
             if key.startswith("size_stock_"):
@@ -107,19 +150,13 @@ class ProductForm(forms.ModelForm):
                     except ValueError:
                         pass
 
-        uploaded_main = self.cleaned_data.get("main_image")
-        if uploaded_main:
-            old_public_id = self.instance.cloudinary_public_id if self.instance and self.instance.pk else None
-            try:
-                upload_result = upload_product_image(uploaded_main)
-            except CloudinaryUploadError as exc:
-                raise forms.ValidationError(str(exc)) from exc
-            if upload_result:
-                product.image_url = upload_result.secure_url
-                product.cloudinary_public_id = upload_result.public_id
-                product.main_image = ""
-                if old_public_id and old_public_id != upload_result.public_id:
-                    delete_product_image(old_public_id)
+        # Upload main image → Cloudinary → store image_url + cloudinary_public_id → Neon DB
+        self._upload_image_field(product, "main_image", "image_url", "cloudinary_public_id")
+
+        # Upload gallery images → Cloudinary → store gallery_url_N + gallery_public_id_N → Neon DB
+        self._upload_image_field(product, "gallery_image_1", "gallery_url_1", "gallery_public_id_1")
+        self._upload_image_field(product, "gallery_image_2", "gallery_url_2", "gallery_public_id_2")
+        self._upload_image_field(product, "gallery_image_3", "gallery_url_3", "gallery_public_id_3")
 
         if commit:
             product.save()

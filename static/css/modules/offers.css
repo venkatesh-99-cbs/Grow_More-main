@@ -229,11 +229,11 @@
   pointer-events: auto;
 }
 
-/* The circular pulsing button */
+/* The squircle (rounded-square) pulsing button */
 .ball-expand {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
+  width: 88px;
+  height: 88px;
+  border-radius: 26px;
   background: linear-gradient(
     135deg,
     #51e2f5 0%,
@@ -249,7 +249,7 @@
   display: grid;
   place-items: center;
   position: relative;
-  padding: 0;
+  padding: 8px;
   font-family: inherit;
   animation: floatBallBounce 2s ease-in-out infinite,
              gradientShift 8s ease infinite;
@@ -281,14 +281,14 @@
 
 .ball-countdown {
   font-family: 'Courier New', monospace;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 800;
   letter-spacing: 0.02em;
   line-height: 1;
 }
 
 .ball-label {
-  font-size: 0.5rem;
+  font-size: 0.55rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -474,9 +474,9 @@
   .popup-cta      { padding: 0.5rem 0.7rem; font-size: 0.65rem; border-radius: 6px; }
   .popup-close    { width: 20px; height: 20px; font-size: 0.9rem; right: 0.5rem; }
   .floating-deal-ball { bottom: 16px !important; right: 16px !important; }
-  .ball-expand    { width: 60px; height: 60px; border-width: 2px; }
-  .ball-countdown { font-size: 0.65rem; }
-  .ball-label     { font-size: 0.45rem; }
+  .ball-expand    { width: 72px; height: 72px; border-radius: 20px; border-width: 2px; }
+  .ball-countdown { font-size: 0.7rem; }
+  .ball-label     { font-size: 0.48rem; }
   .ball-close     { width: 28px; height: 28px; font-size: 1rem; }
   .deal-banner    { max-width: 100%; margin-bottom: 0.8rem; padding: 0.58rem 0.68rem; }
   .deal-banner p  { font-size: 0.84rem; }

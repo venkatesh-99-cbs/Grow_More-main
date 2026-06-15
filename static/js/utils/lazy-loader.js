@@ -55,6 +55,9 @@ class LazyLoader {
                     container.style.opacity = '1';
                     container.classList.remove('loading-progressive');
                     container.removeAttribute('aria-busy');
+                    // Make any .reveal elements inside the new content visible
+                    // (their own scroll-triggered observers never saw them appear)
+                    container.querySelectorAll('.reveal').forEach((el) => el.classList.add('show', 'active'));
                     // Re-initialize any JS needed for new content
                     document.dispatchEvent(new CustomEvent('content-loaded', { detail: { container } }));
                 }, 300);

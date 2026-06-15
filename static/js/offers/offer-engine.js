@@ -148,30 +148,62 @@ function initPopupBanner() {
   }
 }
 
-function getBadgeSecondsLeft(badge) {
+const DEAL_ENDED_FADE_SECONDS = 60;
+
+function getBadgeEndTime(badge) {
   const endIso = badge.dataset.offerEnd;
   if (endIso) {
     const endTime = new Date(endIso).getTime();
-    if (!isNaN(endTime)) {
-      return Math.max(0, Math.floor((endTime - Date.now()) / 1000));
-    }
+    if (!isNaN(endTime)) return endTime;
   }
   const endsSeconds = Number(badge.dataset.endsSeconds || 0);
-  return endsSeconds > 0 ? endsSeconds : 0;
+  return endsSeconds > 0 ? Date.now() + endsSeconds * 1000 : null;
 }
 
 function initLimitedBadges() {
   const updateBadges = () => {
     document.querySelectorAll(".limited-badge").forEach((badge) => {
-      const secondsLeft = getBadgeSecondsLeft(badge);
+      const endTime = getBadgeEndTime(badge);
+
+      if (endTime === null) {
+        // No offer data at all - hide immediately
+        badge.style.display = "none";
+        return;
+      }
+
+      const now = Date.now();
+      const secondsLeft = Math.max(0, Math.floor((endTime - now) / 1000));
+
       if (secondsLeft > 0) {
+        // Offer still active
         badge.textContent = `Ends in ${formatCountdown(secondsLeft)}`;
         badge.style.display = "";
+        badge.style.opacity = "1";
+        badge.style.transition = "";
         badge.classList.remove("expired");
+        delete badge.dataset.endedAt;
       } else {
-        // No active offer or offer expired - hide the badge entirely
-        badge.style.display = "none";
-        badge.classList.add("expired");
+        // Offer just ended (or already ended) - show "Deal ended" and
+        // smoothly fade it out over DEAL_ENDED_FADE_SECONDS, then hide.
+        if (!badge.dataset.endedAt) {
+          badge.dataset.endedAt = String(endTime);
+          badge.textContent = "Deal ended";
+          badge.style.display = "";
+          badge.style.opacity = "1";
+          badge.style.transition = `opacity ${DEAL_ENDED_FADE_SECONDS}s ease-out`;
+          badge.classList.add("expired");
+          // Trigger fade on next frame so the transition applies
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              badge.style.opacity = "0";
+            });
+          });
+        }
+
+        const secondsSinceEnd = Math.floor((now - Number(badge.dataset.endedAt)) / 1000);
+        if (secondsSinceEnd >= DEAL_ENDED_FADE_SECONDS) {
+          badge.style.display = "none";
+        }
       }
     });
   };

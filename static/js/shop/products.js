@@ -4,6 +4,18 @@ import { initReveal, money, showToast } from "../core/utilities.js";
 
 let cachedFavorites = null;
 
+/**
+ * Set innerHTML on a container and immediately make all .reveal
+ * children visible — they were injected after initReveal() already ran,
+ * so the IntersectionObserver never observed them.
+ */
+function injectCards(container, html) {
+  container.innerHTML = html;
+  container.querySelectorAll(".reveal").forEach((el) => {
+    el.classList.add("show", "active");
+  });
+}
+
 async function getFavorites() {
   if (cachedFavorites !== null) return cachedFavorites;
 
@@ -150,9 +162,8 @@ export async function initShopControls() {
     const data = await apiGet(`/api/products/?${params.toString()}`);
 
     const cardHtmls = await Promise.all(data.products.map(productCard));
-    grid.innerHTML = cardHtmls.join("") || "<p class='muted'>No matching products.</p>";
+    injectCards(grid, cardHtmls.join("") || "<p class='muted'>No matching products.</p>");
 
-    initReveal();
     window.initProductOffers?.();
     updateFavoriteCount();
   };
@@ -215,7 +226,7 @@ export async function renderFavoritesPage() {
   if (!target || !source) return;
   const wanted = await getFavorites();
   const cards = [...source.querySelectorAll(".product-card")].filter((card) => wanted.includes(Number(card.dataset.productId)));
-  target.innerHTML = cards.length ? cards.map((card) => card.outerHTML).join("") : "<p class='muted'>No favorites yet. Tap the heart on products.</p>";
+  injectCards(target, cards.length ? cards.map((card) => card.outerHTML).join("") : "<p class='muted'>No favorites yet. Tap the heart on products.</p>");
   updateFavoriteCount();
 }
 

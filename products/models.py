@@ -196,6 +196,9 @@ class Product(models.Model):
     gallery_url_1 = models.URLField(blank=True)
     gallery_url_2 = models.URLField(blank=True)
     gallery_url_3 = models.URLField(blank=True)
+    gallery_public_id_1 = models.CharField(max_length=255, blank=True, null=True)
+    gallery_public_id_2 = models.CharField(max_length=255, blank=True, null=True)
+    gallery_public_id_3 = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

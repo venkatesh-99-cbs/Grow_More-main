@@ -29,17 +29,13 @@
   border-color: rgba(81, 226, 245, 0.3);
 }
 
-/* Blur-up Image Effect */
+/* Image loading — no blur, instant display */
 .blur-up-image {
-  filter: blur(10px);
-  transition: filter 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: scale(1.05);
-  background: #f0f0f0;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .blur-up-image.loaded {
-  filter: blur(0);
-  transform: scale(1);
+  /* no-op — class may still be added by lazy-loader, safe to keep */
 }
 
 .loading-progressive {
@@ -68,11 +64,13 @@
 .product-media img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   transition: transform var(--transition);
   position: absolute;
   inset: 0;
   backface-visibility: hidden;
+  background: #f8f8f8;
 }
 
 .product-media .front {
@@ -256,8 +254,10 @@
 .product-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   transition: transform var(--transition);
+  background: #f8f8f8;
 }
 
 .product-card:hover .product-image {
@@ -485,9 +485,11 @@
 .detail-media img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   display: block;
   transition: opacity 0.18s ease;
+  background: #f8f8f8;
 }
 
 #detail-main-img.changing {
@@ -538,7 +540,9 @@
 .detail-thumbs img {
   width: 104px;
   height: 88px;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
+  background: #f8f8f8;
   border-radius: 10px;
   cursor: pointer;
   border: 1px solid var(--border);
