@@ -26,7 +26,10 @@ def env_list(name: str, default: str = "") -> list[str]:
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-grow-more-dev-key-change-me")
 DEBUG = env_bool("DEBUG", True)
-ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "127.0.0.1,localhost,testserver",".onrender.com",)
+ALLOWED_HOSTS = env_list(
+    "ALLOWED_HOSTS",
+    "127.0.0.1,localhost,testserver,.onrender.com"
+)
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
 
 INSTALLED_APPS = [
