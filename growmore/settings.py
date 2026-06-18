@@ -174,35 +174,27 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+# ============================================================================
+# Static Files
+# ============================================================================
 
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 STORAGES = {
-    'default': {
-        'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage'
-        if USE_CLOUDINARY and importlib.util.find_spec("cloudinary_storage")
-        else 'django.core.files.storage.FileSystemStorage',
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage"
+        if USE_CLOUDINARY
+        else "django.core.files.storage.FileSystemStorage",
     },
-    'staticfiles': {
-        # Use plain StaticFilesStorage for collectstatic.
-        # WhiteNoise middleware (in MIDDLEWARE) handles gzip/brotli compression
-        # at serve-time without needing pre-processing — this avoids all
-        # MissingFileError and FileNotFoundError issues from CompressedStaticFilesStorage.
-        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
-# Compatibility shim: cloudinary_storage<=0.3.x reads the legacy
-# STATICFILES_STORAGE attribute instead of STORAGES['staticfiles'].
-STATICFILES_STORAGE = STORAGES['staticfiles']['BACKEND']
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
 
 LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'accounts:profile'
