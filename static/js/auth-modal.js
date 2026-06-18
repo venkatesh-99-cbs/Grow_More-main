@@ -28,7 +28,8 @@ class AuthModalManager {
         
         <div class="auth-modal-header">
           <div class="auth-modal-logo">
-             <img src="/media/logo/Grow_More_logo.png" alt="Grow More" style="width: 60px; height: 60px; object-fit: contain; margin-bottom: 12px; filter: drop-shadow(0 4px 12px rgba(81, 226, 245, 0.4));">
+             <img src="{% static 'images/Grow_More_logo.png' %}"
+     alt="Grow More" style="width: 60px; height: 60px; object-fit: contain; margin-bottom: 12px; filter: drop-shadow(0 4px 12px rgba(81, 226, 245, 0.4));">
           </div>
           <h2 class="auth-modal-title">Elevate Your Style</h2>
           <p class="auth-modal-subtitle">Join the Grow More community</p>
