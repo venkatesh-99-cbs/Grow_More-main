@@ -3,27 +3,70 @@ services:
     name: grow-more
     env: python
     plan: starter
-    buildCommand: pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput
-    startCommand: gunicorn growmore.wsgi:application
+    region: oregon
+    buildCommand: |
+      pip install -r requirements.txt &&
+      python manage.py collectstatic --noinput &&
+      python manage.py migrate --noinput
+    startCommand: gunicorn growmore.wsgi:application --workers 2 --threads 2 --timeout 120 --bind 0.0.0.0:$PORT
     autoDeploy: true
+    healthCheckPath: /
     envVars:
+      # Core Django
       - key: DEBUG
         value: "False"
-      - key: ENVIRONMENT
-        value: production
       - key: SECRET_KEY
         generateValue: true
+      - key: ALLOWED_HOSTS
+        sync: false          # Set in Render dashboard: yourdomain.onrender.com
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false          # Set in Render dashboard: https://yourdomain.onrender.com
+
+      # Database (Neon PostgreSQL)
       - key: DATABASE_URL
-        sync: false
+        sync: false          # Paste your Neon connection string here
+
+      # Cloudinary (image storage)
       - key: USE_CLOUDINARY
         value: "True"
       - key: CLOUDINARY_URL
-        sync: false
-      - key: ALLOWED_HOSTS
-        sync: false
-      - key: CSRF_TRUSTED_ORIGINS
-        sync: false
+        sync: false          # cloudinary://api_key:api_secret@cloud_name
+
+      # Email (Gmail SMTP)
+      - key: EMAIL_BACKEND
+        value: django.core.mail.backends.smtp.EmailBackend
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      - key: EMAIL_PORT
+        value: "587"
+      - key: EMAIL_USE_TLS
+        value: "True"
+      - key: EMAIL_HOST_USER
+        sync: false          # your Gmail address
+      - key: EMAIL_HOST_PASSWORD
+        sync: false          # Gmail App Password (not your login password)
+      - key: DEFAULT_FROM_EMAIL
+        sync: false          # e.g. Grow More <your@gmail.com>
+      - key: CONTACT_EMAIL
+        value: growmoreofficial.store@gmail.com
+
+      # Payments
       - key: RAZORPAY_KEY_ID
         sync: false
       - key: RAZORPAY_KEY_SECRET
         sync: false
+
+      # Static files storage — CompressedStaticFilesStorage avoids MissingFileError
+      # from Django admin CSS referencing SVGs not present on all platforms.
+      # Override here only if you need manifest-based fingerprinting.
+      # - key: STATICFILES_STORAGE_BACKEND
+      #   value: whitenoise.storage.CompressedStaticFilesStorage
+        value: "True"
+      - key: SESSION_COOKIE_SECURE
+        value: "True"
+      - key: CSRF_COOKIE_SECURE
+        value: "True"
+      - key: SECURE_HSTS_SECONDS
+        value: "31536000"
+      - key: SECURE_HSTS_INCLUDE_SUBDOMAINS
+        value: "True"

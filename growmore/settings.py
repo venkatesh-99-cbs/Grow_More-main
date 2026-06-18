@@ -26,10 +26,7 @@ def env_list(name: str, default: str = "") -> list[str]:
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-grow-more-dev-key-change-me")
 DEBUG = env_bool("DEBUG", True)
-ALLOWED_HOSTS = env_list(
-    "ALLOWED_HOSTS",
-    "127.0.0.1,localhost,testserver,growmore-store.onrender.com"
-)
+ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "127.0.0.1,localhost,testserver")
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
 
 INSTALLED_APPS = [
@@ -188,14 +185,17 @@ STORAGES = {
         else 'django.core.files.storage.FileSystemStorage',
     },
     'staticfiles': {
-        'BACKEND': os.environ.get(
-            'STATICFILES_STORAGE_BACKEND',
-            'django.contrib.staticfiles.storage.StaticFilesStorage'
-            if DEBUG
-            else 'whitenoise.storage.CompressedStaticFilesStorage',
-        ),
+        # Use plain StaticFilesStorage for collectstatic.
+        # WhiteNoise middleware (in MIDDLEWARE) handles gzip/brotli compression
+        # at serve-time without needing pre-processing — this avoids all
+        # MissingFileError and FileNotFoundError issues from CompressedStaticFilesStorage.
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
     },
 }
+
+# Compatibility shim: cloudinary_storage<=0.3.x reads the legacy
+# STATICFILES_STORAGE attribute instead of STORAGES['staticfiles'].
+STATICFILES_STORAGE = STORAGES['staticfiles']['BACKEND']
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

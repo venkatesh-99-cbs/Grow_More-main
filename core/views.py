@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib import messages
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import ensure_csrf_cookie
 
@@ -50,13 +50,29 @@ def about(request):
 def contact(request):
     form = ContactForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
-        send_mail(
-            f"Grow More contact from {form.cleaned_data['name']}",
-            form.cleaned_data["message"],
-            form.cleaned_data["email"],
-            [settings.CONTACT_EMAIL],
-            fail_silently=False,
+        name    = form.cleaned_data["name"]
+        email   = form.cleaned_data["email"]
+        message = form.cleaned_data["message"]
+
+        email_body = (
+            f"You have a new message from the Grow More contact form.\n"
+            f"{'=' * 52}\n\n"
+            f"Customer Name  : {name}\n"
+            f"Customer Email : {email}\n\n"
+            f"Message\n"
+            f"{'-' * 52}\n"
+            f"{message}\n\n"
+            f"{'=' * 52}\n"
+            f"Reply directly to this email to respond to {name}.\n"
         )
+
+        EmailMessage(
+            subject=f"[Grow More] New message from {name} <{email}>",
+            body=email_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[settings.CONTACT_EMAIL],
+            reply_to=[email],
+        ).send(fail_silently=False)
         messages.success(request, "Thanks, we will contact you soon.")
         return redirect("core:contact")
     return render(request, "core/contact.html", {"form": form})
