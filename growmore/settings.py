@@ -28,7 +28,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-grow-more-dev-key-cha
 DEBUG = env_bool("DEBUG", True)
 ALLOWED_HOSTS = env_list(
     "ALLOWED_HOSTS",
-    "127.0.0.1,localhost,testserver,growmore-store.onrender.com"
+    "127.0.0.1,localhost,testserver,growmorestore.onrender.com"
 )
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
 
