@@ -64,8 +64,8 @@ USE_CLOUDINARY = env_bool(
         )
     ),
 )
-if USE_CLOUDINARY and importlib.util.find_spec("cloudinary_storage") and importlib.util.find_spec("cloudinary"):
-    INSTALLED_APPS = ['cloudinary_storage', 'cloudinary'] + INSTALLED_APPS
+if USE_CLOUDINARY and importlib.util.find_spec("cloudinary"):
+    INSTALLED_APPS = ["cloudinary"] + INSTALLED_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -179,6 +179,11 @@ USE_TZ = True
 # ============================================================================
 
 STATIC_URL = "/static/"
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "/media/"
