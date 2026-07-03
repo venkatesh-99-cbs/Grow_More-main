@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
+from django.utils.functional import cached_property
 from django.utils.text import slugify
 
 from core.validators import validate_store_image
@@ -253,7 +254,7 @@ class Product(models.Model):
             return Decimal("0.00")
         return self.original_price - self.current_price
 
-    @property
+    @cached_property
     def active_offer(self):
         from offers.services import best_offer_for_product
 
