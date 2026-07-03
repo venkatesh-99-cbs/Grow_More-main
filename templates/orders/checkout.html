@@ -40,9 +40,22 @@
         <h3>Order Summary</h3>
         <div id="checkout-summary">
           {% for item in cart.items.all %}
-            <div class="checkout-item"><img src="{{ item.product.main_image_url }}" alt="{{ item.product.name }}"><div><p>{{ item.product.name }}</p><small class="cart-variant-line">{{ item.size }}{% if item.color %}<span class="cart-color-chip"><span class="cart-color-dot" style="background:{{ item.color }}"></span>{{ item.color }}</span>{% endif %} x{{ item.quantity }}</small>{% if item.product.active_offer %}<small class="offer-mini">{{ item.product.offer_label }}</small>{% endif %}</div><strong>Rs. {{ item.subtotal }}</strong></div>
+            <div class="checkout-item" data-item-id="{{ item.id }}">
+              <img src="{{ item.product.main_image_url }}" alt="{{ item.product.name }}">
+              <div style="flex: 1;">
+                <p>{{ item.product.name }}</p>
+                <small class="cart-variant-line">{{ item.size }}{% if item.color %}<span class="cart-color-chip"><span class="cart-color-dot" style="background:{{ item.color }}"></span>{{ item.color }}</span>{% endif %}</small>
+                {% if item.product.active_offer %}<small class="offer-mini">{{ item.product.offer_label }}</small>{% endif %}
+                <div class="qty-selector mini" style="margin-top: 8px;">
+                  <button type="button" class="qty-btn" data-action="minus" data-id="{{ item.id }}">-</button>
+                  <input type="number" value="{{ item.quantity }}" readonly />
+                  <button type="button" class="qty-btn" data-action="plus" data-id="{{ item.id }}">+</button>
+                </div>
+              </div>
+              <strong>Rs. {{ item.subtotal }}</strong>
+            </div>
           {% endfor %}
-          <div class="cart-row"><strong>Total</strong><strong>Rs. {{ cart.total }}</strong></div>
+          <div class="cart-row"><strong>Total</strong><strong id="summary-total">Rs. {{ cart.total }}</strong></div>
         </div>
       </article>
     </section>

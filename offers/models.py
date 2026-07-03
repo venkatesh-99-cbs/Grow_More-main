@@ -106,10 +106,16 @@ class PromotionalOffer(models.Model):
         if self.offer_type == "homepage" and product.is_featured:
             return True
         if self.offer_type == "product":
+            if hasattr(self, "_product_ids"):
+                return product.pk in self._product_ids
             return any(item.pk == product.pk for item in self.products.all())
         if self.offer_type == "category":
+            if hasattr(self, "_category_ids"):
+                return product.category_id in self._category_ids
             return any(item.pk == product.category_id for item in self.categories.all())
         if self.offer_type == "brand":
+            if hasattr(self, "_brand_ids"):
+                return product.brand_id in self._brand_ids
             return any(item.pk == product.brand_id for item in self.brands.all())
         if self.offer_type == "trending":
             return product.is_trending

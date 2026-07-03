@@ -39,6 +39,7 @@ export async function refreshCart() {
 }
 
 export function initCartUI() {
+  window.refreshCart = refreshCart;
   const sidebar = document.getElementById("cart-sidebar");
   if (!sidebar) return;
 

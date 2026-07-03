@@ -16,6 +16,16 @@ def active_offers():
             .prefetch_related("products", "categories", "brands")
             .order_by("display_priority", "-discount_percent")
         )
+        # Pre-calculate sets for O(1) lookup in applies_to_product
+        # Using .all() to leverage prefetched data and avoid N+1 queries
+        for offer in offers:
+            if offer.offer_type == "product":
+                offer._product_ids = {p.pk for p in offer.products.all()}
+            elif offer.offer_type == "category":
+                offer._category_ids = {c.pk for c in offer.categories.all()}
+            elif offer.offer_type == "brand":
+                offer._brand_ids = {b.pk for b in offer.brands.all()}
+
         cache.set(cache_key, offers, 300)  # Cache for 5 minutes
     return offers
 
