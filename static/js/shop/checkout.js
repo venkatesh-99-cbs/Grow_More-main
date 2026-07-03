@@ -1,4 +1,6 @@
 import { validateStep, preventDoubleSubmit } from "../services/validation-service.js";
+import { apiPost } from "../services/api-service.js";
+import { money } from "../core/utilities.js";
 
 function initCheckoutSteps() {
   const form = document.getElementById("checkout-form");
@@ -45,6 +47,65 @@ function initCheckoutSteps() {
   preventDoubleSubmit(form);
 }
 
+async function updateSummary(cart) {
+  const summary = document.getElementById("checkout-summary");
+  const totalDisplay = document.getElementById("summary-total");
+  if (!summary || !totalDisplay) return;
+
+  totalDisplay.textContent = money(cart.total);
+
+  if (!cart.items.length) {
+    window.location.href = "/shop/"; // Redirect if cart becomes empty
+    return;
+  }
+
+  // Find all checkout-item elements
+  const existingItems = summary.querySelectorAll(".checkout-item");
+  const itemIdsInCart = cart.items.map(i => String(i.id));
+
+  // Remove items that are no longer in cart
+  existingItems.forEach(el => {
+    if (!itemIdsInCart.includes(el.dataset.itemId)) {
+      el.remove();
+    }
+  });
+
+  // Update existing items
+  cart.items.forEach(item => {
+    const el = summary.querySelector(`.checkout-item[data-item-id="${item.id}"]`);
+    if (el) {
+      el.querySelector("input").value = item.qty;
+      el.querySelector("strong").textContent = money(item.subtotal);
+    }
+  });
+}
+
+function initSummaryActions() {
+  const summary = document.getElementById("checkout-summary");
+  if (!summary) return;
+
+  summary.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".qty-btn");
+    if (!btn) return;
+
+    const itemId = btn.dataset.id;
+    const action = btn.dataset.action;
+    const input = btn.parentElement.querySelector("input");
+    let currentQty = parseInt(input.value);
+
+    let newQty = action === "plus" ? currentQty + 1 : currentQty - 1;
+
+    try {
+      const cart = await apiPost(`/cart/items/${itemId}/update/`, { quantity: newQty });
+      updateSummary(cart);
+      // Also trigger global cart refresh if it exists
+      if (window.refreshCart) window.refreshCart();
+    } catch (err) {
+      console.error("Failed to update quantity:", err);
+    }
+  });
+}
+
 function initRazorpay() {
   const button = document.getElementById("pay-button");
   if (!button || !window.Razorpay) return;
@@ -69,5 +130,6 @@ function initRazorpay() {
 
 document.addEventListener("DOMContentLoaded", () => {
   initCheckoutSteps();
+  initSummaryActions();
   initRazorpay();
 });
