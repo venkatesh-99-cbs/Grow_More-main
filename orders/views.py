@@ -11,7 +11,13 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from core.services import send_order_confirmation
 from orders.forms import CheckoutForm
 from orders.models import CartItem, Order, Payment
-from orders.services import create_order_from_cart, create_payment_record, get_or_create_cart, verify_razorpay_signature
+from orders.services import (
+    create_order_from_cart,
+    create_payment_record,
+    get_or_create_cart,
+    verify_razorpay_signature,
+    invalidate_cart_count_cache,
+)
 from products.models import Product
 
 
@@ -90,6 +96,7 @@ def add_to_cart(request):
     if not created:
         item.quantity += quantity
         item.save(update_fields=["quantity"])
+    invalidate_cart_count_cache(request)
     return JsonResponse(cart_payload(cart))
 
 
@@ -104,6 +111,7 @@ def update_cart_item(request, pk):
     else:
         item.quantity = min(quantity, 99)
         item.save(update_fields=["quantity"])
+    invalidate_cart_count_cache(request)
     return JsonResponse(cart_payload(cart))
 
 
@@ -111,6 +119,7 @@ def update_cart_item(request, pk):
 def remove_cart_item(request, pk):
     cart = get_or_create_cart(request)
     get_object_or_404(CartItem, pk=pk, cart=cart).delete()
+    invalidate_cart_count_cache(request)
     return JsonResponse(cart_payload(cart))
 
 
@@ -148,6 +157,7 @@ def checkout(request):
             payment.status = "paid"
             payment.save(update_fields=["status"])
             cart.items.all().delete()
+            invalidate_cart_count_cache(request)
             send_order_confirmation(order)
             return redirect("orders:success", order_number=order.order_number)
         return render(request, "orders/payment.html", {"order": order, "payment": payment, "razorpay_key_id": settings.RAZORPAY_KEY_ID})
@@ -170,6 +180,7 @@ def verify_payment(request):
         payment.order.status = "confirmed"
         payment.order.save(update_fields=["status"])
         get_or_create_cart(request).items.all().delete()
+        invalidate_cart_count_cache(request)
         send_order_confirmation(payment.order)
         return redirect("orders:success", order_number=payment.order.order_number)
     payment.status = "failed"

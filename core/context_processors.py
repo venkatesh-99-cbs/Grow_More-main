@@ -1,9 +1,9 @@
-from orders.services import get_or_create_cart
+from orders.services import get_cart_count_from_session
 
 
 def cart(request):
     try:
-        current_cart = get_or_create_cart(request)
-        return {"cart": current_cart, "cart_count": current_cart.total_quantity}
+        cart_count = get_cart_count_from_session(request)
+        return {"cart": None, "cart_count": cart_count}
     except Exception:
         return {"cart": None, "cart_count": 0}

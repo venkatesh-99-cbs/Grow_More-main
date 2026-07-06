@@ -30,7 +30,9 @@
     data-authenticated="{{ request.user.is_authenticated|yesno:'true,false' }}"
     data-server-time="{{ now|date:'c' }}"
   >
+    {% if request.resolver_match.url_name == 'home' %}
     {% include "partials/intro_animation.html" %}
+    {% endif %}
     {% block header %}
     <header class="topbar">
       <div class="container nav">
@@ -181,15 +183,15 @@
     </footer>
     {% endblock %}
 
-    <script src="{% static 'js/notifications.js' %}"></script>
-    <script src="{% static 'js/auth-modal.js' %}"></script>
-    <script src="{% static 'js/utils/lazy-loader.js' %}"></script>
-    <script src="{% static 'js/skeleton-loader.js' %}"></script>
-    <script src="{% static 'js/intro-animation.js' %}"></script>
-    <script src="{% static 'js/product-interactions.js' %}"></script>
-    <script src="{% static 'js/offers/offer-engine.js' %}"></script>
-    <script src="{% static 'js/offers/product-offers.js' %}"></script>
-    <script src="{% static 'js/offers/homepage-offers.js' %}"></script>
+    <script src="{% static 'js/notifications.js' %}" defer></script>
+    <script src="{% static 'js/auth-modal.js' %}" defer></script>
+    <script src="{% static 'js/utils/lazy-loader.js' %}" defer></script>
+    <script src="{% static 'js/skeleton-loader.js' %}" defer></script>
+    <script src="{% static 'js/intro-animation.js' %}" defer></script>
+    <script src="{% static 'js/product-interactions.js' %}" defer></script>
+    <script src="{% static 'js/offers/offer-engine.js' %}" defer></script>
+    <script src="{% static 'js/offers/product-offers.js' %}" defer></script>
+    <script src="{% static 'js/offers/homepage-offers.js' %}" defer></script>
 
     <script type="module" src="{% static 'js/core/main.js' %}"></script>
     {% block scripts %}{% endblock %}

@@ -32,7 +32,7 @@ def overview(request):
 
 @staff_member_required
 def products(request):
-    items = Product.objects.select_related("category").all()
+    items = Product.objects.select_related("category", "brand").all()
     return render(request, "dashboard/products.html", {"products": items})
 
 
@@ -57,9 +57,16 @@ def product_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
     name = product.name
     try:
-        public_id = product.cloudinary_public_id
+        pids = [
+            product.cloudinary_public_id,
+            product.gallery_public_id_1,
+            product.gallery_public_id_2,
+            product.gallery_public_id_3,
+        ]
         product.delete()
-        delete_product_image(public_id)
+        for pid in pids:
+            if pid:
+                delete_product_image(pid)
         messages.success(request, f"{name} removed.")
     except ProtectedError:
         product.is_active = False
@@ -202,8 +209,12 @@ def order_status(request, pk):
 
 @staff_member_required
 def customers(request):
-    users = User.objects.filter(is_staff=False).prefetch_related("orders__items", "addresses")
-    return render(request, "dashboard/customers.html", {"customers": users})
+    from django.core.paginator import Paginator
+    users_list = User.objects.filter(is_staff=False).prefetch_related("orders__items", "addresses").order_by("-date_joined")
+    paginator = Paginator(users_list, 20)  # 20 customers per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, "dashboard/customers.html", {"customers": page_obj, "page_obj": page_obj})
 
 
 @staff_member_required

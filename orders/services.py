@@ -30,6 +30,23 @@ def get_or_create_cart(request):
     return cart
 
 
+def get_cart_count_from_session(request):
+    """Return cart count from session cache, avoiding DB hit on every page load."""
+    count = request.session.get('cart_count_cache')
+    if count is not None:
+        return count
+    # Only query DB on cache miss
+    cart = get_or_create_cart(request)
+    count = cart.total_quantity
+    request.session['cart_count_cache'] = count
+    return count
+
+
+def invalidate_cart_count_cache(request):
+    """Call this after any cart modification."""
+    request.session.pop('cart_count_cache', None)
+
+
 def merge_session_cart_into_user(request):
     if not request.user.is_authenticated or not request.session.session_key:
         return
@@ -49,6 +66,7 @@ def merge_session_cart_into_user(request):
             existing.quantity += item.quantity
             existing.save(update_fields=["quantity"])
     session_cart.delete()
+    invalidate_cart_count_cache(request)
 
 
 @transaction.atomic

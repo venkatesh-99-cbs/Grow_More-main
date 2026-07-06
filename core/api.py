@@ -4,10 +4,13 @@ All frontend content is served from these endpoints.
 """
 
 from django.db.models import Q
+from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.views.decorators.cache import cache_control
 from django.views.decorators.http import require_http_methods
+
 
 from offers.models import PromotionalOffer
 from offers.services import best_offer_for_product, price_for_product
@@ -17,6 +20,7 @@ from .models import HeroBanner, HomepageSection
 
 
 @require_http_methods(["GET"])
+@cache_control(max_age=60, private=True)
 def api_hero_banners(request):
     banners = HeroBanner.objects.filter(is_active=True).order_by("sort_order")
     return JsonResponse(
@@ -24,10 +28,10 @@ def api_hero_banners(request):
             "banners": [
                 {
                     "id": banner.id,
-                    "title": banner.title,
-                    "subtitle": banner.subtitle,
-                    "button_label": banner.button_label,
-                    "button_url": banner.button_url,
+                    "title": banner.display_title,
+                    "subtitle": banner.display_subtitle,
+                    "button_label": banner.display_button_label,
+                    "button_url": banner.display_button_url,
                     "image": banner.display_image,
                 }
                 for banner in banners
@@ -56,11 +60,13 @@ def api_products(request):
     if request.GET.get("trending") == "true":
         query = query.filter(is_trending=True)
 
+    query = query.annotate(effective_price=Coalesce("discount_price", "price"))
     if sort == "name":
         query = query.order_by("name")
-    elif sort in {"price-low", "price-high"}:
-        query = list(query)
-        query.sort(key=lambda product: product.current_price, reverse=sort == "price-high")
+    elif sort == "price-low":
+        query = query.order_by("effective_price")
+    elif sort == "price-high":
+        query = query.order_by("-effective_price")
 
     try:
         limit = int(request.GET.get("limit", 20))
@@ -69,7 +75,9 @@ def api_products(request):
     limit = max(1, min(limit, 100))
 
     products = query[:limit]
-    return JsonResponse({"products": [_serialize_product(product) for product in products], "count": len(products)})
+    response = JsonResponse({"products": [_serialize_product(product) for product in products], "count": len(products)})
+    response["Cache-Control"] = "private, max-age=30"
+    return response
 
 
 @require_http_methods(["GET"])
@@ -173,19 +181,24 @@ def api_categories(request):
 
 
 @require_http_methods(["GET"])
+@cache_control(max_age=120, private=True)
 def api_featured_products(request):
     products = Product.objects.filter(is_active=True, is_featured=True).select_related("category")[:4]
     return JsonResponse({"products": [_serialize_product(product) for product in products]})
 
 
 @require_http_methods(["GET"])
+@cache_control(max_age=120, private=True)
 def api_deal_products(request):
-    products = Product.objects.filter(is_active=True).select_related("category")
-    deal_products = [product for product in products if best_offer_for_product(product)][:6]
+    from offers.services import get_products_with_active_offers
+    deal_products = get_products_with_active_offers(limit=6)
+    if not deal_products.exists():
+        deal_products = Product.objects.filter(is_active=True, is_featured=True).select_related("category")[:6]
     return JsonResponse({"products": [_serialize_product(product) for product in deal_products]})
 
 
 @require_http_methods(["GET"])
+@cache_control(max_age=120, private=True)
 def api_trending_products(request):
     products = Product.objects.filter(is_active=True, is_trending=True).select_related("category")[:6]
     return JsonResponse({"products": [_serialize_product(product) for product in products]})

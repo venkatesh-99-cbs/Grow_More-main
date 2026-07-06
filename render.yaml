@@ -61,7 +61,6 @@ services:
       # Override here only if you need manifest-based fingerprinting.
       # - key: STATICFILES_STORAGE_BACKEND
       #   value: whitenoise.storage.CompressedStaticFilesStorage
-        value: "True"
       - key: SESSION_COOKIE_SECURE
         value: "True"
       - key: CSRF_COOKIE_SECURE

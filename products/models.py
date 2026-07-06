@@ -238,8 +238,7 @@ class Product(models.Model):
 
     @property
     def original_price(self):
-        if self.active_offer or self.discount_price:
-            return self.price
+        """Always returns the base undiscounted price."""
         return self.price
 
     @property
@@ -289,7 +288,7 @@ class Product(models.Model):
 
         if url and "res.cloudinary.com" in url:
             # Add auto-optimization parameters
-            if "/upload/" in url:
+            if "/upload/" in url and "f_auto,q_auto" not in url:
                 return url.replace("/upload/", "/upload/f_auto,q_auto/")
         return url
 
@@ -307,7 +306,7 @@ class Product(models.Model):
         processed_images = []
         for img in raw_images:
             if img:
-                if "res.cloudinary.com" in img and "/upload/" in img:
+                if "res.cloudinary.com" in img and "/upload/" in img and "f_auto,q_auto" not in img:
                     processed_images.append(img.replace("/upload/", "/upload/f_auto,q_auto/"))
                 else:
                     processed_images.append(img)
@@ -321,20 +320,15 @@ class Product(models.Model):
     @property
     def size_stock_items(self):
         """Return list of (size, stock) tuples for template iteration."""
-        items = []
-        for size in self.sizes:
-            try:
-                items.append((size, self.size_stocks.get(size=size)))
-            except:
-                items.append((size, None))
-        return items
+        stock_map = {ss.size: ss for ss in self.size_stocks.all()}
+        return [(size, stock_map.get(size)) for size in self.sizes]
     
     def get_size_stock(self, size):
         """Get stock for specific size."""
-        try:
-            return self.size_stocks.get(size=size)
-        except:
-            return None
+        for ss in self.size_stocks.all():
+            if ss.size == size:
+                return ss
+        return None
     
     def get_total_stock(self):
         """Calculate total stock across all sizes."""

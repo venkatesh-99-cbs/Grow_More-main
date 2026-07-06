@@ -11,10 +11,12 @@ from products.models import Product
 
 @ensure_csrf_cookie
 def home(request):
-    from offers.services import active_offers
+    from offers.services import active_offers, get_products_with_active_offers
 
     if request.GET.get("lazy") == "deals":
-        deal_products = [product for product in Product.objects.filter(is_active=True).select_related("category") if product.active_offer][:6]
+        deal_products = get_products_with_active_offers(limit=6)
+        if not deal_products.exists():
+            deal_products = Product.objects.filter(is_active=True, is_featured=True).select_related("category")[:6]
         return render(request, "partials/product_grid.html", {"products": deal_products})
 
     banners = HeroBanner.objects.filter(is_active=True).select_related('group')
@@ -23,10 +25,9 @@ def home(request):
     fallback_products = []
     if not featured_products:
         # Fallback to products with offers, then any active products
-        all_active = Product.objects.filter(is_active=True).select_related("category")
-        fallback_products = [p for p in all_active if p.active_offer][:4]
+        fallback_products = get_products_with_active_offers(limit=4)
         if not fallback_products:
-            fallback_products = all_active[:4]
+            fallback_products = Product.objects.filter(is_active=True).select_related("category")[:4]
 
     sections = HomepageSection.objects.filter(is_active=True)
     current_offers = active_offers()
