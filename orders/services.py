@@ -5,6 +5,7 @@ from io import BytesIO
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import F
 
 from orders.models import Cart, CartItem, Order, OrderItem, Payment
 
@@ -30,10 +31,31 @@ def get_or_create_cart(request):
     return cart
 
 
-def merge_session_cart_into_user(request):
-    if not request.user.is_authenticated or not request.session.session_key:
+def get_cart_count_from_session(request):
+    """Return cart count from session cache, avoiding DB hit on every page load."""
+    count = request.session.get('cart_count_cache')
+    if count is not None:
+        return count
+    # Only query DB on cache miss
+    cart = get_or_create_cart(request)
+    count = cart.total_quantity
+    request.session['cart_count_cache'] = count
+    return count
+
+
+def invalidate_cart_count_cache(request):
+    """Call this after any cart modification."""
+    request.session.pop('cart_count_cache', None)
+
+
+def merge_session_cart_into_user(request, session_key=None):
+    if not request.user.is_authenticated:
         return
-    session_cart = Cart.objects.filter(session_key=request.session.session_key, user=None).first()
+    # Login rotates the session key, so the caller passes the pre-login key.
+    session_key = session_key or request.session.session_key
+    if not session_key:
+        return
+    session_cart = Cart.objects.filter(session_key=session_key, user=None).first()
     user_cart, _ = Cart.objects.get_or_create(user=request.user)
     if not session_cart:
         return
@@ -49,13 +71,36 @@ def merge_session_cart_into_user(request):
             existing.quantity += item.quantity
             existing.save(update_fields=["quantity"])
     session_cart.delete()
+    invalidate_cart_count_cache(request)
 
 
 @transaction.atomic
 def create_order_from_cart(cart, user, form_data):
-    items = list(cart.items.select_related("product"))
+    from products.models import Product, SizeStock
+
+    # Lock cart rows so concurrent checkouts on the same cart serialize.
+    items = list(cart.items.select_related("product").select_for_update())
     if not items:
         raise ValueError("Cart is empty.")
+    # Lock products and size rows up front so two checkouts cannot oversell.
+    locked_products = {
+        p.pk: p
+        for p in Product.objects.select_for_update().filter(pk__in={i.product_id for i in items})
+    }
+    locked_sizes = {
+        (s.product_id, s.size): s
+        for s in SizeStock.objects.select_for_update().filter(
+            product_id__in={i.product_id for i in items}
+        )
+    }
+    for cart_item in items:
+        product = locked_products[cart_item.product_id]
+        if cart_item.size:
+            size_stock = locked_sizes.get((cart_item.product_id, cart_item.size))
+            if size_stock is not None and size_stock.stock_quantity < cart_item.quantity:
+                raise ValueError(f"Only {size_stock.stock_quantity} left for size {cart_item.size}.")
+        elif product.stock < cart_item.quantity:
+            raise ValueError("Insufficient stock.")
     order = Order.objects.create(
         user=user if user and user.is_authenticated else None,
         email=form_data["email"],
@@ -69,8 +114,8 @@ def create_order_from_cart(cart, user, form_data):
     )
     total = Decimal("0.00")
     for cart_item in items:
-        product = cart_item.product
-        active_offer = product.active_offer
+        product = locked_products[cart_item.product_id]
+        active_offer = cart_item.product.active_offer
         OrderItem.objects.create(
             order=order,
             product=product,
@@ -78,55 +123,53 @@ def create_order_from_cart(cart, user, form_data):
             size=cart_item.size,
             color=cart_item.color,
             quantity=cart_item.quantity,
-            price=product.current_price,
+            price=cart_item.product.current_price,
             original_price=product.price,
             offer_title=active_offer.title if active_offer else "",
             offer_discount_percent=active_offer.discount_percent if active_offer else 0,
         )
-        total += product.current_price * cart_item.quantity
+        total += cart_item.product.current_price * cart_item.quantity
 
-        # Reduced stock for the specific size if it exists
         if cart_item.size:
-            from products.models import SizeStock
-            size_stock = SizeStock.objects.filter(product=product, size=cart_item.size).first()
-            if size_stock:
-                if size_stock.stock_quantity >= cart_item.quantity:
-                    size_stock.stock_quantity -= cart_item.quantity
-                    size_stock.save(update_fields=["stock_quantity"])
-                else:
-                    # If somehow we got here with insufficient stock, set to 0
-                    size_stock.stock_quantity = 0
-                    size_stock.save(update_fields=["stock_quantity"])
-
-        # Also reduce global product stock as a fallback/sync
-        if product.stock >= cart_item.quantity:
-            product.stock -= cart_item.quantity
-            product.save(update_fields=["stock"])
+            size_stock = locked_sizes.get((cart_item.product_id, cart_item.size))
+            if size_stock is not None:
+                SizeStock.objects.filter(pk=size_stock.pk).update(
+                    stock_quantity=F("stock_quantity") - cart_item.quantity
+                )
+        Product.objects.filter(pk=product.pk, stock__gte=cart_item.quantity).update(
+            stock=F("stock") - cart_item.quantity
+        )
 
     order.total_amount = total
     order.save(update_fields=["total_amount"])
     return order
 
 
-def create_payment_record(order):
-    provider_order_id = ""
-    if settings.RAZORPAY_KEY_ID and settings.RAZORPAY_KEY_SECRET:
-        try:
-            import razorpay
+class PaymentError(Exception):
+    """Razorpay order creation failed; caller must not leave an empty id behind."""
 
-            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-            amount_paise = int(order.total_amount * 100)
-            provider_order = client.order.create(
-                {
-                    "amount": amount_paise,
-                    "currency": settings.RAZORPAY_CURRENCY,
-                    "receipt": order.order_number,
-                    "payment_capture": 1,
-                }
-            )
-            provider_order_id = provider_order.get("id", "")
-        except Exception:
-            provider_order_id = ""
+
+def create_payment_record(order):
+    if not settings.RAZORPAY_KEY_ID or not settings.RAZORPAY_KEY_SECRET:
+        return Payment.objects.create(order=order, provider_order_id="")
+    try:
+        import razorpay
+
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+        amount_paise = int(order.total_amount * 100)
+        provider_order = client.order.create(
+            {
+                "amount": amount_paise,
+                "currency": settings.RAZORPAY_CURRENCY,
+                "receipt": order.order_number,
+                "payment_capture": 1,
+            }
+        )
+        provider_order_id = provider_order.get("id", "")
+    except Exception as exc:
+        raise PaymentError("Payment service is down. Please try Cash on Delivery.") from exc
+    if not provider_order_id:
+        raise PaymentError("Payment service returned an empty order. Please try again.")
     return Payment.objects.create(order=order, provider_order_id=provider_order_id)
 
 

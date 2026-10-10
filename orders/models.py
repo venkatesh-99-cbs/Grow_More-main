@@ -21,7 +21,10 @@ class Cart(models.Model):
 
     @property
     def total_quantity(self):
-        return sum(item.quantity for item in self.items.all())
+        if hasattr(self, "_prefetched_objects_cache") and "items" in self._prefetched_objects_cache:
+            return sum(item.quantity for item in self.items.all())
+        from django.db.models import Sum
+        return self.items.aggregate(total=Sum("quantity"))["total"] or 0
 
 
 class CartItem(models.Model):

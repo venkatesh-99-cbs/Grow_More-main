@@ -11,7 +11,7 @@ class PromotionalOfferForm(forms.ModelForm):
         model = PromotionalOffer
         fields = (
             "title", "slug", "description", "offer_label", "highlight_text", "discount_percent",
-            "starts_at", "ends_at", "countdown_end", "cta_text", "cta_link", "image", "image_url",
+            "starts_at", "ends_at", "countdown_end", "cta_text", "cta_link", "image",
             "is_active", "show_on_homepage", "floating_ball_enabled",
             "permanent_dismiss_allowed", "display_priority", "offer_type", "products", "categories",
         )
@@ -45,3 +45,21 @@ class PromotionalOfferForm(forms.ModelForm):
         if not (value.startswith("/") or value.startswith("https://") or value.startswith("http://")):
             raise forms.ValidationError("CTA link must be a local path or full URL.")
         return value
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        file_obj = self.cleaned_data.get("image")
+        if file_obj:
+            from products.cloudinary_utils import upload_product_image, cloudinary_is_configured
+            if cloudinary_is_configured():
+                try:
+                    result = upload_product_image(file_obj)
+                    if result:
+                        instance.image_url = result.secure_url
+                        instance.image = ""
+                except Exception:
+                    pass
+        if commit:
+            instance.save()
+            self.save_m2m()
+        return instance

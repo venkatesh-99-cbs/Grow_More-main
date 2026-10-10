@@ -59,14 +59,35 @@
             <img src="{{ product.main_image_url }}" alt="{{ product.name }}">
           {% endif %}
         </div>
-        <details class="gallery-fields">
-          <summary>Optional gallery images</summary>
-          {{ form.gallery_image_1.label_tag }} {{ form.gallery_image_1 }} {{ form.gallery_image_1.errors }}
-          {{ form.gallery_image_2.label_tag }} {{ form.gallery_image_2 }} {{ form.gallery_image_2.errors }}
-          {{ form.gallery_image_3.label_tag }} {{ form.gallery_image_3 }} {{ form.gallery_image_3.errors }}
-          {{ form.gallery_url_1.label_tag }} {{ form.gallery_url_1 }} {{ form.gallery_url_1.errors }}
-          {{ form.gallery_url_2.label_tag }} {{ form.gallery_url_2 }} {{ form.gallery_url_2.errors }}
-          {{ form.gallery_url_3.label_tag }} {{ form.gallery_url_3 }} {{ form.gallery_url_3.errors }}
+        <details class="gallery-fields" style="margin-top: 15px;">
+          <summary style="cursor: pointer; font-weight: bold; margin-bottom: 10px;">Optional gallery images</summary>
+          
+          <div class="gallery-field-group" style="margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 10px;">
+            {{ form.gallery_image_1.label_tag }} {{ form.gallery_image_1 }} {{ form.gallery_image_1.errors }}
+            {% if product and product.gallery_url_1 %}
+              <div class="gallery-preview" style="margin-top: 5px;">
+                <img src="{{ product.gallery_url_1 }}" style="max-height: 80px; border-radius: 4px; border: 1px solid #ddd;" alt="Gallery 1">
+              </div>
+            {% endif %}
+          </div>
+          
+          <div class="gallery-field-group" style="margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 10px;">
+            {{ form.gallery_image_2.label_tag }} {{ form.gallery_image_2 }} {{ form.gallery_image_2.errors }}
+            {% if product and product.gallery_url_2 %}
+              <div class="gallery-preview" style="margin-top: 5px;">
+                <img src="{{ product.gallery_url_2 }}" style="max-height: 80px; border-radius: 4px; border: 1px solid #ddd;" alt="Gallery 2">
+              </div>
+            {% endif %}
+          </div>
+          
+          <div class="gallery-field-group" style="margin-bottom: 15px; padding-bottom: 10px;">
+            {{ form.gallery_image_3.label_tag }} {{ form.gallery_image_3 }} {{ form.gallery_image_3.errors }}
+            {% if product and product.gallery_url_3 %}
+              <div class="gallery-preview" style="margin-top: 5px;">
+                <img src="{{ product.gallery_url_3 }}" style="max-height: 80px; border-radius: 4px; border: 1px solid #ddd;" alt="Gallery 3">
+              </div>
+            {% endif %}
+          </div>
         </details>
       </div>
     </div>

@@ -3,6 +3,7 @@
 {% block title %}Shop | Grow More{% endblock %}
 {% block content %}
 <main class="container page-hero">
+  <h1 class="sr-only">Grow More Shop — Summer Menswear Collection</h1>
   <div class="products-container">
     <!-- Modern Animated Filters -->
     <button class="mobile-filter-trigger" id="mobile-filter-trigger">
@@ -90,7 +91,7 @@
     <!-- Products Grid -->
     <section class="shop-main">
       <div class="shop-toolbar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-        <p id="results-count" style="font-weight:600; color:#666;">Showing {{ products.count }} products</p>
+        <p id="results-count" style="font-weight:600; color:#666;">Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} products</p>
       </div>
 
       <div class="product-grid-fixed" id="product-grid">
@@ -98,6 +99,24 @@
           {% include "partials/product_card.html" with product=product %}
         {% endfor %}
       </div>
+
+      {% if page_obj.has_other_pages %}
+      <nav class="shop-pagination" style="display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 40px; padding: 20px 0;" aria-label="Product pagination">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}{% for k, v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}" class="btn-small" style="text-decoration: none; padding: 8px 16px; border: 1px solid var(--bright-blue); border-radius: 8px; color: var(--bright-blue);">← Previous</a>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+            <span class="page-num current" style="font-weight: 700; color: var(--bright-blue);">{{ num }}</span>
+          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?page={{ num }}{% for k, v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}" class="page-num" style="text-decoration: none; color: inherit;">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}{% for k, v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}" class="btn-small" style="text-decoration: none; padding: 8px 16px; border: 1px solid var(--bright-blue); border-radius: 8px; color: var(--bright-blue);">Next →</a>
+        {% endif %}
+      </nav>
+      {% endif %}
     </section>
   </div>
 </main>

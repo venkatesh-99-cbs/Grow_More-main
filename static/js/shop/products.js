@@ -119,7 +119,7 @@ async function productCard(product) {
   const offerMarkup = product.offer ? `
     <div class="offer-chip-row">
       <span class="offer-label-chip">${product.offer.label}</span>
-      ${product.isTrending ? '<span class="offer-label-chip muted-chip">Trending Deal</span>' : ""}
+      ${(product.is_trending || product.isTrending) ? '<span class="offer-label-chip muted-chip">Trending Deal</span>' : ""}
     </div>
     <div class="limited-badge" data-offer-countdown data-offer-end="${product.offer.endsAt}">Limited time</div>
   ` : "";

@@ -96,3 +96,52 @@ def offer_payload(offer):
         "permanentDismissAllowed": offer.permanent_dismiss_allowed,
         "image": offer.display_image,
     }
+
+
+def get_products_with_active_offers(limit=6):
+    """
+    Get a list of active products that have an active offer.
+    Uses DB-level filtering to avoid N+1 queries.
+    """
+    from django.db.models import Q
+    from products.models import Product
+
+    offers = active_offers()
+    if not offers:
+        return Product.objects.none()
+
+    # Check if there is any site-wide active offer. If so, all products are discounted!
+    has_site_wide = any(o.offer_type == 'site_wide' for o in offers)
+    if has_site_wide:
+        return Product.objects.filter(is_active=True).order_by('-is_featured', '-is_trending').select_related("category")[:limit]
+
+    # Build Q filters for targeted offers
+    product_pks = set()
+    category_ids = set()
+    brand_ids = set()
+    featured_offers = False
+    trending_offers = False
+
+    for offer in offers:
+        if offer.offer_type == 'product':
+            product_pks.update(offer.products.values_list('pk', flat=True))
+        elif offer.offer_type == 'category':
+            category_ids.update(offer.categories.values_list('pk', flat=True))
+        elif offer.offer_type == 'brand':
+            brand_ids.update(offer.brands.values_list('pk', flat=True))
+        elif offer.offer_type == 'homepage':
+            featured_offers = True
+        elif offer.offer_type == 'trending':
+            trending_offers = True
+
+    q_filter = Q(pk__in=product_pks)
+    if category_ids:
+        q_filter |= Q(category_id__in=category_ids)
+    if brand_ids:
+        q_filter |= Q(brand_id__in=brand_ids)
+    if featured_offers:
+        q_filter |= Q(is_featured=True)
+    if trending_offers:
+        q_filter |= Q(is_trending=True)
+
+    return Product.objects.filter(is_active=True).filter(q_filter).select_related("category").distinct()[:limit]

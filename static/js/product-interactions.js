@@ -114,21 +114,6 @@ class ProductCardManager {
     document.dispatchEvent(event);
   }
 
-  getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
-  }
-
   static initAll() {
     document.querySelectorAll('.product-card').forEach(card => {
       if (!card.dataset.initialized) {
@@ -143,9 +128,13 @@ document.addEventListener('DOMContentLoaded', () => {
   ProductCardManager.initAll();
 });
 
-// Watch for new products (e.g. from infinite scroll or filters)
+// Watch for new products (e.g. from infinite scroll or filters) with debouncing
+let debounceTimeout;
 const observer = new MutationObserver(() => {
-  ProductCardManager.initAll();
+  clearTimeout(debounceTimeout);
+  debounceTimeout = setTimeout(() => {
+    ProductCardManager.initAll();
+  }, 100);
 });
 observer.observe(document.body, { childList: true, subtree: true });
 

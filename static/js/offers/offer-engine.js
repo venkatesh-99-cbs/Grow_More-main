@@ -210,12 +210,16 @@ function initLimitedBadges() {
 
   updateBadges();
 
-  if (!badgeUpdateInterval) {
-    badgeUpdateInterval = setInterval(updateBadges, 1000);
-  }
+  registerCountdownCallback(updateBadges);
 
-  // Watch for new badges (lazy-loading)
-  const observer = new MutationObserver(() => updateBadges());
+  // Watch for new badges (lazy-loading) with debouncing
+  let badgeDebounceTimeout;
+  const observer = new MutationObserver(() => {
+    clearTimeout(badgeDebounceTimeout);
+    badgeDebounceTimeout = setTimeout(() => {
+      updateBadges();
+    }, 100);
+  });
 
   observer.observe(document.body, {
     childList: true,

@@ -67,24 +67,32 @@ def shop(request):
         products = products.filter(size_stocks__size__in=sizes_filter, size_stocks__stock_quantity__gt=0).distinct()
 
     # Sorting
+    from django.db.models.functions import Coalesce
+    products = products.annotate(effective_price=Coalesce("discount_price", "price"))
     if sort == "price-low":
-        products = products.order_by("price")
+        products = products.order_by("effective_price")
     elif sort == "price-high":
-        products = products.order_by("-price")
+        products = products.order_by("-effective_price")
     elif sort == "newest":
         products = products.order_by("-created_at")
     else:
         products = products.order_by("-is_featured", "-is_trending", "name")
 
+    from django.core.paginator import Paginator
+    paginator = Paginator(products, 12)  # 12 products per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     if request.GET.get("partial") == "true":
-        return render(request, "partials/product_grid.html", {"products": products})
+        return render(request, "partials/product_grid.html", {"products": page_obj})
 
     categories = Category.objects.filter(is_active=True)
     brands = Brand.objects.filter(is_active=True)
     size_choices = SizeStock.SIZE_CHOICES
 
     return render(request, "products/shop.html", {
-        "products": products,
+        "products": page_obj,
+        "page_obj": page_obj,
         "categories": categories,
         "brands": brands,
         "size_choices": size_choices
@@ -93,7 +101,7 @@ def shop(request):
 
 @ensure_csrf_cookie
 def detail(request, slug):
-    product = get_object_or_404(Product.objects.select_related("category", "brand"), slug=slug, is_active=True)
+    product = get_object_or_404(Product.objects.select_related("category", "brand").prefetch_related("size_stocks"), slug=slug, is_active=True)
 
     if request.GET.get("lazy") == "true":
         # Better related products logic: same category OR same brand OR same collection (tags/trending)
@@ -113,11 +121,15 @@ def detail(request, slug):
         related_products = related_products.select_related("category")[:8]
 
         # If not enough, fill with trending
-        if related_products.count() < 4:
-            trending = Product.objects.filter(is_active=True, is_trending=True).exclude(pk=product.pk).exclude(pk__in=[p.pk for p in related_products])
-            related_products = list(related_products) + list(trending[:8 - len(related_products)])
+        related_list = list(related_products)
+        if len(related_list) < 4:
+            pk_list = [p.pk for p in related_list]
+            trending = Product.objects.filter(
+                is_active=True, is_trending=True
+            ).exclude(pk__in=[product.pk] + pk_list).select_related("category")[:8 - len(related_list)]
+            related_list = related_list + list(trending)
 
-        return render(request, "partials/product_grid.html", {"products": related_products[:8]})
+        return render(request, "partials/product_grid.html", {"products": related_list[:8]})
 
     return render(request, "products/detail.html", {"product": product})
 
@@ -172,10 +184,12 @@ def product_api(request):
         products = products.filter(Q(name__icontains=q) | Q(description__icontains=q) | Q(category__name__icontains=q))
     if category and category != "all":
         products = products.filter(category__slug=category)
+    from django.db.models.functions import Coalesce
+    products = products.annotate(effective_price=Coalesce("discount_price", "price"))
     if sort == "price-low":
-        products = sorted(products, key=lambda p: p.current_price)
+        products = products.order_by("effective_price")
     elif sort == "price-high":
-        products = sorted(products, key=lambda p: p.current_price, reverse=True)
+        products = products.order_by("-effective_price")
     elif sort == "name":
         products = products.order_by("name")
     return JsonResponse({"products": [product_payload(product) for product in products]})

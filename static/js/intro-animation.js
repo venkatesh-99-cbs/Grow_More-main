@@ -5,7 +5,9 @@
 class IntroAnimation {
     constructor() {
         this.intro = document.getElementById('intro-animation');
-        this.hasSeenIntro = sessionStorage.getItem('hasSeenIntro');
+        const INTRO_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
+        const lastSeen = Number(localStorage.getItem('gm_intro_seen_at') || 0);
+        this.hasSeenIntro = (Date.now() - lastSeen) < INTRO_EXPIRY_MS;
         this.init();
     }
 
@@ -46,7 +48,7 @@ class IntroAnimation {
 
         this.intro.classList.add('intro-exit-process');
         document.body.style.overflow = '';
-        sessionStorage.setItem('hasSeenIntro', 'true');
+        localStorage.setItem('gm_intro_seen_at', String(Date.now()));
 
         setTimeout(() => {
             this.intro.remove();

@@ -16,8 +16,8 @@
           <tr>
             <td data-label="User"><strong>{{ customer.get_full_name|default:customer.username }}</strong><br><small>{{ customer.username }}</small></td>
             <td data-label="Email">{{ customer.email }}</td>
-            <td data-label="Orders">{{ customer.orders.count }}</td>
-            <td data-label="Addresses">{{ customer.addresses.count }}</td>
+            <td data-label="Orders">{{ customer.orders.all|length }}</td>
+            <td data-label="Addresses">{{ customer.addresses.all|length }}</td>
             <td data-label="Recent Products">
               <div class="mini-history-list">
                 {% for order in customer.orders.all|slice:":3" %}
@@ -43,4 +43,16 @@
       </tbody>
     </table>
   </div>
+
+  {% if page_obj.has_other_pages %}
+  <div class="pagination" style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 20px; padding: 10px;">
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}" class="btn-small" style="text-decoration: none; padding: 5px 10px; border: 1px solid #ccc; border-radius: 4px;">&laquo; Previous</a>
+    {% endif %}
+    <span class="current-page">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}" class="btn-small" style="text-decoration: none; padding: 5px 10px; border: 1px solid #ccc; border-radius: 4px;">Next &raquo;</a>
+    {% endif %}
+  </div>
+  {% endif %}
 {% endblock %}

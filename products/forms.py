@@ -24,7 +24,6 @@ class ProductForm(forms.ModelForm):
             "name", "slug", "category", "description", "price", "discount_price",
             "stock", "brand", "color_hex", "color_name", "is_active", "is_featured", "is_trending", "main_image",
             "gallery_image_1", "gallery_image_2", "gallery_image_3",
-            "gallery_url_1", "gallery_url_2", "gallery_url_3",
         )
         widgets = {
             "main_image": forms.ClearableFileInput(attrs={"accept": ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"}),

@@ -5,7 +5,6 @@ Handles advanced product filtering with brand, category, HEX color, size, and pr
 
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
 from django.db.models import Q, F, DecimalField, Case, When, Value
 import json
@@ -13,7 +12,6 @@ import json
 from products.models import Product, Brand, Category, SizeStock
 
 
-@csrf_exempt
 @require_http_methods(["GET"])
 def filter_products(request):
     """
@@ -176,7 +174,6 @@ def filter_products(request):
         }, status=400)
 
 
-@csrf_exempt
 @require_http_methods(["GET"])
 def get_filter_options(request):
     """
@@ -251,7 +248,6 @@ def get_filter_options(request):
         }, status=400)
 
 
-@csrf_exempt
 @require_http_methods(["GET"])
 def search_products(request):
     """
