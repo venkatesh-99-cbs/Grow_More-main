@@ -19,8 +19,9 @@ class GrowMoreLoginView(LoginView):
     redirect_authenticated_user = True
 
     def form_valid(self, form):
-        merge_session_cart_into_user(self.request)
+        guest_session_key = self.request.session.session_key
         response = super().form_valid(form)
+        merge_session_cart_into_user(self.request, session_key=guest_session_key)
         if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'success': True})
         return response

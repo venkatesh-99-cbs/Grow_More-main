@@ -24,8 +24,14 @@ def env_bool(name: str, default: bool = False) -> bool:
 def env_list(name: str, default: str = "") -> list[str]:
     return [item.strip() for item in os.environ.get(name, default).split(",") if item.strip()]
 
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "development")
+
 SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-grow-more-dev-key-change-me")
-DEBUG = env_bool("DEBUG", True)
+if ENVIRONMENT == "production" and (
+    not os.environ.get("SECRET_KEY") or len(SECRET_KEY) < 50 or "insecure" in SECRET_KEY
+):
+    raise ValueError("SECRET_KEY must be set to a long random value in production.")
+DEBUG = env_bool("DEBUG", ENVIRONMENT != "production")
 ALLOWED_HOSTS = env_list(
     "ALLOWED_HOSTS",
     "127.0.0.1,localhost,testserver,growmorestore.onrender.com"
@@ -221,10 +227,14 @@ SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', '0' if DEBUG els
 SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool('SECURE_HSTS_INCLUDE_SUBDOMAINS', not DEBUG)
 SECURE_HSTS_PRELOAD = env_bool('SECURE_HSTS_PRELOAD', not DEBUG)
 
+# shortcut: file cache is shared by workers on one host only; for multiple
+# Render instances use Redis (needs django-redis) and point CACHES there.
+CACHE_DIR = BASE_DIR / ".cache"
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'grow-more-cache',
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': str(CACHE_DIR),
     }
 }
 

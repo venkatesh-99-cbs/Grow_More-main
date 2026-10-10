@@ -12,6 +12,7 @@ from core.services import send_order_confirmation
 from orders.forms import CheckoutForm
 from orders.models import CartItem, Order, Payment
 from orders.services import (
+    PaymentError,
     create_order_from_cart,
     create_payment_record,
     get_or_create_cart,
@@ -147,17 +148,26 @@ def checkout(request):
     if request.method == "POST" and form.is_valid():
         try:
             order = create_order_from_cart(cart, request.user, form.cleaned_data)
-        except ValueError:
-            messages.error(request, "Your cart is empty.")
-            return redirect("products:shop")
-        payment = create_payment_record(order)
+        except ValueError as exc:
+            messages.error(request, str(exc) or "Your cart is empty.")
+            if "empty" in str(exc).lower():
+                return redirect("products:shop")
+            return render(request, "orders/checkout.html", {"form": form, "cart": cart})
+        try:
+            payment = create_payment_record(order)
+        except PaymentError as exc:
+            order.delete()
+            messages.error(request, str(exc))
+            return render(request, "orders/checkout.html", {"form": form, "cart": cart})
+        # shortcut: clearing here stops refresh/back re-POSTs (cart is now empty);
+        # two POSTs in the same instant can still race — needs an idempotency key to fully fix.
+        cart.items.all().delete()
+        invalidate_cart_count_cache(request)
         if order.payment_method == "cod":
             order.status = "confirmed"
             order.save(update_fields=["status"])
             payment.status = "paid"
             payment.save(update_fields=["status"])
-            cart.items.all().delete()
-            invalidate_cart_count_cache(request)
             send_order_confirmation(order)
             return redirect("orders:success", order_number=order.order_number)
         return render(request, "orders/payment.html", {"order": order, "payment": payment, "razorpay_key_id": settings.RAZORPAY_KEY_ID})
@@ -170,6 +180,9 @@ def verify_payment(request):
     provider_order_id = request.POST.get("razorpay_order_id", "")
     provider_payment_id = request.POST.get("razorpay_payment_id", "")
     signature = request.POST.get("razorpay_signature", "")
+    if not provider_order_id:
+        messages.error(request, "Payment session expired. Please checkout again.")
+        return redirect("orders:checkout")
     payment = get_object_or_404(Payment, provider_order_id=provider_order_id, order__user=request.user)
     if verify_razorpay_signature(provider_order_id, provider_payment_id, signature):
         payment.provider_payment_id = provider_payment_id
